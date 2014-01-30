@@ -43,6 +43,10 @@ def initialize_model(bot, storage):
     for reminder in Reminder.select() \
         .where(~(Reminder.duration >> None)):
         dt = datetime.utcnow() - (reminder.ts + timedelta(seconds=reminder.duration))
+
+        if dt < timedelta(0):
+            reminder.delete_instance()
+
         bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
 
 

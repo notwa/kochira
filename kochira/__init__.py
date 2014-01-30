@@ -38,7 +38,8 @@ class Bot:
         self._connect_to_irc()
 
     def _connect_to_db(self):
-        database.initialize(SqliteDatabase(self.config["core"]["database"]))
+        database.initialize(SqliteDatabase(self.config["core"]["database"],
+                                           threadlocals=True))
         logger.info("Opened database connection: %s", self.config["core"]["database"])
 
         ACLEntry.create_table(True)
