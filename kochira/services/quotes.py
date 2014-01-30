@@ -55,6 +55,7 @@ def delete_quote(client, target, origin, qid: int):
         client.message(target, "{origin}: That's not a quote.".format(
             origin=origin
         ))
+        return
 
     Quote.delete().where(Quote.id == qid).execute()
 
@@ -77,6 +78,7 @@ def read_quote(client, target, origin, qid: int):
         client.message(target, "{origin}: That's not a quote.".format(
             origin=origin
         ))
+        return
 
     quote = q[0]
 
@@ -98,6 +100,7 @@ def rand_quote(client, target, origin):
         client.message(target, "{origin}: Couldn't find any quotes.".format(
             origin=origin
         ))
+        return
 
     quote = q[0]
 
