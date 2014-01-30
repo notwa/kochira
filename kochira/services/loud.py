@@ -38,11 +38,20 @@ def who_said_that(client, target, origin):
 
 @service.command(r"how many shouts\??$", mention=True)
 @service.command(r"how many times have people shouted\??", mention=True)
-def how_many_shouts(client, target, origin):
-    client.message(target, "{origin}: I have {num} shouts.".format(
-        origin=origin,
-        num=Shout.select().count()
-    ))
+@service.command(r"how many times has (?P<who>\S+) shouted\??", mention=True)
+@service.command(r"how loud is (?P<who>\S+)\??", mention=True)
+def how_many_shouts(client, target, origin, who=None):
+    if who is None:
+        client.message(target, "{origin}: There have been {num} shouts.".format(
+            origin=origin,
+            num=Shout.select().count()
+        ))
+    else:
+        client.message(target, "{origin}: {who} has shouted {num} times.".format(
+            origin=origin,
+            who=who,
+            num=Shout.select().where(Shout.who == who).count()
+        ))
 
 
 @service.hook("message")
