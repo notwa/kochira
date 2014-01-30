@@ -116,6 +116,25 @@ def list_services(client, target, origin):
     )
 
 
+@service.command(r"reload services$", mention=True)
+@requires_permission("admin")
+def reload_services(client, target, origin):
+    failed_services = []
+
+    for service_name in list(client.bot.services.keys()):
+        try:
+            client.bot.load_service(service_name, True)
+        except:
+            failed_services.append(service_name)
+
+    if failed_services:
+        client.message(target, "I couldn't reload the following services: {failed_services}".format(
+            failed_services=", ".join(failed_services))
+        )
+    else:
+        client.message(target, "All services reloaded!")
+
+
 @service.command(r">>> (?P<code>.+)$")
 @service.command(r"eval (?P<code>.+)$", mention=True)
 @requires_permission("admin")
