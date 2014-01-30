@@ -15,7 +15,7 @@ class Service:
         self.on_setup = []
         self.logger = logging.getLogger(self.name)
 
-    def register_command(self, *patterns, mention=False):
+    def register_command(self, *patterns, mention=False, background=False):
         """
         Register a command for use with the bot.
 
@@ -47,7 +47,10 @@ class Service:
                         if k in f.__annotations__ and v is not None:
                             kwargs[k] = f.__annotations__[k](v)
 
-                    return f(client, origin, target, **kwargs)
+                    if background:
+                        client.bot.executor.submit(f, client, origin, target, **kwargs)
+                    else:
+                        f(client, origin, target, **kwargs)
 
             self.commands.append(_inner)
             return _inner

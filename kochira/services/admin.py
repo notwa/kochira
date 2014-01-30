@@ -4,27 +4,29 @@ from ..service import Service
 service = Service(__name__)
 
 @service.register_command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
-@requires_permission("grant-revoke")
+@requires_permission("acl")
 def grant(client, target, origin, permission, hostmask, channel=None):
     client.grant_permission(hostmask, permission, channel)
 
     if channel is not None:
-        message = "Granted permission \"{permission}\" to {hostmask} on channel {channel}.".format(
+        message = "Granted permission \"{permission}\" to {hostmask} on channel {channel} for network \"{network}\".".format(
             permission=permission,
             hostmask=hostmask,
-            channel=channel
+            channel=channel,
+            network=client.network
         )
     else:
-        message = "Granted permission \"{permission}\" to {hostmask} globally.".format(
+        message = "Granted permission \"{permission}\" to {hostmask} globally for network \"{network}\".".format(
             permission=permission,
-            hostmask=hostmask
+            hostmask=hostmask,
+            network=client.network
         )
 
     client.message(target, message)
 
 
 @service.register_command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
-@requires_permission("grant-revoke")
+@requires_permission("acl")
 def revoke(client, target, origin, permission, hostmask, channel=None):
     if permission == "everything":
         permission = None
@@ -37,15 +39,17 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
         message_part = "permission \"{permission}\"".format(permission)
 
     if channel is not None:
-        message = "Revoked {message_part} from {hostmask} on channel {channel}.".format(
+        message = "Revoked {message_part} from {hostmask} on channel {channel} for network \"{network}\".".format(
             message_part=message_part,
             hostmask=hostmask,
-            channel=channel
+            channel=channel,
+            network=client.network
         )
     else:
-        message = "Revoked {message_part} from {hostmask} globally.".format(
+        message = "Revoked {message_part} from {hostmask} globally for network \"{network}\".".format(
             message_part=message_part,
-            hostmask=hostmask
+            hostmask=hostmask,
+            network=client.network
         )
 
     client.message(target, message)
@@ -117,3 +121,10 @@ def eval_code(client, target, origin, code):
         return
 
     client.message(target, "Evaluation result: {0!r}".format(result))
+
+
+@service.register_command(r"rehash$", mention=True)
+@requires_permission("rehash")
+def rehash(client, target, origin):
+    client.bot.rehash()
+    client.message(target, "Configuration rehashed.")
