@@ -113,8 +113,16 @@ def add_reminder(client, target, origin, who, message):
 
 
 @service.hook("message")
+def play_reminder_on_message(client, target, origin, message):
+    play_reminder(client, target, origin)
+
+
 @service.hook("join")
-def play_reminder(client, target, origin, *_):
+def play_reminder_on_join(client, channel, user):
+    play_reminder(client, channel, user)
+
+
+def play_reminder(client, target, origin):
     now = datetime.utcnow()
 
     for reminder in Reminder.select().where(Reminder.who == origin,

@@ -92,14 +92,14 @@ class Service:
         """
         self.on_setup.append(f)
 
-    def run_hooks(self, hook, client, origin, target, *args):
+    def run_hooks(self, hook, client, *args):
         """
         Attempt to dispatch a command to all command handlers.
         """
 
         for hook in self.hooks.get(hook, []):
             try:
-                hook(client, origin, target, *args)
+                hook(client, *args)
             except BaseException:
                 self.logger.error("Hook processing failed", exc_info=True)
 

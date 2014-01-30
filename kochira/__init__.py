@@ -100,13 +100,13 @@ class Bot:
 
         del self.services[name]
 
-    def run_hooks(self, hook, client, origin, target, *args):
+    def run_hooks(self, hook, client, *args):
         """
         Attempt to dispatch a command to all command handlers.
         """
 
         for service, _ in list(self.services.values()):
-            service.run_hooks(hook, client, origin, target, *args)
+            service.run_hooks(hook, client, *args)
 
     def rehash(self):
         """
