@@ -169,6 +169,7 @@ def update(client, target, origin):
 
     p = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE)
     head, _ = p.communicate()
+    head = head.decode("utf-8").strip()
 
     if p.returncode != 0:
         client.message(target, "Update failed!")
@@ -195,7 +196,7 @@ def update(client, target, origin):
         client.message(target, "Update failed!")
         return
 
-    for line in out.rstrip("\n").split("\n"):
+    for line in out.decode("utf-8").rstrip("\n").split("\n"):
         client.message(target, line)
 
     client.message(target, "Update finished!")
