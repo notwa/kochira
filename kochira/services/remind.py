@@ -27,8 +27,9 @@ def initialize_model(bot, storage):
 def add_reminder(client, target, origin, who, message):
     Reminder.create(who=who, channel=target, origin=origin, message=message,
                     network=client.network, ts=datetime.utcnow()).save()
-    client.message(target, "{origin}: Okay, I'll let them know.".format(
-        origin=origin
+    client.message(target, "{origin}: Okay, I'll let {who} know.".format(
+        origin=origin,
+        who=who
     ))
 
 
