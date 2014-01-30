@@ -84,7 +84,7 @@ class Bot:
 
             service = module.service
 
-            service.setup(self, storage)
+            service.run_setup(self, storage)
         except:
             logger.error("Couldn't load service %s", name, exc_info=True)
             return

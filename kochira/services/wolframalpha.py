@@ -10,9 +10,9 @@ service = Service(__name__)
 
 XPATH_EXPR = "/queryresult[@success='true']/pod[@primary='true']/subpod[1]/plaintext/text()"
 
-@service.register_command(r"~~(?P<query>.+)$", background=True)
-@service.register_command(r"!wa (?P<query>.+)$", background=True)
-@service.register_command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True, background=True)
+@service.command(r"~~(?P<query>.+)$", background=True)
+@service.command(r"!wa (?P<query>.+)$", background=True)
+@service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True, background=True)
 def query(client, target, origin, query):
     config = service.config_for(client.bot)
 

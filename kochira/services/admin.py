@@ -7,7 +7,7 @@ from ..service import Service
 
 service = Service(__name__)
 
-@service.register_command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
+@service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
 @requires_permission("admin")
 def grant(client, target, origin, permission, hostmask, channel=None):
     client.grant_permission(hostmask, permission, channel)
@@ -29,7 +29,7 @@ def grant(client, target, origin, permission, hostmask, channel=None):
     client.message(target, message)
 
 
-@service.register_command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
+@service.command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
 @requires_permission("admin")
 def revoke(client, target, origin, permission, hostmask, channel=None):
     if permission == "everything":
@@ -59,7 +59,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
     client.message(target, message)
 
 
-@service.register_command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True)
+@service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True)
 @requires_permission("admin")
 def load_service(client, target, origin, r, service_name):
     try:
@@ -82,7 +82,7 @@ def load_service(client, target, origin, r, service_name):
     client.message(target, message)
 
 
-@service.register_command(r"unload service (?P<service_name>\S+)$", mention=True)
+@service.command(r"unload service (?P<service_name>\S+)$", mention=True)
 @requires_permission("admin")
 def unload_service(client, target, origin, service_name):
     try:
@@ -100,8 +100,8 @@ def unload_service(client, target, origin, service_name):
     client.message(target, "Unloaded service \"{name}\".".format(name=service_name))
 
 
-@service.register_command(r"what services are(?: you)? running\??$", mention=True)
-@service.register_command(r"(?:list )services$", mention=True)
+@service.command(r"what services are(?: you)? running\??$", mention=True)
+@service.command(r"(?:list )services$", mention=True)
 @requires_permission("admin")
 def list_services(client, target, origin):
     client.message(target, "I am running: {services}".format(
@@ -109,7 +109,7 @@ def list_services(client, target, origin):
     )
 
 
-@service.register_command(r"eval (?P<code>.+)$", mention=True)
+@service.command(r"eval (?P<code>.+)$", mention=True)
 @requires_permission("admin")
 def eval_code(client, target, origin, code):
     try:
@@ -125,14 +125,14 @@ def eval_code(client, target, origin, code):
     client.message(target, "Evaluation result: {0!r}".format(result))
 
 
-@service.register_command(r"rehash$", mention=True)
+@service.command(r"rehash$", mention=True)
 @requires_permission("admin")
 def rehash(client, target, origin):
     client.bot.rehash()
     client.message(target, "Configuration rehashed.")
 
 
-@service.register_command(r"re(?:start|boot)$", mention=True)
+@service.command(r"re(?:start|boot)$", mention=True)
 @requires_permission("admin")
 def restart(client, target, origin):
     for client in list(client.bot.networks.values()):
@@ -140,7 +140,7 @@ def restart(client, target, origin):
     os.execvp(os.path.join(sys.path[0], sys.argv[0]), sys.argv)
 
 
-@service.register_command(r"(?:windows )?update(?:s)?!?$", mention=True)
+@service.command(r"(?:windows )?update(?:s)?!?$", mention=True)
 @requires_permission("admin")
 def update(client, target, origin):
     client.message(target, "Checking for updates...")

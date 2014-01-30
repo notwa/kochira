@@ -9,7 +9,7 @@ from ..service import Service
 service = Service(__name__)
 
 
-@service.register_setup
+@service.setup
 def make_snapchat(bot, storage):
     config = service.config_for(bot)
 
@@ -19,7 +19,7 @@ def make_snapchat(bot, storage):
         raise Exception("could not log into Snapchat")
 
 
-@service.register_task(interval=timedelta(seconds=30))
+@service.task(interval=timedelta(seconds=30))
 def poll_for_updates(bot):
     config = service.config_for(bot)
     storage = service.storage_for(bot)

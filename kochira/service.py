@@ -16,14 +16,18 @@ class Service:
         self.on_setup = []
         self.logger = logging.getLogger(self.name)
 
-    def register_hook(self, hook, handler):
+    def hook(self, hook):
         """
         Register a hook with the service.
         """
 
-        self.hooks.setdefault(hook, []).append(handler)
+        def _decorator(f):
+            self.hooks.setdefault(hook, []).append(f)
+            return f
 
-    def register_command(self, pattern, mention=False, background=False):
+        return _decorator
+
+    def command(self, pattern, mention=False, background=False):
         """
         Register a command for use with the bot.
 
@@ -59,12 +63,12 @@ class Service:
                 else:
                     f(client, origin, target, **kwargs)
 
-            self.register_hook("message", _command_handler)
+            self.hook("message")(_command_handler)
             return f
 
         return _decorator
 
-    def register_task(self, interval):
+    def task(self, interval):
         """
         Register a new periodic task. For one-off tasks that need to be
         deferred to a thread, use ``bot.executor.submit``.
@@ -76,7 +80,7 @@ class Service:
 
         return _decorator
 
-    def register_setup(self, f):
+    def setup(self, f):
         """
         Register a setup function.
         """
@@ -93,7 +97,7 @@ class Service:
             except BaseException:
                 self.logger.error("Hook processing failed", exc_info=True)
 
-    def setup(self, bot, storage):
+    def run_setup(self, bot, storage):
         """
         Run all setup functions for the service.
         """

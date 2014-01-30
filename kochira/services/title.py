@@ -13,7 +13,7 @@ HEADERS = {
 
 DESPACE_EXPR = re.compile(r"\s+")
 
-@service.register_command(r'.*(?P<url>http[s]?://[^\s<>"]+|www\.[^\s<>"]+)')
+@service.command(r'.*(?P<url>http[s]?://[^\s<>"]+|www\.[^\s<>"]+)')
 def detect_url(client, target, origin, url):
     if not (url.startswith("http:") or url.startswith("https:")):
         url = "http://" + url
