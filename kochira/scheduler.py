@@ -40,35 +40,40 @@ class Scheduler(Thread):
 
                     if k not in self.work and interval is not None:
                         # this task is being scheduled automatically
-                        self.work[k] = Work(interval.total_seconds())
+                        self.work.setdefault(k, []).append(Work(interval.total_seconds()))
 
                     if k not in self.work:
                         # task is scheduled in manual mode
                         continue
 
-                    work = self.work[k]
+                    remaining_work = []
 
-                    work.deadline -= dt
+                    for work in self.work[k]:
+                        work.deadline -= dt
 
-                    if work.deadline <= 0:
-                        # task needs to run now
-                        logger.info("Submitting task %s.%s to executor (late by %.2fs)",
-                            service.name,
-                            task.__name__,
-                            -work.deadline
-                        )
+                        if work.deadline <= 0:
+                            # task needs to run now
+                            logger.info("Submitting task %s.%s to executor (late by %.2fs)",
+                                service.name,
+                                task.__name__,
+                                -work.deadline
+                            )
 
-                        future = self.bot.executor.submit(task, self.bot,
-                                                          *work.args,
-                                                          **work.kwargs)
+                            future = self.bot.executor.submit(task, self.bot,
+                                                              *work.args,
+                                                              **work.kwargs)
 
-                        @future.add_done_callback
-                        def on_complete(future):
-                            exc = future.exception()
-                            if exc is not None:
-                                logger.error("Task error", exc_info=exc)
+                            @future.add_done_callback
+                            def on_complete(future):
+                                exc = future.exception()
+                                if exc is not None:
+                                    logger.error("Task error", exc_info=exc)
+                        else:
+                            remaining_work.append(work)
 
-                        # reschedule the task next tick
+                    if remaining_work:
+                        self.work[k] = remaining_work
+                    else:
                         del self.work[k]
 
             self.last_tick = current
@@ -80,4 +85,4 @@ class Scheduler(Thread):
         Schedule a task to run after a given amount of time.
         """
         k = (task.service.name, task.__name__)
-        self.work[k] = Work(time.total_seconds(), args, kwargs)
+        self.work.setdefault(k, []).append(Work(time.total_seconds(), args, kwargs))
