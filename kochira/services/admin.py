@@ -1,3 +1,4 @@
+from io import StringIO
 import os
 import subprocess
 import sys
@@ -5,7 +6,13 @@ import sys
 from ..auth import requires_permission
 from ..service import Service
 
+
 service = Service(__name__)
+
+
+@service.setup
+def setup_eval_locals(bot, storage):
+    storage.eval_locals = {}
 
 @service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
 @requires_permission("admin")
@@ -109,11 +116,18 @@ def list_services(client, target, origin):
     )
 
 
+@service.command(r">>> (?P<code>.+)$")
 @service.command(r"eval (?P<code>.+)$", mention=True)
 @requires_permission("admin")
 def eval_code(client, target, origin, code):
+    storage = service.storage_for(client.bot)
+
+    buf = StringIO()
+    sys.stdout = buf
+
     try:
-        result = eval(code, {"client": client}, {})
+        eval(compile(code, "<irc>", "single"),
+             {"client": client}, storage.eval_locals)
     except BaseException as e:
         client.message(target, "Sorry, evaluation failed.")
         client.message(target, "↳ {name}: {info}".format(
@@ -121,8 +135,16 @@ def eval_code(client, target, origin, code):
             info=str(e)
         ))
         return
+    finally:
+        sys.stdout = sys.__stdout__
 
-    client.message(target, "Evaluation result: {0!r}".format(result))
+    output = buf.getvalue().rstrip("\n")
+
+    if output:
+        for line in output.split("\n"):
+            client.message(target, "<<< {}".format(line))
+    else:
+        client.message(target, "(no result)")
 
 
 @service.command(r"rehash$", mention=True)
