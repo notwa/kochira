@@ -41,15 +41,15 @@ def initialize_model(bot, storage):
 
 
 @service.task
-def play_timed_reminder(bot, client, target, who, origin, message):
-    client.message(target, "{who}, {origin} wanted you to know: {message}".format(
+def play_timed_reminder(bot, network, target, who, origin, message):
+    bot.networks[network].message(target, "{who}, {origin} wanted you to know: {message}".format(
         who=who,
         origin=origin,
         message=message
     ))
 
 
-@service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to) (?P<message>.+)$", mention=True)
+@service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to|that) (?P<message>.+)$", mention=True)
 def add_reminder(client, target, origin, who, message):
     Reminder.create(who=who, channel=target, origin=origin, message=message,
                     network=client.network, ts=datetime.utcnow()).save()
@@ -59,7 +59,7 @@ def add_reminder(client, target, origin, who, message):
     ))
 
 
-@service.command(r"remind (?P<who>\S+) (?P<duration>(?:in|after) .+) (?:about|to) (?P<message>.+)$", mention=True)
+@service.command(r"remind (?P<who>\S+) (?P<duration>(?:in|after) .+) (?:about|to|that) (?P<message>.+)$", mention=True)
 def add_timed_reminder(client, target, origin, who, duration, message):
     now = datetime.now()
     t = parse_time(duration)
@@ -84,7 +84,9 @@ def add_timed_reminder(client, target, origin, who, duration, message):
         dt=dt
     ))
 
-    client.bot.scheduler.schedule_after(dt, play_timed_reminder, client, target, who, origin, message)
+    client.bot.scheduler.schedule_after(dt, play_timed_reminder,
+                                        client.network, target, who,
+                                        origin, message)
 
 
 @service.hook("message")
