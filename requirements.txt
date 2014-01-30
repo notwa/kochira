@@ -2,3 +2,4 @@ pydle
 peewee
 pyyaml
 requests
+lxml
