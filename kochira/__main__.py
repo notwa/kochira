@@ -1,7 +1,4 @@
-from . import Bot
-import logging
+from . import main
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    bot = Bot()
-    bot.run()
+    main()

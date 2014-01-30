@@ -1,3 +1,6 @@
+import os
+import sys
+
 from ..auth import requires_permission
 from ..service import Service
 
@@ -97,8 +100,7 @@ def unload_service(client, target, origin, service_name):
 
 
 @service.register_command(r"what services are(?: you)? running\??$", mention=True)
-@service.register_command(r"services$", mention=True)
-@service.register_command(r"list services", mention=True)
+@service.register_command(r"(?:list )services$", mention=True)
 @requires_permission("services")
 def list_services(client, target, origin):
     client.message(target, "I am running: {services}".format(
@@ -127,3 +129,11 @@ def eval_code(client, target, origin, code):
 def rehash(client, target, origin):
     client.bot.rehash()
     client.message(target, "Configuration rehashed.")
+
+
+@service.register_command(r"re(?:start|boot)$", mention=True)
+@requires_permission("restart")
+def restart(client, target, origin):
+    for client in list(client.bot.networks.values()):
+        client.quit("Restarting...")
+    os.execvp(os.path.join(sys.path[0], sys.argv[0]), sys.argv)

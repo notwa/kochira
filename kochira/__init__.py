@@ -114,3 +114,9 @@ class Bot:
 
         with open(self.config_file, "r") as f:
             self.config = yaml.load(f)
+
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+    bot = Bot()
+    bot.run()
