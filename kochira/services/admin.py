@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 
 from ..auth import requires_permission
@@ -134,6 +135,30 @@ def rehash(client, target, origin):
 @service.register_command(r"re(?:start|boot)$", mention=True)
 @requires_permission("restart")
 def restart(client, target, origin):
+    for client in list(client.bot.networks.values()):
+        client.quit("Restarting...")
+    os.execvp(os.path.join(sys.path[0], sys.argv[0]), sys.argv)
+
+
+@service.register_command(r"(?:windows )?update(?:s)?!?", mention=True)
+@requires_permission("restart")
+def update(client, target, origin):
+    client.message(target, "Checking for updates...")
+
+    p = subprocess.Popen(["git", "pull"], stdout=subprocess.PIPE)
+
+    out, _ = p.communicate()
+
+    if p.returncode != 0:
+        client.message(target, "Update failed!")
+        return
+
+    if out.decode("utf-8").strip() == "Already up-to-date.":
+        client.message(target, "No updates.")
+        return
+
+    client.message(target, "Update finished!")
+
     for client in list(client.bot.networks.values()):
         client.quit("Restarting...")
     os.execvp(os.path.join(sys.path[0], sys.argv[0]), sys.argv)
