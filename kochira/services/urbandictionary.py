@@ -37,7 +37,7 @@ def define(client, target, origin, term, num: int=None):
     client.message(target, "{origin}: {term}: {definition} ({num} of {total})".format(
         origin=origin,
         term=term,
-        definition=r["list"][num]["definition"],
+        definition=r["list"][num]["definition"].replace("\n", " "),
         num=num + 1,
         total=total
     ))
