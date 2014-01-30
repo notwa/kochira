@@ -17,9 +17,10 @@ def query(client, target, origin, query):
     config = service.config_for(client.bot)
 
     resp = requests.get(url="http://api.wolframalpha.com/v2/query?" + urlencode({
-        "input":    query,
-        "appid":    config["appid"],
-        "format":   "plaintext"
+        "input": query,
+        "appid": config["appid"],
+        "format": "plaintext",
+        "reinterpret": "true"
     }))
 
     tree = etree.parse(BytesIO(resp.text.encode("utf-8")))
