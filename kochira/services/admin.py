@@ -63,7 +63,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
 @requires_permission("services")
 def load_service(client, target, origin, r, service_name):
     try:
-        client.bot.load_service(service_name, r is not None)
+        client.bot.load_service(service.SERVICES_PACKAGE + '.' + service_name, r is not None)
     except Exception as e:
         client.message(target, "Sorry, couldn't load the service \"{name}\".".format(
             name=service_name
@@ -86,7 +86,7 @@ def load_service(client, target, origin, r, service_name):
 @requires_permission("services")
 def unload_service(client, target, origin, service_name):
     try:
-        client.bot.unload_service(service_name)
+        client.bot.unload_service(service.SERVICES_PACKAGE + '.' + service_name)
     except Exception as e:
         client.message(target, "Sorry, couldn't unload the service \"{name}\".".format(
             name=service_name
