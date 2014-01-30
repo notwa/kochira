@@ -1,7 +1,7 @@
 import parsedatetime
 
 from datetime import datetime, timedelta
-from peewee import TextField, CharField, DateTimeField
+from peewee import TextField, CharField, DateTimeField, IntegerField
 
 import math
 
@@ -33,20 +33,29 @@ class Reminder(Model):
     channel = CharField(255)
     network = CharField(255)
     ts = DateTimeField()
+    duration = IntegerField(null=True)
 
 
 @service.setup
 def initialize_model(bot, storage):
     Reminder.create_table(True)
 
+    for reminder in Reminder.select() \
+        .where(~(Reminder.duration >> None)):
+        dt = datetime.utcnow() - (reminder.ts + timedelta(seconds=reminder.duration))
+        bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
+
 
 @service.task
-def play_timed_reminder(bot, network, target, who, origin, message):
-    bot.networks[network].message(target, "{who}, {origin} wanted you to know: {message}".format(
-        who=who,
-        origin=origin,
-        message=message
-    ))
+def play_timed_reminder(bot, reminder):
+    if reminder.network in bot.networks:
+        bot.networks[reminder.network].message(reminder.target, "{who}, {origin} wanted you to know: {message}".format(
+            who=reminder.who,
+            origin=reminder.origin,
+            message=reminder.message
+        ))
+
+    reminder.delete_instance()
 
 
 @service.command(r"remind (?P<who>\S+)(?: about| to| that)? (?P<message>.+) (?P<duration>(?:in|after) .+)$", mention=True)
@@ -61,7 +70,7 @@ def add_timed_reminder(client, target, origin, who, duration, message):
         ))
         return
 
-    dt = timedelta(seconds=math.ceil((parse_time(duration) - now).total_seconds()))
+    dt = timedelta(seconds=int(math.ceil((parse_time(duration) - now).total_seconds())))
 
     if dt < timedelta(0):
         client.message(target, "{origin}: Uh, that's in the past.".format(
@@ -69,21 +78,29 @@ def add_timed_reminder(client, target, origin, who, duration, message):
         ))
         return
 
+    # persist reminder to the DB
+    reminder = Reminder.create(who=who, channel=target, origin=origin,
+                               message=message, network=client.network,
+                               ts=datetime.utcnow(),
+                               duration=dt.total_seconds())
+    reminder.save()
+
     client.message(target, "{origin}: Okay, I'll let {who} know in {dt}.".format(
         origin=origin,
         who=who,
         dt=dt
     ))
 
-    client.bot.scheduler.schedule_after(dt, play_timed_reminder,
-                                        client.network, target, who,
-                                        origin, message)
+    # ... but also schedule it
+    client.bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
 
 
 @service.command(r"tell (?P<who>\S+)(?: about| to| that)? (?P<message>.+)$", mention=True)
 def add_reminder(client, target, origin, who, message):
     Reminder.create(who=who, channel=target, origin=origin, message=message,
-                    network=client.network, ts=datetime.utcnow()).save()
+                    network=client.network, ts=datetime.utcnow(),
+                    duration=None).save()
+
     client.message(target, "{origin}: Okay, I'll let {who} know.".format(
         origin=origin,
         who=who
@@ -97,7 +114,8 @@ def play_reminder(client, target, origin, *_):
 
     for reminder in Reminder.select().where(Reminder.who == origin,
                                             Reminder.channel == target,
-                                            Reminder.network == client.network) \
+                                            Reminder.network == client.network,
+                                            Reminder.duration >> None) \
         .order_by(Reminder.ts.asc()):
 
         # TODO: display time
@@ -111,4 +129,5 @@ def play_reminder(client, target, origin, *_):
 
     Reminder.delete().where(Reminder.who == origin,
                             Reminder.channel == target,
-                            Reminder.network == client.network).execute()
+                            Reminder.network == client.network,
+                            Reminder.duration >> None).execute()
