@@ -42,15 +42,19 @@ def who_said_that(client, target, origin):
 @service.command(r"how loud is (?P<who>\S+)\??", mention=True)
 def how_many_shouts(client, target, origin, who=None):
     if who is None:
-        client.message(target, "{origin}: There have been {num} shouts.".format(
+        num = Shout.select().count()
+        client.message(target, "{origin}: People have shouted {num} time{s}.".format(
             origin=origin,
-            num=Shout.select().count()
+            num=num,
+            s="s" if num != 1 else ""
         ))
     else:
-        client.message(target, "{origin}: {who} has shouted {num} times.".format(
+        num = Shout.select().where(Shout.who == who).count()
+        client.message(target, "{origin}: {who} has shouted {num} time{s}.".format(
             origin=origin,
             who=who,
-            num=Shout.select().where(Shout.who == who).count()
+            num=num,
+            s="s" if num != 1 else ""
         ))
 
 
