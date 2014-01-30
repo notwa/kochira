@@ -6,6 +6,12 @@ from .auth import ACLEntry
 logger = logging.getLogger(__name__)
 
 
+def make_hook(name):
+    def _hook_function(self, *args, **kwargs):
+        self.bot.run_hooks(name, self, *args, **kwargs)
+    return _hook_function
+
+
 class Client(Client):
     def __init__(self, bot, network, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -37,5 +43,5 @@ class Client(Client):
         logger.info("Connected to IRC network: %s", self.network)
         super().on_connect()
 
-    def on_message(self, target, origin, message):
-        self.bot.run_hooks("message", self, target, origin, message)
+    on_message = make_hook("message")
+    on_join = make_hook("join")
