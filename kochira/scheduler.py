@@ -58,8 +58,15 @@ class Scheduler(Thread):
                             -work.deadline
                         )
 
-                        self.bot.executor.submit(task, self.bot,
-                                                 *work.args, **work.kwargs)
+                        future = self.bot.executor.submit(task, self.bot,
+                                                          *work.args,
+                                                          **work.kwargs)
+
+                        @future.add_done_callback
+                        def on_complete(future):
+                            exc = future.exception()
+                            if exc is not None:
+                                logger.error("Task error", exc_info=exc)
 
                         # reschedule the task next tick
                         del self.work[k]
