@@ -45,7 +45,7 @@ class ACLEntry(Model):
         """
         return ACLEntry.select().where(Expression(hostmask, "ilike", ACLEntry.hostmask),
                                        ACLEntry.network == network,
-                                       ACLEntry.permission == permission,
+                                       ACLEntry.permission << [permission, "admin"],
                                        (ACLEntry.channel == channel) |
                                        (ACLEntry.channel >> None)).exists()
 
