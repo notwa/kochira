@@ -1,3 +1,4 @@
+import re
 import requests
 from urllib.parse import urlencode
 from lxml import etree
@@ -31,5 +32,6 @@ def query(client, target, origin, query):
     prefix = "Wolfram|Alpha:"
 
     for line in result.split("\n"):
+        line = re.sub(r"(?<!\\)\\:([0-9a-fA-F]{4})", lambda x: chr(int(x.group(1), 16)), line)
         client.message(target, "\x02{}\x02 {}".format(prefix, line))
         prefix = "↳"

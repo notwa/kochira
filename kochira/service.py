@@ -87,12 +87,12 @@ class Service:
             except BaseException:
                 self.logger.error("Command processing failed", exc_info=True)
 
-    def setup(self, bot):
+    def setup(self, bot, storage):
         """
         Run all setup functions for the service.
         """
         for setup in self.on_setup:
-            setup(bot)
+            setup(bot, storage)
 
     def tasks_for_time_slice(self):
         """
@@ -104,3 +104,10 @@ class Service:
         Get the configuration dictionary.
         """
         return bot.config["services"][self.name]
+
+    def storage_for(self, bot):
+        """
+        Get the disposable storage object.
+        """
+        _, storage = bot.services[self.name]
+        return storage

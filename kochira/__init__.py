@@ -12,6 +12,7 @@ from .auth import ACLEntry
 from .client import Client
 from .db import database
 from .scheduler import Scheduler
+from .util import Expando
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,10 @@ class Bot:
         instance of ``kochira.service.Service`` and configured appropriately.
         """
 
+        # we create an expando storage first for bots to load any locals they
+        # need
+        storage = Expando()
+
         try:
             module = importlib.import_module(name)
 
@@ -79,13 +84,13 @@ class Bot:
 
             service = module.service
 
-            service.setup(self)
+            service.setup(self, storage)
         except:
             logger.error("Couldn't load service %s", name, exc_info=True)
             return
 
         logger.info("Loaded service %s", name)
-        self.services[service.name] = service
+        self.services[service.name] = (service, storage)
 
     def unload_service(self, name):
         """
@@ -99,7 +104,7 @@ class Bot:
         Attempt to dispatch a command to all command handlers.
         """
 
-        for service in list(self.services.values()):
+        for service, _ in list(self.services.values()):
             service.dispatch_commands(client, origin, target, message)
 
     def rehash(self):

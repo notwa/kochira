@@ -22,7 +22,7 @@ class Scheduler(Thread):
             dt = current - self.last_tick
 
             # now schedule all the jobs
-            for service in self.bot.services.values():
+            for service, _ in self.bot.services.values():
                 for task, interval in service.tasks:
                     k = (service.name, task.__name__)
 

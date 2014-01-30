@@ -10,11 +10,11 @@ service = Service(__name__)
 
 
 @service.register_setup
-def make_snapchat(bot):
+def make_snapchat(bot, storage):
     config = service.config_for(bot)
 
-    service.snapchat = Snapchat()
-    if not service.snapchat.login(config["username"],
+    storage.snapchat = Snapchat()
+    if not storage.snapchat.login(config["username"],
                                   config["password"]).get("logged"):
         raise Exception("could not log into Snapchat")
 
@@ -22,13 +22,15 @@ def make_snapchat(bot):
 @service.register_task(interval=timedelta(seconds=30))
 def poll_for_updates(bot):
     config = service.config_for(bot)
+    storage = service.storage_for(bot)
+
     has_snaps = False
 
-    for snap in reversed(service.snapchat.get_snaps(time.time() - 60)):
+    for snap in reversed(storage.snapchat.get_snaps(time.time() - 60)):
         has_snaps = True
         sender = snap["sender"]
 
-        blob = service.snapchat.get_blob(snap["id"])
+        blob = storage.snapchat.get_blob(snap["id"])
         if blob is None:
             continue
 
@@ -41,7 +43,7 @@ def poll_for_updates(bot):
         else:
             link = ulim["data"]["link"]
 
-        service.snapchat.mark_viewed(snap["id"])
+        storage.snapchat.mark_viewed(snap["id"])
 
         for announce in config["announce"]:
             bot.networks[announce["network"]].message(
@@ -53,6 +55,6 @@ def poll_for_updates(bot):
             )
 
     if has_snaps:
-        service.snapchat._request("clear", {
-            "username": service.snapchat.username
+        storage.snapchat._request("clear", {
+            "username": storage.snapchat.username
         })
