@@ -11,10 +11,17 @@ class Service:
 
     def __init__(self, name, commands=None, tasks=None):
         self.name = name
-        self.commands = []
+        self.hooks = {}
         self.tasks = []
         self.on_setup = []
         self.logger = logging.getLogger(self.name)
+
+    def register_hook(self, hook, handler):
+        """
+        Register a hook with the service.
+        """
+
+        self.hooks.setdefault(hook, []).append(handler)
 
     def register_command(self, pattern, mention=False, background=False):
         """
@@ -27,17 +34,17 @@ class Service:
 
         def _decorator(f):
             @functools.wraps(f)
-            def _command_handler(client, origin, target, msg):
+            def _command_handler(client, origin, target, message):
                 if mention:
-                    first, _, rest = msg.partition(" ")
+                    first, _, rest = message.partition(" ")
                     first = first.rstrip(",:")
 
                     if first != client.nickname:
                         return
 
-                    msg = rest
+                    message = rest
 
-                match = pat.match(msg)
+                match = pat.match(message)
                 if match is None:
                     return
 
@@ -52,11 +59,10 @@ class Service:
                 else:
                     f(client, origin, target, **kwargs)
 
-            self.commands.append(_command_handler)
+            self.register_hook("message", _command_handler)
             return f
 
         return _decorator
-
 
     def register_task(self, interval):
         """
@@ -76,16 +82,16 @@ class Service:
         """
         self.on_setup.append(f)
 
-    def dispatch_commands(self, client, origin, target, message):
+    def run_hooks(self, hook, client, origin, target, *args):
         """
         Attempt to dispatch a command to all command handlers.
         """
 
-        for command in self.commands:
+        for hook in self.hooks.get(hook, []):
             try:
-                command(client, origin, target, message)
+                hook(client, origin, target, *args)
             except BaseException:
-                self.logger.error("Command processing failed", exc_info=True)
+                self.logger.error("Hook processing failed", exc_info=True)
 
     def setup(self, bot, storage):
         """

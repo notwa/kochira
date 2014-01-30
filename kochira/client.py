@@ -38,4 +38,4 @@ class Client(Client):
         super().on_connect()
 
     def on_message(self, target, origin, message):
-        self.bot.dispatch_commands(self, target, origin, message)
+        self.bot.run_hooks("message", self, target, origin, message)
