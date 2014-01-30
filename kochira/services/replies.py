@@ -89,5 +89,5 @@ def add_reply(client, target, origin, what, reply):
 def list_replies(client, target, origin):
     client.message(target, "{origin}: I reply to the following: {replies}".format(
         origin=origin,
-        replies=", ".join(reply.what for reply in Reply.select())
+        replies=", ".join(reply.what if is_regex(reply.what) else "\"" + reply.what + "\"" for reply in Reply.select())
     ))
