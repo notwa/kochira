@@ -13,6 +13,4 @@ hostmask = None
 while not hostmask:
     hostmask = input("Hostmask: ")
 
-for permission in ["acl", "services", "eval", "rehash"]:
-    print("GRANT PERMISSION {} TO {} ON {}".format(permission, hostmask, network))
-    ACLEntry.grant(hostmask, network, permission)
+ACLEntry.grant(hostmask, network, "admin")
