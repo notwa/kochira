@@ -6,7 +6,7 @@ from ..service import Service
 service = Service(__name__)
 
 
-@service.command(r"!ud (?P<term>.+?)(?: (?P<num>\d+))?$", mention=True, background=True)
+@service.command(r"!ud (?P<term>.+?)(?: (?P<num>\d+))?$", background=True)
 @service.command(r"define (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True, background=True)
 @service.command(r"what does (?P<term>.+) mean(?: \((?P<num>\d+)\))?\??$", mention=True, background=True)
 def define(client, target, origin, term, num: int=None):
@@ -37,7 +37,7 @@ def define(client, target, origin, term, num: int=None):
     client.message(target, "{origin}: {term}: {definition} ({num} of {total})".format(
         origin=origin,
         term=term,
-        definition=r["list"][num]["definition"].replace("\n", " "),
+        definition=r["list"][num]["definition"].replace("\r", "").replace("\n", " "),
         num=num + 1,
         total=total
     ))
