@@ -73,9 +73,10 @@ def add_reply(client, target, origin, what, reply):
     ))
 
 
-@service.command(r"what do you reply to\??")
-@service.command(r"replies\??")
+@service.command(r"what do you reply to\??$", mention=True)
+@service.command(r"replies\??$", mention=True)
 def list_replies(client, target, origin):
     client.message(target, "{origin}: I reply to the following: {replies}".format(
+        origin=origin,
         replies=", ".join(reply.what for reply in Reply.select())
     ))
