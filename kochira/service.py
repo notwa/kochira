@@ -68,15 +68,21 @@ class Service:
 
         return _decorator
 
-    def task(self, interval):
+    def task(self, interval=None):
         """
-        Register a new periodic task. For one-off tasks that need to be
-        deferred to a thread, use ``bot.executor.submit``.
+        Register a new task. If the task is designed to be used as a timer,
+        interval should be `None`.
         """
 
         def _decorator(f):
+            f.service = self
             self.tasks.append((f, interval))
             return f
+
+        if callable(interval):
+            f = interval
+            interval = None
+            return _decorator(f)
 
         return _decorator
 

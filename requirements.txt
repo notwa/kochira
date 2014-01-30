@@ -3,3 +3,4 @@ peewee
 pyyaml
 requests
 lxml
+parsedatetime
