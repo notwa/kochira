@@ -1,0 +1,23 @@
+core:
+    database: kochira.db
+
+networks:
+    freenode:
+        nickname: Kochira
+        hostname: irc.freenode.net
+        port: 6667
+        channels:
+            - "#kochira"
+
+services:
+    kochira.services.admin:
+        autoload: true
+
+    kochira.services.snapchat:
+        autoload: true
+        username: 
+        password: 
+        imgur_clientid: 
+        announce:
+            - network: freenode
+              channel: "#kochira"
