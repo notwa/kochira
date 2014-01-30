@@ -187,7 +187,7 @@ def update(client, target, origin):
         return
 
     p = subprocess.Popen(["git", "log", "--graph", "--abbrev-commit",
-                          "--date=relative", "--format='%h - (%ar) %s - %an'",
+                          "--date=relative", "--format=%h - (%ar) %s - %an",
                           head + "..HEAD"], stdout=subprocess.PIPE)
 
     out, _ = p.communicate()
