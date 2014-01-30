@@ -15,14 +15,14 @@ class Service:
         self.on_setup = []
         self.logger = logging.getLogger(self.name)
 
-    def register_command(self, *patterns, mention=False, background=False):
+    def register_command(self, pattern, mention=False, background=False):
         """
         Register a command for use with the bot.
 
         ``mention`` specifies that the bot's nickname must be mentioned.
         """
 
-        pats = [re.compile(pattern) for pattern in patterns]
+        pat = re.compile(pattern)
 
         def _decorator(f):
             @functools.wraps(f)
@@ -36,21 +36,20 @@ class Service:
 
                     msg = rest
 
-                for pat in pats:
-                    match = pat.match(msg)
-                    if match is None:
-                        continue
+                match = pat.match(msg)
+                if match is None:
+                    return
 
-                    kwargs = match.groupdict()
+                kwargs = match.groupdict()
 
-                    for k, v in kwargs.items():
-                        if k in f.__annotations__ and v is not None:
-                            kwargs[k] = f.__annotations__[k](v)
+                for k, v in kwargs.items():
+                    if k in f.__annotations__ and v is not None:
+                        kwargs[k] = f.__annotations__[k](v)
 
-                    if background:
-                        client.bot.executor.submit(f, client, origin, target, **kwargs)
-                    else:
-                        f(client, origin, target, **kwargs)
+                if background:
+                    client.bot.executor.submit(f, client, origin, target, **kwargs)
+                else:
+                    f(client, origin, target, **kwargs)
 
             self.commands.append(_command_handler)
             return f
