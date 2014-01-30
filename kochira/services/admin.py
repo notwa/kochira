@@ -108,7 +108,7 @@ def unload_service(client, target, origin, service_name):
 
 
 @service.command(r"what services are(?: you)? running\??$", mention=True)
-@service.command(r"(?:list )services$", mention=True)
+@service.command(r"(?:list )?services$", mention=True)
 @requires_permission("admin")
 def list_services(client, target, origin):
     client.message(target, "I am running: {services}".format(
