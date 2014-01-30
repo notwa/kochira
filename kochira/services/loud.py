@@ -20,8 +20,8 @@ def initialize_model(bot, storage):
     storage.last_shout = None
 
 
-@service.register_command(r"who said that\??$",
-                          r"what was the context of that\??$", mention=True)
+@service.register_command(r"who said that\??$", mention=True)
+@service.register_command(r"what was the context of that\??$", mention=True)
 def who_said_that(client, target, origin):
     storage = service.storage_for(client.bot)
 
@@ -36,8 +36,8 @@ def who_said_that(client, target, origin):
     ))
 
 
-@service.register_command(r"how many shouts\??$",
-                          r"how many times have people shouted\??", mention=True)
+@service.register_command(r"how many shouts\??$", mention=True)
+@service.register_command(r"how many times have people shouted\??", mention=True)
 def how_many_shouts(client, target, origin):
     client.message(target, "{origin}: I have {num} shouts.".format(
         origin=origin,

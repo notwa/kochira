@@ -96,10 +96,9 @@ def unload_service(client, target, origin, service_name):
     client.message(target, "Unloaded service \"{name}\".".format(name=service_name))
 
 
-@service.register_command(r"what services are(?: you)? running\??$",
-                          r"services$",
-                          r"list services",
-                          mention=True)
+@service.register_command(r"what services are(?: you)? running\??$", mention=True)
+@service.register_command(r"services$", mention=True)
+@service.register_command(r"list services", mention=True)
 @requires_permission("services")
 def list_services(client, target, origin):
     client.message(target, "I am running: {services}".format(

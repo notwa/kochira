@@ -26,7 +26,7 @@ class Service:
 
         def _decorator(f):
             @functools.wraps(f)
-            def _inner(client, origin, target, msg):
+            def _command_handler(client, origin, target, msg):
                 if mention:
                     first, _, rest = msg.partition(" ")
                     first = first.rstrip(",:")
@@ -52,8 +52,8 @@ class Service:
                     else:
                         f(client, origin, target, **kwargs)
 
-            self.commands.append(_inner)
-            return _inner
+            self.commands.append(_command_handler)
+            return f
 
         return _decorator
 
