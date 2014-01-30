@@ -141,7 +141,7 @@ def restart(client, target, origin):
 
 
 @service.register_command(r"(?:windows )?update(?:s)?!?", mention=True)
-@requires_permission("restart")
+@requires_permission("update")
 def update(client, target, origin):
     client.message(target, "Checking for updates...")
 
@@ -158,7 +158,3 @@ def update(client, target, origin):
         return
 
     client.message(target, "Update finished!")
-
-    for client in list(client.bot.networks.values()):
-        client.quit("Restarting...")
-    os.execvp(os.path.join(sys.path[0], sys.argv[0]), sys.argv)
