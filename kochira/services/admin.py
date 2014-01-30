@@ -167,8 +167,14 @@ def restart(client, target, origin):
 def update(client, target, origin):
     client.message(target, "Checking for updates...")
 
-    p = subprocess.Popen(["git", "pull"], stdout=subprocess.PIPE)
+    p = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE)
+    head, _ = p.communicate()
 
+    if p.returncode != 0:
+        client.message(target, "Update failed!")
+        return
+
+    p = subprocess.Popen(["git", "pull"], stdout=subprocess.PIPE)
     out, _ = p.communicate()
 
     if p.returncode != 0:
@@ -178,5 +184,18 @@ def update(client, target, origin):
     if out.decode("utf-8").strip() == "Already up-to-date.":
         client.message(target, "No updates.")
         return
+
+    p = subprocess.Popen(["git", "log", "--graph", "--abbrev-commit",
+                          "--date=relative", "--format='%h - (%ar) %s - %an'",
+                          head + "..HEAD"], stdout=subprocess.PIPE)
+
+    out, _ = p.communicate()
+
+    if p.returncode != 0:
+        client.message(target, "Update failed!")
+        return
+
+    for line in out.rstrip("\n").split("\n"):
+        client.message(target, line)
 
     client.message(target, "Update finished!")
