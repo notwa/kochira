@@ -19,6 +19,10 @@ class Reply(Model):
         )
 
 
+def is_regex(what):
+    return what[0] == "/" and what[-1] == "/"
+
+
 @service.setup
 def initialize_model(bot, storage):
     Reply.create_table(True)
@@ -38,9 +42,9 @@ def remove_reply(client, target, origin, what):
 
     Reply.delete().where(Reply.what == what).execute()
 
-    client.message(target, "{origin}: Okay, I won't reply to \"{what}\" anymore.".format(
+    client.message(target, "{origin}: Okay, I won't reply to {what} anymore.".format(
         origin=origin,
-        what=what
+        what=what if is_regex(what) else "\"" + what + "\""
     ))
 
 
@@ -49,7 +53,11 @@ def do_reply(client, target, origin, message):
     replies = []
 
     for reply in Reply.select():
-        if re.search(r"\b{}\b".format(re.escape(reply.what)), message) is not None:
+        if is_regex(reply.what):
+            expr = reply.what[1:-1]
+        else:
+            expr = r"\b{}\b".format(re.escape(reply.what))
+        if re.search(expr, message) is not None:
             replies.append(reply.reply)
 
     if not replies:
@@ -62,17 +70,17 @@ def do_reply(client, target, origin, message):
 @requires_permission("reply")
 def add_reply(client, target, origin, what, reply):
     if Reply.select().where(Reply.what == what).exists():
-        client.message(target, "{origin}: I'm already replying to \"{what}\".".format(
+        client.message(target, "{origin}: I'm already replying to {what}.".format(
             origin=origin,
-            what=what
+            what=what if is_regex(what) else "\"" + what + "\""
         ))
         return
 
     Reply.create(what=what, reply=reply).save()
 
-    client.message(target, "{origin}: Okay, I'll reply to \"{what}\".".format(
+    client.message(target, "{origin}: Okay, I'll reply to {what}.".format(
         origin=origin,
-        what=what
+        what=what if is_regex(what) else "\"" + what + "\""
     ))
 
 
