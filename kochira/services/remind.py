@@ -49,7 +49,7 @@ def initialize_model(bot, storage):
 @service.task
 def play_timed_reminder(bot, reminder):
     if reminder.network in bot.networks:
-        bot.networks[reminder.network].message(reminder.target, "{who}, {origin} wanted you to know: {message}".format(
+        bot.networks[reminder.network].message(reminder.channel, "{who}, {origin} wanted you to know: {message}".format(
             who=reminder.who,
             origin=reminder.origin,
             message=reminder.message
