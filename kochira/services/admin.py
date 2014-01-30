@@ -36,7 +36,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
     if permission is None:
         message_part = "all permissions"
     else:
-        message_part = "permission \"{permission}\"".format(permission)
+        message_part = "permission \"{permission}\"".format(permission=permission)
 
     if channel is not None:
         message = "Revoked {message_part} from {hostmask} on channel {channel} for network \"{network}\".".format(

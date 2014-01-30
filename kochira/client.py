@@ -1,12 +1,12 @@
 import logging
-from pydle import Client as _Client
+from pydle import Client
 
 from .auth import ACLEntry
 
 logger = logging.getLogger(__name__)
 
 
-class Client(_Client):
+class Client(Client):
     def __init__(self, bot, network, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

@@ -1,7 +1,7 @@
 import functools
 
-from peewee import Model, CharField, Expression
-from .db import database
+from peewee import CharField, Expression
+from .db import Model
 
 
 def requires_permission(permission):
@@ -36,7 +36,6 @@ class ACLEntry(Model):
             (("hostmask", "network", "channel"), False),
             (("hostmask", "network", "channel", "permission"), True)
         )
-        database = database
 
 
     @classmethod
