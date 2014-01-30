@@ -7,6 +7,7 @@ from ..service import Service
 service = Service(__name__)
 
 
+@service.command(r"what is (?P<term>.+) in (?P<to_lang>.+)\??$", mention=True, background=True)
 @service.command(r"(?:translate) (?P<term>.+?)(?: from (?P<from_lang>.+?))? to (?P<to_lang>.+)$", mention=True, background=True)
 def search(client, target, origin, term, to_lang, from_lang=None):
     if from_lang is None:
