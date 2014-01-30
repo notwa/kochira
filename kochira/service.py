@@ -94,11 +94,6 @@ class Service:
         for setup in self.on_setup:
             setup(bot, storage)
 
-    def tasks_for_time_slice(self):
-        """
-        Get the tasks that should run for this time slice.
-        """
-
     def config_for(self, bot):
         """
         Get the configuration dictionary.
