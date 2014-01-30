@@ -1,3 +1,4 @@
+import random
 import re
 from peewee import CharField, fn
 
@@ -45,14 +46,16 @@ def remove_reply(client, target, origin, what):
 
 @service.hook("message")
 def do_reply(client, target, origin, message):
-    replies = Reply.select().where(Reply.what << re.split(r"\W+", message)) \
-        .order_by(fn.Random()) \
-        .limit(1)
+    replies = []
 
-    if not replies.exists():
+    for reply in Reply.select():
+        if re.search(r"\b{}\b".format(re.escape(reply.what)), message) is not None:
+            replies.append(reply.reply)
+
+    if not replies:
         return
 
-    client.message(target, replies[0].reply)
+    client.message(target, random.choice(replies))
 
 
 @service.command(r"reply to (?P<what>.+) with (?P<reply>.+)$", mention=True)
