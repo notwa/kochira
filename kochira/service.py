@@ -7,6 +7,7 @@ class Service:
     """
     A service provides the bot with additional facilities.
     """
+    SERVICES_PACKAGE = 'kochira.services'
 
     def __init__(self, name, commands=None, tasks=None):
         self.name = name
