@@ -1,6 +1,6 @@
 import random
 import re
-from peewee import CharField, fn
+from peewee import CharField
 
 from ..db import Model
 

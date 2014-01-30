@@ -87,7 +87,7 @@ class Bot:
             service.run_setup(self, storage)
         except:
             logger.error("Couldn't load service %s", name, exc_info=True)
-            return
+            raise
 
         logger.info("Loaded service %s", name)
         self.services[service.name] = (service, storage)
