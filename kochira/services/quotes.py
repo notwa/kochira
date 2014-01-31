@@ -172,7 +172,6 @@ def find_quote(client, target, origin, query):
             origin=origin,
             quote=quotes[0].as_text
         ))
-        return
     else:
         client.message(target, "{origin}: Found {num} quotes: {qids}".format(
             origin=origin,
