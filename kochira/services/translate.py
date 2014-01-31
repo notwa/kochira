@@ -6,12 +6,21 @@ from ..service import Service
 
 service = Service(__name__)
 
+LANGUAGES = {}
+
+for language in pycountry.languages.objects:
+    for name in language.name.split(";"):
+        try:
+            LANGUAGES[name.strip().lower()] = language.alpha2
+        except AttributeError:
+            continue
+
 
 def perform_translation(term, sl, tl):
     return requests.get("http://translate.google.com/translate_a/t?" + urlencode({
         "client": "p",
-        "sl": "auto" if sl is None else sl.alpha2,
-        "tl": "auto" if tl is None else tl.alpha2,
+        "sl": sl,
+        "tl": tl,
         "text": term,
         "ie": "UTF-8",
         "oe": "UTF-8"
@@ -24,7 +33,7 @@ def transliterate(client, target, origin, term, from_lang=None):
         sl = None
     else:
         try:
-            sl = pycountry.languages.get(name=from_lang.title())
+            sl = LANGUAGES.get(from_lang.lower())
         except KeyError:
             client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
                     origin=origin,
@@ -49,13 +58,13 @@ def transliterate(client, target, origin, term, from_lang=None):
 
 
 @service.command(r"what is (?P<term>.+) in (?P<to_lang>.+)\??$", mention=True, background=True)
-@service.command(r"(?:translate) (?P<term>.+?)(?: from (?P<from_lang>.+?))? to (?P<to_lang>.+)$", mention=True, background=True)
-def translate(client, target, origin, term, to_lang, from_lang=None):
+@service.command(r"(?:translate) (?P<term>.+?)(?: from (?P<from_lang>.+?))?(?: to (?P<to_lang>.+))?$", mention=True, background=True)
+def translate(client, target, origin, term, to_lang=None, from_lang=None):
     if from_lang is None:
-        sl = None
+        sl = "auto"
     else:
         try:
-            sl = pycountry.languages.get(name=from_lang.title())
+            sl = LANGUAGES.get(from_lang.lower())
         except KeyError:
             client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
                 origin=origin,
@@ -63,14 +72,17 @@ def translate(client, target, origin, term, to_lang, from_lang=None):
             ))
             return
 
-    try:
-        tl = pycountry.languages.get(name=to_lang.title())
-    except KeyError:
-        client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
-            origin=origin,
-            lang=to_lang
-        ))
-        return
+    if to_lang is None:
+        tl = "en"
+    else:
+        try:
+            tl = LANGUAGES.get(to_lang.lower())
+        except KeyError:
+            client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
+                origin=origin,
+                lang=to_lang
+            ))
+            return
 
     r = perform_translation(term, sl, tl)
 
