@@ -12,8 +12,7 @@ from ..service import Service
 service = Service(__name__)
 
 GIF_FRAMERATE = 7
-GIF_HEIGHT = 427
-GIF_WIDTH = 240
+GIF_MAX_LENGTH = 360
 
 def convert_to_gif(blob):
     with tempfile.TemporaryDirectory() as d:
@@ -21,10 +20,9 @@ def convert_to_gif(blob):
             f.write(blob)
 
         if subprocess.call(["ffmpeg", "-i", os.path.join(d, "video.mp4"),
-                            "-vf", "scale='if(gt(a,{aspect}),{width},-1)':'if(gt(a,{aspect}),-1,{height})'".format(
-                                aspect=GIF_WIDTH / GIF_HEIGHT,
-                                width=GIF_WIDTH,
-                                height=GIF_HEIGHT
+                            "-vf", "scale=\"'if(gt(a,{aspect}),{max_length},-1)':'if(gt(a,{aspect}),-1,{max_length})'\"".format(
+                                aspect="16/9",
+                                max_length=GIF_MAX_LENGTH
                             ),
                             "-r", str(GIF_FRAMERATE),
                             os.path.join(d, "frames%03d.gif")]) != 0:
