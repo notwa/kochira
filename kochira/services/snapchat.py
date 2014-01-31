@@ -12,7 +12,7 @@ from ..service import Service
 
 service = Service(__name__)
 
-GIF_SCALE = 0.5
+GIF_SCALE = 1 / 3
 GIF_FRAMERATE = 7
 
 
