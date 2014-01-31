@@ -1,4 +1,4 @@
-import string
+wimport string
 
 from peewee import TextField, CharField, fn
 
@@ -12,6 +12,11 @@ service = Service(__name__)
 class Shout(Model):
     message = TextField()
     who = CharField(255)
+
+    class Meta:
+        indexes = (
+            (("message",), True),
+        )
 
 
 @service.setup
