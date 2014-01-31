@@ -18,7 +18,7 @@ class Work(object):
         self.kwargs = kwargs if kwargs is not None else {}
 
     def reset_repeating_deadline(self):
-        self.deadline = self.repeat.total_seconds()
+        self.deadline += self.repeat.total_seconds()
 
 
 class Scheduler(threading.Thread):
