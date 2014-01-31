@@ -28,18 +28,42 @@ def benisify(s):
     ], s)
 
 
-@service.command(r"!benis(?: (?P<text>.+))?$")
-@service.command(r"benis(?: (?P<text>.+))?$", mention=True)
-def benis(client, target, origin, text=None):
+
+FABULOUS_COLORS = [4, 5, 8, 9, 10, 12, 13, 6]
+
+def fabulousify(s):
+    buf = ""
+
+    for i, x in enumerate(s):
+        if x == " ":
+            buf += x
+        else:
+            buf += "\x03{:02}{}".format(FABULOUS_COLORS[i % len(FABULOUS_COLORS)], x)
+
+    return buf
+
+
+def run_filter(f, client, target, origin, text=None):
     if text is None:
         if len(client.backlogs[target]) == 1:
             return
 
         _, text = client.backlogs[target][1]
 
-    text = benisify(text)
+    text = f(text)
 
     client.message(target, "{origin}: {text}".format(
         origin=origin,
         text=text
     ))
+
+
+def bind_filter(name, f):
+    @service.command(r"!{}(?: (?P<text>.+))?$".format(name))
+    @service.command(r"{}(?: (?P<text>.+))?$".format(name), mention=True)
+    def benis(client, target, origin, text=None):
+        run_filter(f, client, target, origin, text)
+
+
+bind_filter("benis", benisify)
+bind_filter("fabulous", fabulousify)
