@@ -18,7 +18,7 @@ def convert_to_gif(blob):
         with open(os.path.join(d, "video.mp4"), "wb") as f:
             f.write(blob)
 
-        if subprocess.call(["ffmpeg", "-i", os.path.join(d, "video.mp4"),
+        if subprocess.call(["avconv", "-i", os.path.join(d, "video.mp4"),
                             "-vf", "transpose=1,scale=240:-1", "-r", "10",
                             os.path.join(d, "frames%03d.gif")]) != 0:
             return None
