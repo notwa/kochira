@@ -19,7 +19,7 @@ def convert_to_gif(blob):
             f.write(blob)
 
         subprocess.call(["ffmpeg", "-i", os.path.join(d, "video.mp4"),
-                         "-vf", "transpose=3,scale=240:-1", "-r", "10",
+                         "-vf", "transpose=1,scale=240:-1", "-r", "10",
                          os.path.join(d, "frames%03d.gif")])
 
         subprocess.call(["gifsicle", "--delay=10", "--loop", "-o",
