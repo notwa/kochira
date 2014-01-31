@@ -48,7 +48,7 @@ class Client(Client):
 
     def on_message(self, target, origin, message):
         backlog = self.backlogs.setdefault(target, deque([]))
-        backlog.appendleft(message)
+        backlog.appendleft((origin, message))
 
         while len(backlog) > self.bot.config["core"].get("max_backlog", 10):
             backlog.pop()

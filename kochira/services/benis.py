@@ -28,13 +28,14 @@ def benisify(s):
     ], s)
 
 
-@service.command(r"benis(?: (?P<text>.+))?", mention=True)
+@service.command(r"!benis(?: (?P<text>.+))?$")
+@service.command(r"benis(?: (?P<text>.+))?$", mention=True)
 def benis(client, target, origin, text=None):
     if text is None:
         if len(client.backlogs[target]) == 1:
             return
 
-        text = client.backlogs[target][1]
+        _, text = client.backlogs[target][1]
 
     text = benisify(text)
 
