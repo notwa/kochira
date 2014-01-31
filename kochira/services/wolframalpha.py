@@ -23,7 +23,7 @@ def query(client, target, origin, query):
         "reinterpret": "true"
     }))
 
-    tree = etree.parse(BytesIO(resp.text.encode("utf-8")))
+    tree = etree.parse(BytesIO(resp.content))
 
     result = tree.xpath(XPATH_EXPR)
 
