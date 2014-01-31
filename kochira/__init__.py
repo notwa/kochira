@@ -60,7 +60,10 @@ class Bot:
     def _load_services(self):
         for service, config in self.config["services"].items():
             if config.get("autoload"):
-                self.load_service(service)
+                try:
+                    self.load_service(service)
+                except:
+                    pass # it gets logged
 
     def load_service(self, name, reload=False):
         """
