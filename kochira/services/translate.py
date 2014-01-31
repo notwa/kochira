@@ -2,7 +2,7 @@ import requests
 import pycountry
 from urllib.parse import urlencode
 
-from ..service import Service
+from ..service import Service, background
 
 service = Service(__name__)
 
@@ -27,7 +27,8 @@ def perform_translation(term, sl, tl):
     })).json()
 
 
-@service.command(r"(?:transliterate|romanize) (?P<term>.+?)(?: from (?P<from_lang>.+?))?$", mention=True, background=True)
+@service.command(r"(?:transliterate|romanize) (?P<term>.+?)(?: from (?P<from_lang>.+?))?$", mention=True)
+@background
 def transliterate(client, target, origin, term, from_lang=None):
     if from_lang is None:
         sl = None
@@ -57,8 +58,9 @@ def transliterate(client, target, origin, term, from_lang=None):
     ))
 
 
-@service.command(r"what is (?P<term>.+) in (?P<to_lang>.+)\??$", mention=True, background=True)
-@service.command(r"(?:translate) (?P<term>.+?)(?: from (?P<from_lang>.+?))?(?: to (?P<to_lang>.+))?$", mention=True, background=True)
+@service.command(r"what is (?P<term>.+) in (?P<to_lang>.+)\??$", mention=True)
+@service.command(r"(?:translate) (?P<term>.+?)(?: from (?P<from_lang>.+?))?(?: to (?P<to_lang>.+))?$", mention=True)
+@background
 def translate(client, target, origin, term, to_lang=None, from_lang=None):
     if from_lang is None:
         sl = "auto"

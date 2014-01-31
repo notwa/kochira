@@ -2,6 +2,8 @@ import functools
 import re
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 class Service:
     """
@@ -27,8 +29,7 @@ class Service:
 
         return _decorator
 
-    def command(self, pattern, mention=False, background=False, strip=True,
-                re_flags=0):
+    def command(self, pattern, mention=False, strip=True, re_flags=0):
         """
         Register a command for use with the bot.
 
@@ -62,16 +63,7 @@ class Service:
                     if k in f.__annotations__ and v is not None:
                         kwargs[k] = f.__annotations__[k](v)
 
-                if background:
-                    future = client.bot.executor.submit(f, client, origin, target, **kwargs)
-
-                    @future.add_done_callback
-                    def on_complete(future):
-                        exc = future.exception()
-                        if exc is not None:
-                            self.logger.error("Command error", exc_info=exc)
-                else:
-                    f(client, origin, target, **kwargs)
+                f(client, origin, target, **kwargs)
 
             self.hook("message")(_command_handler)
             return f
@@ -132,3 +124,21 @@ class Service:
         """
         _, storage = bot.services[self.name]
         return storage
+
+
+def background(f):
+    """
+    Defer a command to run in the background.
+    """
+
+    @functools.wraps(f)
+    def _inner(client, *args, **kwargs):
+        future = client.bot.executor.submit(f, client, *args, **kwargs)
+
+        @future.add_done_callback
+        def on_complete(future):
+            exc = future.exception()
+            if exc is not None:
+                logger.error("Command error", exc_info=exc)
+
+    return _inner

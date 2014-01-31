@@ -1,14 +1,15 @@
 import requests
 from urllib.parse import urlencode
 
-from ..service import Service
+from ..service import Service, background
 
 service = Service(__name__)
 
 
-@service.command(r"!ud (?P<term>.+?)(?: (?P<num>\d+))?$", background=True)
-@service.command(r"define (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True, background=True)
-@service.command(r"what does (?P<term>.+) mean(?: \((?P<num>\d+)\))?\??$", mention=True, background=True)
+@service.command(r"!ud (?P<term>.+?)(?: (?P<num>\d+))?$")
+@service.command(r"define (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
+@service.command(r"what does (?P<term>.+) mean(?: \((?P<num>\d+)\))?\??$", mention=True)
+@background
 def define(client, target, origin, term, num: int=None):
     r = requests.get("http://api.urbandictionary.com/v0/define?" + urlencode({
         "term": term

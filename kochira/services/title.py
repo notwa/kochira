@@ -5,7 +5,8 @@ import tempfile
 from lxml import etree
 from PIL import Image
 
-from ..service import Service
+from ..service import Service, background
+
 from io import BytesIO
 
 service = Service(__name__)
@@ -16,7 +17,7 @@ HEADERS = {
 
 DESPACE_EXPR = re.compile(r"\s+")
 
-def handle_html(client, target, origin, resp):
+def handle_html(resp):
     parser = etree.HTMLParser()
     tree = etree.parse(BytesIO(resp.content), parser)
 
@@ -27,22 +28,22 @@ def handle_html(client, target, origin, resp):
     else:
         title = "(no title)"
 
-    client.message(target, "\x02Web Page Title:\x02 {title}".format(
+    return "\x02Web Page Title:\x02 {title}".format(
         title=title
-    ))
+    )
 
 
-def handle_image(client, target, origin, resp):
+def handle_image(resp):
     with tempfile.NamedTemporaryFile(
         suffix=mimetypes.guess_extension(resp.headers["content-type"])
     ) as f:
         f.write(resp.content)
         im = Image.open(f.name)
 
-    client.message(target, "\x02Image Size:\x02 {w} x {h}".format(
+    return "\x02Image Size:\x02 {w} x {h}".format(
         w=im.size[0],
         h=im.size[1]
-    ))
+    )
 
 
 HANDLERS = {
@@ -53,22 +54,39 @@ HANDLERS = {
     "image/gif": handle_image
 }
 
-@service.command(r'.*(?P<url>http[s]?://[^\s<>"]+|www\.[^\s<>"]+)', background=True)
-def detect_url(client, target, origin, url):
-    if not (url.startswith("http:") or url.startswith("https:")):
-        url = "http://" + url
+@service.hook("message")
+@background
+def detect_urls(client, target, origin, message):
+    found_info = {}
 
-    try:
-        resp = requests.head(url, headers=HEADERS, verify=False)
-    except requests.RequestException as e:
-        client.message(target, "\x02Error:\x02 " + str(e))
+    urls = re.findall(r'http[s]?://[^\s<>"]+|www\.[^\s<>"]+', message)
 
-    content_type = resp.headers.get("content-type", "text/html").split(";")[0]
+    for i, url in enumerate(urls):
+        if not (url.startswith("http:") or url.startswith("https:")):
+            url = "http://" + url
 
-    if content_type not in HANDLERS and \
-        content_type != mimetypes.guess_type(url):
-        client.message(target, "\x02Content Type:\x02 " + content_type)
-        return
+        if url not in found_info:
+            try:
+                resp = requests.head(url, headers=HEADERS, verify=False)
+            except requests.RequestException as e:
+                info = "\x02Error:\x02 " + str(e)
+            else:
+                content_type = resp.headers.get("content-type", "text/html").split(";")[0]
 
-    HANDLERS[content_type](client, target, origin,
-                           requests.get(url, headers=HEADERS, verify=False))
+                if content_type in HANDLERS:
+                    info = HANDLERS[content_type](requests.get(url, headers=HEADERS,
+                                                                    verify=False))
+                else:
+                    info = "\x02Content Type:\x02 " + content_type
+            found_info[url] = info
+        else:
+            info = found_info[url]
+
+        if len(urls) == 1:
+            client.message(target, info)
+        else:
+            client.message(target, "{info} ({i} of {num})".format(
+                i=i + 1,
+                num=len(urls),
+                info=info
+            ))

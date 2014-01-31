@@ -2,16 +2,17 @@ import requests
 from urllib.parse import urlencode, unquote
 from html.parser import HTMLParser
 
-from ..service import Service
+from ..service import Service, background
 
 service = Service(__name__)
 
 html_parser = HTMLParser()
 
 
-@service.command(r"\?\?(?P<term>.+?)(?: (?P<num>\d+))?$", background=True)
-@service.command(r"!g (?P<term>.+?)(?: (?P<num>\d+))?$", background=True)
-@service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True, background=True)
+@service.command(r"\?\?(?P<term>.+?)(?: (?P<num>\d+))?$")
+@service.command(r"!g (?P<term>.+?)(?: (?P<num>\d+))?$")
+@service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
+@background
 def search(client, target, origin, term, num: int=None):
     r = requests.get("https://ajax.googleapis.com/ajax/services/search/web?" + urlencode({
         "v": "1.0",
