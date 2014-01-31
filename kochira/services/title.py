@@ -1,6 +1,9 @@
 import re
 import requests
+import mimetypes
+import tempfile
 from lxml import etree
+from PIL import Image
 
 from ..service import Service
 from io import BytesIO
@@ -12,6 +15,45 @@ HEADERS = {
 }
 
 DESPACE_EXPR = re.compile(r"\s+")
+
+def handle_html(client, target, origin, resp):
+    parser = etree.HTMLParser()
+    tree = etree.parse(BytesIO(resp.content), parser)
+
+    title = tree.xpath("/html/head/title/text()")
+
+    if title:
+        title = DESPACE_EXPR.sub(" ", title[0].replace("\n", " "))
+    else:
+        title = "(no title)"
+
+    print("HI")
+
+    client.message(target, "\x02Web Page Title:\x02 {title}".format(
+        title=title
+    ))
+
+
+def handle_image(client, target, origin, resp):
+    with tempfile.NamedTemporaryFile(
+        suffix=mimetypes.guess_extension(resp.headers["content-type"])
+    ) as f:
+        f.write(resp.content)
+        im = Image.open(f.name)
+
+    client.message(target, "\x02Image Size:\x02 {w} x {h}".format(
+        w=im.size[0],
+        h=im.size[1]
+    ))
+
+
+HANDLERS = {
+    "text/html": handle_html,
+    "application/xhtml+xml": handle_html,
+    "image/jpeg": handle_image,
+    "image/png": handle_image,
+    "image/gif": handle_image
+}
 
 @service.command(r'.*(?P<url>http[s]?://[^\s<>"]+|www\.[^\s<>"]+)', background=True)
 def detect_url(client, target, origin, url):
@@ -25,20 +67,10 @@ def detect_url(client, target, origin, url):
 
     content_type = resp.headers.get("content-type", "text/html").split(";")[0]
 
-    if content_type not in ("text/html", "application/xhtml+xml"):
+    if content_type not in HANDLERS and \
+        content_type != mimetypes.guess_type(url):
         client.message(target, "\x02Content Type:\x02 " + content_type)
         return
 
-    resp = requests.get(url, headers=HEADERS, verify=False)
-
-    parser = etree.HTMLParser()
-    tree = etree.parse(BytesIO(resp.text.encode("utf-8")), parser)
-
-    title = tree.xpath("/html/head/title/text()")
-
-    if title:
-        title = DESPACE_EXPR.sub(" ", title[0].replace("\n", " "))
-    else:
-        title = "(no title)"
-
-    client.message(target, "\x02Title:\x02 " + title)
+    HANDLERS[content_type](client, target, origin,
+                           requests.get(url, headers=HEADERS, verify=False))
