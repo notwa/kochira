@@ -19,7 +19,7 @@ def parse_time(s):
 
     dt = None
 
-    if what in (1,  2):
+    if what in (1, 2):
         dt = datetime(*result[:6])
     elif what == 3:
         dt = result
@@ -53,14 +53,25 @@ def initialize_model(bot, storage):
 
 @service.task
 def play_timed_reminder(bot, reminder):
-    if reminder.network in bot.networks:
-        bot.networks[reminder.network].message(reminder.channel, "{who}, {origin} wanted you to know: {message}".format(
-            who=reminder.who,
-            origin=reminder.origin,
-            message=reminder.message
-        ))
+    needs_archive = False
 
-    reminder.delete_instance()
+    if reminder.network in bot.networks:
+        client = bot.networks[reminder.network]
+
+        if reminder.channel in client.channels:
+            if reminder.who in client.channels[reminder.channel]["users"]:
+                client.message(reminder.channel, "{who}, {origin} wanted you to know: {message}".format(
+                    who=reminder.who,
+                    origin=reminder.origin,
+                    message=reminder.message
+                ))
+            else:
+                needs_archive = True
+                reminder.duration = None
+                reminder.save()
+
+    if not needs_archive:
+        reminder.delete_instance()
 
 
 @service.command(r"remind (?P<who>\S+)(?: about| to| that)? (?P<message>.+) (?P<duration>(?:in|after) .+)$", mention=True)
