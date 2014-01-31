@@ -34,6 +34,7 @@ def define(client, target, origin, term, num: int=None):
             origin=origin,
             term=term
         ))
+        return
 
     client.message(target, "{origin}: {term}: {definition} ({num} of {total})".format(
         origin=origin,
