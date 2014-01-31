@@ -11,7 +11,7 @@ def perform_translation(term, sl, tl):
     return requests.get("http://translate.google.com/translate_a/t?" + urlencode({
         "client": "p",
         "sl": "auto" if sl is None else sl.alpha2,
-        "tl": "auto" if sl is None else tl.alpha2,
+        "tl": "auto" if tl is None else tl.alpha2,
         "text": term,
         "ie": "UTF-8",
         "oe": "UTF-8"
