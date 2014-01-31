@@ -27,8 +27,6 @@ def handle_html(client, target, origin, resp):
     else:
         title = "(no title)"
 
-    print("HI")
-
     client.message(target, "\x02Web Page Title:\x02 {title}".format(
         title=title
     ))
