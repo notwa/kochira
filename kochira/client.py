@@ -1,4 +1,5 @@
 import logging
+from collections import deque
 from pydle import Client
 
 from .auth import ACLEntry
@@ -16,6 +17,7 @@ class Client(Client):
     def __init__(self, bot, network, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.backlogs = {}
         self.bot = bot
 
         # set network name to whatever we have in our config
@@ -42,6 +44,15 @@ class Client(Client):
     def on_connect(self):
         logger.info("Connected to IRC network: %s", self.network)
         super().on_connect()
+        self.bot.run_hooks("connect", self)
 
-    on_message = make_hook("message")
+    def on_message(self, target, origin, message):
+        backlog = self.backlogs.setdefault(target, deque([]))
+        backlog.appendleft(message)
+
+        while len(backlog) > self.bot.config["core"].get("max_backlog", 10):
+            backlog.pop()
+
+        self.bot.run_hooks("message", self, target, origin, message)
+
     on_join = make_hook("join")
