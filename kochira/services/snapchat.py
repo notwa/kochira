@@ -2,7 +2,6 @@ import os
 import glob
 import requests
 import tempfile
-import time
 import subprocess
 
 from datetime import timedelta
@@ -54,7 +53,7 @@ def poll_for_updates(bot):
 
     has_snaps = False
 
-    for snap in reversed(storage.snapchat.get_snaps(time.time() - 60)):
+    for snap in reversed(storage.snapchat.get_snaps()):
         has_snaps = True
         sender = snap["sender"]
 
