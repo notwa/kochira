@@ -22,7 +22,7 @@ def convert_to_gif(blob):
 
         if subprocess.call(["ffmpeg",
                             "-i", os.path.join(d, "video.mp4"),
-                            "-vf", "scale=\"'iw*min({max_length}/iw,{max_length}/ih)':'ih*min({max_length}/iw,{max_length}/ih)'\"".format(max_length=GIF_MAX_LENGTH),
+                            "-vf", "scale='iw*min({max_length}/iw,{max_length}/ih)':'ih*min({max_length}/iw,{max_length}/ih)'.format(max_length=GIF_MAX_LENGTH),
                             "-r", str(GIF_FRAMERATE),
                             os.path.join(d, "frames%03d.gif")]) != 0:
             return None
