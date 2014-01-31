@@ -116,7 +116,7 @@ def list_services(client, target, origin):
     )
 
 
-@service.command(r"reload services$", mention=True)
+@service.command(r"reload(?: all)? services$", mention=True)
 @requires_permission("admin")
 def reload_services(client, target, origin):
     failed_services = []
