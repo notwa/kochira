@@ -12,6 +12,10 @@ from ..service import Service
 
 service = Service(__name__)
 
+GIF_WIDTH = 240
+GIF_HEIGHT = -1
+GIF_FRAMERATE = 5
+
 
 def convert_to_gif(blob):
     with tempfile.TemporaryDirectory() as d:
@@ -19,13 +23,15 @@ def convert_to_gif(blob):
             f.write(blob)
 
         if subprocess.call(["avconv", "-i", os.path.join(d, "video.mp4"),
-                            "-vf", "transpose=1,scale=240:-1", "-r", "10",
+                            "-vf", "transpose=1,scale={}:{}".format(GIF_WIDTH, GIF_HEIGHT),
+                            "-r", str(GIF_FRAMERATE),
                             os.path.join(d, "frames%03d.gif")]) != 0:
             return None
 
-        if subprocess.call(["gifsicle", "--delay=10", "--loop", "-o",
-                             os.path.join(d, "out.gif"), "-O"] +
-                             sorted(glob.glob(os.path.join(d, "frames[0-9][0-9][0-9].gif")))) != 0:
+        if subprocess.call(["gifsicle", "--delay={}".format(100 // GIF_FRAMERATE),
+                            "--loop", "-o",
+                            os.path.join(d, "out.gif"), "-O"] +
+                            sorted(glob.glob(os.path.join(d, "frames[0-9][0-9][0-9].gif")))) != 0:
             return None
 
         with open(os.path.join(d, "out.gif"), "rb") as f:
