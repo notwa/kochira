@@ -1,7 +1,9 @@
+import humanize
 import re
 import requests
 import mimetypes
 import tempfile
+from datetime import timedelta
 from lxml import etree
 from PIL import Image
 
@@ -33,6 +35,16 @@ def handle_html(resp):
     )
 
 
+def get_num_image_frames(im):
+    try:
+        while True:
+             im.seek(im.tell() + 1)
+    except EOFError:
+        pass
+
+    return im.tell() + 1
+
+
 def handle_image(resp):
     with tempfile.NamedTemporaryFile(
         suffix=mimetypes.guess_extension(resp.headers["content-type"])
@@ -40,10 +52,21 @@ def handle_image(resp):
         f.write(resp.content)
         im = Image.open(f.name)
 
-    return "\x02Image Size:\x02 {w} x {h}".format(
+    nframes = get_num_image_frames(im)
+
+    info = "\x02Image Info:\x02 {w} x {h}; {size}".format(
+        size=humanize.naturalsize(len(resp.content)),
         w=im.size[0],
         h=im.size[1]
     )
+
+    if nframes > 1:
+        info += "; animated {t}, {n} frames".format(
+            n=nframes,
+            t=timedelta(seconds=nframes * im.info["duration"] // 1000)
+        )
+
+    return info
 
 
 HANDLERS = {
