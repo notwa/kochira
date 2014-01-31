@@ -158,11 +158,11 @@ def find_quote(client, target, origin, query):
         results = searcher.search(q, limit=None)
         qids = [r["id"] for r in results]
 
-    quotes = list(Quote.select() \
+    quotes = list(Quote.select()
         .where(Quote.network == client.network,
                Quote.channel == target,
-               Quote.id << qids)) \
-        .order_by(Quote.id)
+               Quote.id << qids)
+        .order_by(Quote.id))
 
     if not quotes:
         client.message(target, "{origin}: Couldn't find any quotes.".format(
