@@ -27,18 +27,22 @@ class Service:
 
         return _decorator
 
-    def command(self, pattern, mention=False, background=False):
+    def command(self, pattern, mention=False, background=False, strip=True,
+                re_flags=0):
         """
         Register a command for use with the bot.
 
         ``mention`` specifies that the bot's nickname must be mentioned.
         """
 
-        pat = re.compile(pattern)
+        pat = re.compile(pattern, re_flags)
 
         def _decorator(f):
             @functools.wraps(f)
             def _command_handler(client, origin, target, message):
+                if strip:
+                    message = message.strip()
+
                 if mention:
                     first, _, rest = message.partition(" ")
                     first = first.rstrip(",:")
