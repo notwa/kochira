@@ -1,12 +1,33 @@
+import os
+import glob
 import requests
+import tempfile
 import time
+import subprocess
 
 from datetime import timedelta
-from pysnap import Snapchat
+from pysnap import Snapchat, MEDIA_VIDEO_NOAUDIO, MEDIA_VIDEO
 
 from ..service import Service
 
 service = Service(__name__)
+
+
+def convert_to_gif(blob):
+    with tempfile.TemporaryDirectory() as d:
+        with open(os.path.join(d, "video.mp4"), "wb") as f:
+            f.write(blob)
+
+        subprocess.call(["ffmpeg", "-i", os.path.join(d, "video.mp4"),
+                         "-vf", "transpose=3,scale=240:-1", "-r", "10",
+                         os.path.join(d, "frames%03d.gif")])
+
+        subprocess.call(["gifsicle", "--delay=10", "--loop", "-o",
+                         os.path.join(d, "out.gif"), "-O"] +
+                         sorted(glob.glob(os.path.join(d, "frames[0-9][0-9][0-9].gif"))))
+
+        with open(os.path.join(d, "out.gif"), "rb") as f:
+            return f.read()
 
 
 @service.setup
@@ -33,6 +54,9 @@ def poll_for_updates(bot):
         blob = storage.snapchat.get_blob(snap["id"])
         if blob is None:
             continue
+
+        if snap["media_type"] in (MEDIA_VIDEO, MEDIA_VIDEO_NOAUDIO):
+            blob = convert_to_gif(blob)
 
         ulim = requests.post("https://api.imgur.com/3/upload.json",
                              headers={"Authorization": "Client-ID " + config["imgur_clientid"]},
