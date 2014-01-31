@@ -14,7 +14,7 @@ service = Service(__name__)
 
 GIF_WIDTH = 240
 GIF_HEIGHT = -1
-GIF_FRAMERATE = 5
+GIF_FRAMERATE = 7
 
 
 def convert_to_gif(blob):
