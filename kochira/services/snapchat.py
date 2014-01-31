@@ -18,13 +18,15 @@ def convert_to_gif(blob):
         with open(os.path.join(d, "video.mp4"), "wb") as f:
             f.write(blob)
 
-        subprocess.call(["ffmpeg", "-i", os.path.join(d, "video.mp4"),
-                         "-vf", "transpose=1,scale=240:-1", "-r", "10",
-                         os.path.join(d, "frames%03d.gif")])
+        if subprocess.call(["ffmpeg", "-i", os.path.join(d, "video.mp4"),
+                            "-vf", "transpose=1,scale=240:-1", "-r", "10",
+                            os.path.join(d, "frames%03d.gif")]) != 0:
+            return None
 
-        subprocess.call(["gifsicle", "--delay=10", "--loop", "-o",
-                         os.path.join(d, "out.gif"), "-O"] +
-                         sorted(glob.glob(os.path.join(d, "frames[0-9][0-9][0-9].gif"))))
+        if subprocess.call(["gifsicle", "--delay=10", "--loop", "-o",
+                             os.path.join(d, "out.gif"), "-O"] +
+                             sorted(glob.glob(os.path.join(d, "frames[0-9][0-9][0-9].gif")))) != 0:
+            return None
 
         with open(os.path.join(d, "out.gif"), "rb") as f:
             return f.read()
@@ -58,14 +60,16 @@ def poll_for_updates(bot):
         if snap["media_type"] in (MEDIA_VIDEO, MEDIA_VIDEO_NOAUDIO):
             blob = convert_to_gif(blob)
 
-        ulim = requests.post("https://api.imgur.com/3/upload.json",
-                             headers={"Authorization": "Client-ID " + config["imgur_clientid"]},
-                             data={"image": blob}).json()
-
-        if ulim["status"] != 200:
-            link = "(unavailable)"
+        if blob is not None:
+            ulim = requests.post("https://api.imgur.com/3/upload.json",
+                                 headers={"Authorization": "Client-ID " + config["imgur_clientid"]},
+                                 data={"image": blob}).json()
+            if ulim["status"] != 200:
+                link = "(unavailable)"
+            else:
+                link = ulim["data"]["link"]
         else:
-            link = ulim["data"]["link"]
+            link = "(could not convert video)"
 
         storage.snapchat.mark_viewed(snap["id"])
 
