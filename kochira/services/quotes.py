@@ -178,5 +178,5 @@ def find_quote(client, target, origin, query):
         client.message(target, "{origin}: Found {num} quotes: {qids}".format(
             origin=origin,
             num=len(qids),
-            qids=", ".join(qids)
+            qids=", ".join(str(qid) for qid in qids)
         ))
