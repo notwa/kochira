@@ -70,23 +70,15 @@ class Service:
 
         return _decorator
 
-    def task(self, interval=None):
+    def task(self, f):
         """
         Register a new task. If the task is designed to be used as a timer,
         interval should be `None`.
         """
 
-        def _decorator(f):
-            f.service = self
-            self.tasks.append((f, interval))
-            return f
-
-        if callable(interval):
-            f = interval
-            interval = None
-            return _decorator(f)
-
-        return _decorator
+        f.service = self
+        self.tasks.append(f)
+        return f
 
     def setup(self, f):
         """

@@ -48,8 +48,10 @@ def make_snapchat(bot, storage):
                                   config["password"]).get("logged"):
         raise Exception("could not log into Snapchat")
 
+    bot.scheduler.schedule_every(timedelta(seconds=30), poll_for_updates)
 
-@service.task(interval=timedelta(seconds=30))
+
+@service.task
 def poll_for_updates(bot):
     config = service.config_for(bot)
     storage = service.storage_for(bot)
