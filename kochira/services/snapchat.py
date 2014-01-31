@@ -14,23 +14,24 @@ service = Service(__name__)
 GIF_FRAMERATE = 7
 GIF_MAX_LENGTH = 360
 
+
 def convert_to_gif(blob):
     with tempfile.TemporaryDirectory() as d:
         with open(os.path.join(d, "video.mp4"), "wb") as f:
             f.write(blob)
 
-        if subprocess.call(["ffmpeg", "-i", os.path.join(d, "video.mp4"),
-                            "-vf", "scale=\"'if(gt(a,{aspect}),{max_length},-1)':'if(gt(a,{aspect}),-1,{max_length})'\"".format(
-                                aspect="16/9",
-                                max_length=GIF_MAX_LENGTH
-                            ),
+        if subprocess.call(["ffmpeg",
+                            "-i", os.path.join(d, "video.mp4"),
                             "-r", str(GIF_FRAMERATE),
                             os.path.join(d, "frames%03d.gif")]) != 0:
             return None
 
-        if subprocess.call(["gifsicle", "--delay={}".format(100 // GIF_FRAMERATE),
-                            "--loop", "-o",
-                            os.path.join(d, "out.gif"), "-O"] +
+        if subprocess.call(["gifsicle",
+                            "--delay={}".format(100 // GIF_FRAMERATE),
+                            "--loop",
+                            "-O",
+                            "--resize-fit={max_length}x{max_length}".format(max_length=GIF_MAX_LENGTH),
+                            "-o", os.path.join(d, "out.gif")] +
                             sorted(glob.glob(os.path.join(d, "frames[0-9][0-9][0-9].gif")))) != 0:
             return None
 
