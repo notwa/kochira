@@ -161,8 +161,7 @@ def find_quote(client, target, origin, query):
     quotes = list(Quote.select()
         .where(Quote.network == client.network,
                Quote.channel == target,
-               Quote.id << qids)
-        .order_by(Quote.id))
+               Quote.id << qids))
 
     if not quotes:
         client.message(target, "{origin}: Couldn't find any quotes.".format(
@@ -178,5 +177,5 @@ def find_quote(client, target, origin, query):
         client.message(target, "{origin}: Found {num} quotes: {qids}".format(
             origin=origin,
             num=len(qids),
-            qids=", ".join(str(qid) for qid in qids)
+            qids=", ".join(str(qid) for qid in sorted(qids))
         ))
