@@ -35,9 +35,8 @@ class Quote(Model):
 
     @property
     def as_text(self):
-        return "Quote {id} by {by}: {quote}".format(
+        return "Quote {id}: {quote}".format(
             id=self.id,
-            by=self.by,
             quote=self.quote
         )
 
