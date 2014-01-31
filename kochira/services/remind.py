@@ -1,3 +1,4 @@
+import humanize
 import parsedatetime
 
 from datetime import datetime, timedelta
@@ -101,10 +102,10 @@ def add_timed_reminder(client, target, origin, who, duration, message):
                                duration=dt.total_seconds())
     reminder.save()
 
-    client.message(target, "{origin}: Okay, I'll let {who} know in {dt}.".format(
+    client.message(target, "{origin}: Okay, I'll let {who} know in around {dt}.".format(
         origin=origin,
         who=who,
-        dt=dt
+        dt=humanize.naturaltime(-dt)
     ))
 
     # ... but also schedule it
