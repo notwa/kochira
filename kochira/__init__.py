@@ -88,6 +88,9 @@ class Bot:
 
             service = module.service
 
+            # unschedule some old service might have scheduled
+            self.scheduler.unschedule_service(service)
+
             service.run_setup(self, storage)
         except:
             logger.error("Couldn't load service %s", name, exc_info=True)

@@ -127,3 +127,21 @@ class Scheduler(threading.Thread):
         self._schedule_work(task,
                             Work(interval.total_seconds(), interval,
                                  args, kwargs))
+
+    def unschedule_task(self, task):
+        logger.info("Unscheduling all work for task %s.%s",
+                    task.service.name, task.__name__)
+
+        with self.work_lock:
+            for service_name, task_name in list(self.work.keys()):
+                if service_name == task.service.name and \
+                   task_name == task.__name__:
+                    del self.work[service_name, task_name]
+
+    def unschedule_service(self, service):
+        logger.info("Unscheduling all work for service %s", service.name)
+
+        with self.work_lock:
+            for service_name, task_name in list(self.work.keys()):
+                if service_name == service.name:
+                    del self.work[service_name, task_name]
