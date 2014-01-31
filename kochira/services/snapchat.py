@@ -12,8 +12,7 @@ from ..service import Service
 
 service = Service(__name__)
 
-GIF_WIDTH = -1
-GIF_HEIGHT = 240
+GIF_SCALE = 0.5
 GIF_FRAMERATE = 7
 
 
@@ -23,7 +22,7 @@ def convert_to_gif(blob):
             f.write(blob)
 
         if subprocess.call(["ffmpeg", "-i", os.path.join(d, "video.mp4"),
-                            "-vf", "scale={}:{}".format(GIF_WIDTH, GIF_HEIGHT),
+                            "-vf", "scale=iw*{}:-1".format(GIF_SCALE),
                             "-r", str(GIF_FRAMERATE),
                             os.path.join(d, "frames%03d.gif")]) != 0:
             return None
