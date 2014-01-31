@@ -1,4 +1,4 @@
-wimport string
+import string
 
 from peewee import TextField, CharField, fn
 
