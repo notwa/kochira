@@ -63,7 +63,13 @@ class Service:
                         kwargs[k] = f.__annotations__[k](v)
 
                 if background:
-                    client.bot.executor.submit(f, client, origin, target, **kwargs)
+                    future = client.bot.executor.submit(f, client, origin, target, **kwargs)
+
+                    @future.add_done_callback
+                    def on_complete(future):
+                        exc = future.exception()
+                        if exc is not None:
+                            self.logger.error("Command error", exc_info=exc)
                 else:
                     f(client, origin, target, **kwargs)
 
