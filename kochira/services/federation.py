@@ -151,7 +151,7 @@ class IOLoopThread(threading.Thread):
 
     def run(self):
         try:
-            self.io_loop = ioloop.IOLoop.instance()
+            self.io_loop = ioloop.IOLoop.current()
         finally:
             self.event.set()
 
