@@ -88,7 +88,13 @@ def translate(client, target, origin, term, to_lang=None, from_lang=None):
 
     r = perform_translation(term, sl, tl)
 
-    client.message(target, "{origin}: {sentences}".format(
+    trans = " ".join(x["trans"] for x in r["sentences"])
+    tlit = " ".join(x["translit"] for x in r["sentences"])
+
+    if tlit:
+        trans += " (" + tlit + ")"
+
+    client.message(target, "{origin}: {trans}".format(
         origin=origin,
-        sentences=" ".join(x["trans"] for x in r["sentences"])
+        trans=trans
     ))
