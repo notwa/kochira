@@ -39,7 +39,7 @@ class RequesterConnection:
         storage = service.storage_for(self.bot)
 
         msg = [network.encode("utf-8"),
-               (origin + "!user@federated.kochira").encode("utf-8"),
+               (origin + "!user@federated/kochira/" + origin).encode("utf-8"),
                b"PRIVMSG",
                target.encode("utf-8"),
                message.encode("utf-8")]
@@ -86,6 +86,21 @@ class RequesterConnection:
         event.wait()
 
 
+class FakeUserCollection:
+    def __contains__(self, key):
+        return True
+
+    def __getitem__(self, key):
+        return {
+            "username": "user",
+            "hostname": "federated/kochira/" + key,
+            "account": None,
+            "realname": None,
+            "away": False,
+            "away_message": None
+        }
+
+
 class ResponderClient:
     """
     The remoting proxy takes remote queries, runs them and sends them back to
@@ -95,6 +110,7 @@ class ResponderClient:
         self.bot = bot
         self.identity = identity
         self.network = network
+        self.users = FakeUserCollection()
 
     @property
     def nickname(self):
@@ -102,7 +118,7 @@ class ResponderClient:
 
     def message(self, target, message):
         msg = [self.network.encode("utf-8"),
-               (self.identity + "!bot@federated.kochira").encode("utf-8"),
+               (self.identity + "!bot@federated/kochira/" + self.identity).encode("utf-8"),
                b"PRIVMSG",
                target.encode("utf-8"),
                message.encode("utf-8")]

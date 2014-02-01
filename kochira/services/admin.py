@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-from ..auth import requires_permission
+from ..auth import requires_permission, ACLEntry
 from ..service import Service
 
 
@@ -18,7 +18,7 @@ def setup_eval_locals(bot):
 @service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
 @requires_permission("admin")
 def grant(client, target, origin, permission, hostmask, channel=None):
-    client.grant_permission(hostmask, permission, channel)
+    ACLEntry.grant(client.network, hostmask, permission, channel)
 
     if channel is not None:
         message = "Granted permission \"{permission}\" to {hostmask} on channel {channel} for network \"{network}\".".format(
@@ -43,7 +43,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
     if permission == "everything":
         permission = None
 
-    client.revoke_permission(hostmask, permission, channel)
+    ACLEntry.revoke(client.network, hostmask, permission, channel)
 
     if permission is None:
         message_part = "all permissions"

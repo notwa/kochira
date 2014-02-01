@@ -13,7 +13,7 @@ def requires_permission(permission):
                 username=client.users[origin]["username"],
                 hostname=client.users[origin]["hostname"]
             )
-            if not client.has_permission(hostmask, permission, target):
+            if not ACLEntry.has(client.network, hostmask, permission, target):
                 client.message(target, "Sorry, {origin}, I can't let you do that.".format(origin=origin))
                 return
             return f(client, target, origin, *args, **kwargs)
@@ -39,7 +39,7 @@ class ACLEntry(Model):
 
 
     @classmethod
-    def has(cls, hostmask, network, permission, channel=None):
+    def has(cls, network, hostmask, permission, channel=None):
         """
         Check if a hostmask has a given permission.
         """
@@ -50,7 +50,7 @@ class ACLEntry(Model):
                                        (ACLEntry.channel >> None)).exists()
 
     @classmethod
-    def grant(cls, hostmask, network, permission, channel=None):
+    def grant(cls, network, hostmask, permission, channel=None):
         """
         Grant a permission to a hostmask.
         """
@@ -61,7 +61,7 @@ class ACLEntry(Model):
                    permission=permission, channel=channel).save()
 
     @classmethod
-    def revoke(cls, hostmask, network, permission, channel=None):
+    def revoke(cls, network, hostmask, permission, channel=None):
         """
         Revoke a permission from a hostmask.
         """
