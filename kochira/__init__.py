@@ -97,14 +97,15 @@ class Bot:
                 raise RuntimeError("{} is not a valid service".format(name))
 
             service = module.service
+            self.services[service.name] = (service, storage)
 
             service.run_setup(self, storage)
         except:
             logger.error("Couldn't load service %s", name, exc_info=True)
+            del self.services[service.name]
             raise
 
         logger.info("Loaded service %s", name)
-        self.services[service.name] = (service, storage)
 
     def unload_service(self, name):
         """

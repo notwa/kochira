@@ -69,9 +69,14 @@ class RequesterConnection:
     def shutdown(self):
         storage = service.storage_for(self.bot)
 
+        event = threading.Event()
+
         @storage.ioloop_thread.io_loop.add_callback
         def _callback():
             self.stream.close()
+            event.set()
+
+        event.wait()
 
 
 class ResponderClient:
@@ -149,6 +154,8 @@ def setup_federation(bot, storage):
     zctx = storage.zctx = zmq.Context()
     storage.ioloop_thread.event.wait()
 
+    event = threading.Event()
+
     @storage.ioloop_thread.io_loop.add_callback
     def _callback():
         socket = zctx.socket(zmq.ROUTER)
@@ -161,14 +168,28 @@ def setup_federation(bot, storage):
         )
         storage.stream.on_recv(functools.partial(on_router_recv, bot))
 
-        for name, federation in config["federations"]:
+        for name, federation in config["federations"].items():
             if federation.get("autoconnect", False):
-                storage.remotes[name] = RequesterConnection(bot, name, federation["url"])
+                storage.remotes[name] = RequesterConnection(bot, name, federation["address"])
+
+        event.set()
+
+    event.wait()
 
 
 @service.shutdown
 def shutdown_federation(bot, storage):
-    storage.ioloop_thread.stop()
+    event = threading.Event()
+
+    @storage.ioloop_thread.io_loop.add_callback
+    def _callback():
+        for remote in storage.remotes.values():
+            remote.stream.close()
+        storage.stream.close()
+        storage.ioloop_thread.stop()
+        event.set()
+
+    event.wait()
 
 
 @service.command(r"federate with (?P<name>\S+)$", mention=True)
