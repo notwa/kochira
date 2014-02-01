@@ -190,7 +190,7 @@ def setup_federation(bot):
     storage.ioloop_thread.start()
 
     zctx = storage.zctx = zmq.Context()
-    auth = storage.auth = zmq.authThreadedAuthenticator(zctx)
+    auth = storage.auth = zmq.auth.ThreadedAuthenticator(zctx)
     auth.start()
 
     auth.configure_plain(domain="*", passwords=config.get("users", {}))
