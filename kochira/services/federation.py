@@ -9,6 +9,8 @@ from ..service import Service
 
 service = Service(__name__)
 
+raise Exception("don't use this unless you know what you're doing")
+
 
 class RequesterConnection:
     """
@@ -156,7 +158,6 @@ class IOLoopThread(threading.Thread):
             self.event.set()
 
         self.io_loop.start()
-        self.io_loop.close(all_fds=True)
 
     def stop(self):
         @self.io_loop.add_callback
