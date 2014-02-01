@@ -152,10 +152,11 @@ class IOLoopThread(threading.Thread):
     def run(self):
         try:
             self.io_loop = ioloop.IOLoop.instance()
-            self.io_loop.start()
-            self.io_loop.close(all_fds=True)
-        except:
+        finally:
             self.event.set()
+
+        self.io_loop.start()
+        self.io_loop.close(all_fds=True)
 
     def stop(self):
         self.io_loop.stop()
