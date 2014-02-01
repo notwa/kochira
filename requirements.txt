@@ -9,3 +9,4 @@ whoosh
 pillow
 humanize
 BeautifulSoup4
+pyzmq
