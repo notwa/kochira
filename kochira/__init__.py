@@ -80,7 +80,8 @@ class Bot:
 
         # ensure that the service's shutdown routine is run
         if name in self.services:
-            self._shutdown_service(self.services[name])
+            service, _ = self.services[name]
+            self._shutdown_service(service)
 
         # we create an expando storage first for bots to load any locals they
         # need
@@ -109,7 +110,8 @@ class Bot:
         """
         Unload a service from the bot.
         """
-        self._shutdown_service(self.services[name])
+        service, _ = self.services[name]
+        self._shutdown_service(service)
         del self.services[name]
 
     def run_hooks(self, hook, client, *args):
