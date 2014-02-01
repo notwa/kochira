@@ -232,8 +232,14 @@ def shutdown_federation(bot):
     def _callback():
         try:
             for remote in storage.federations.values():
-                remote.stream.close()
-            storage.stream.close()
+                try:
+                    remote.stream.close()
+                except:
+                    pass
+            try:
+                storage.stream.close()
+            except:
+                pass
             storage.ioloop_thread.stop()
         finally:
             event.set()
