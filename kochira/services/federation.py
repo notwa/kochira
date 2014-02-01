@@ -199,7 +199,7 @@ def add_federation(client, target, origin, name, url):
 @service.command(r"stop federating with (?P<name>\S+)$", mention=True)
 @service.command(r"don't federate with (?P<name>\S+)$", mention=True)
 @requires_permission("federation")
-def remove_federation(client, target, origin, name, url):
+def remove_federation(client, target, origin, name):
     storage = service.storage_for(client.bot)
 
     try:
