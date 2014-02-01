@@ -171,7 +171,7 @@ def setup_federation(bot):
 
         for name, federation in config["federations"].items():
             if federation.get("autoconnect", False):
-                storage.remotes[name] = RequesterConnection(bot, name, federation["address"])
+                storage.remotes[name] = RequesterConnection(bot, name, federation["url"])
 
         event.set()
 
