@@ -39,8 +39,9 @@ class RequesterConnection:
         storage = service.storage_for(self.bot)
 
         msg = [network.encode("utf-8"),
+               b"PRIVMSG",
                target.encode("utf-8"),
-               origin.encode("utf-8"),
+               (origin + "!user@federated.kochira").encode("utf-8"),
                message.encode("utf-8")]
 
         service.logger.info("Sent request to %s: %s", self.identity, msg)
@@ -53,18 +54,21 @@ class RequesterConnection:
         service.logger.info("Received response from %s: %s", self.identity,
                             msg)
 
-        network, target, origin, message = msg
+        network, type, target, origin, *args = msg
 
         network = network.decode("utf-8")
-        origin = origin.decode("utf-8")
+        origin, _, _ = origin.decode("utf-8").partition("!")
         target = target.decode("utf-8")
-        message = message.decode("utf-8")
 
-        self.bot.networks[network].message(target,
-                                           "(via {identity}): {message}".format(
-            identity=self.identity,
-            message=message
-        ))
+        if type == b"PRIVMSG":
+            message, = args
+            message = message.decode("utf-8")
+
+            self.bot.networks[network].message(target,
+                                               "(via {identity}): {message}".format(
+                identity=self.identity,
+                message=message
+            ))
 
     def shutdown(self):
         storage = service.storage_for(self.bot)
@@ -95,8 +99,9 @@ class ResponderClient:
 
     def message(self, target, message):
         msg = [self.network.encode("utf-8"),
+               b"PRIVMSG",
                target.encode("utf-8"),
-               self.identity.encode("utf-8"),
+               (self.identity + "!bot@federated.kochira").encode("utf-8"),
                message.encode("utf-8")]
 
         service.logger.info("Sent response to %s: %s", self.identity, msg)
@@ -130,17 +135,20 @@ def on_router_recv(bot, msg):
 
     service.logger.info("Received request from %s: %s", ident, msg)
 
-    network, target, origin, message = msg
+    network, type, target, origin, *args = msg
 
     ident = ident.decode("utf-8")
     network = network.decode("utf-8")
     target = target.decode("utf-8")
-    origin = origin.decode("utf-8")
-    message = message.decode("utf-8")
+    origin, _, _ = origin.decode("utf-8").partition("!")
 
-    client = ResponderClient(bot, ident, network)
+    if type == b"PRIVMSG":
+        message, = args
+        message = message.decode("utf-8")
 
-    bot.run_hooks("message", client, target, origin, message)
+        client = ResponderClient(bot, ident, network)
+
+        bot.run_hooks("message", client, target, origin, message)
 
 
 @service.setup
