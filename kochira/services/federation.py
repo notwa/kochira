@@ -144,8 +144,9 @@ def on_router_recv(bot, msg):
 
 
 @service.setup
-def setup_federation(bot, storage):
+def setup_federation(bot):
     config = service.config_for(bot)
+    storage = service.storage_for(bot)
 
     storage.remotes = {}
     storage.ioloop_thread = IOLoopThread()
@@ -178,7 +179,9 @@ def setup_federation(bot, storage):
 
 
 @service.shutdown
-def shutdown_federation(bot, storage):
+def shutdown_federation(bot):
+    storage = service.storage_for(bot)
+
     event = threading.Event()
 
     @storage.ioloop_thread.io_loop.add_callback

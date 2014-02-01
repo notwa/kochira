@@ -19,7 +19,7 @@ class Profile(Model):
 
 
 @service.setup
-def initialize_model(bot, storage):
+def initialize_model(bot):
     Profile.create_table(True)
 
 

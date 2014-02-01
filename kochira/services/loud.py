@@ -22,7 +22,9 @@ class Shout(Model):
 
 
 @service.setup
-def initialize_model(bot, storage):
+def initialize_model(bot):
+    storage = service.storage_for(bot)
+
     Shout.create_table(True)
     storage.last_shout = None
 

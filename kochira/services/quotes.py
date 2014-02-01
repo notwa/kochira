@@ -47,8 +47,9 @@ class Quote(Model):
 
 
 @service.setup
-def initialize_model(bot, storage):
+def initialize_model(bot):
     config = service.config_for(bot)
+    storage = service.storage_for(bot)
 
     if not whoosh.index.exists_in(config["index_path"]):
         storage.index = whoosh.index.create_in(config["index_path"], WHOOSH_SCHEMA)

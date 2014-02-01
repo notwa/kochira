@@ -65,9 +65,8 @@ class Bot:
                 except:
                     pass # it gets logged
 
-
     def _shutdown_service(self, service):
-        service.run_shutdown(self, service.storage_for(self))
+        service.run_shutdown(self)
         self.scheduler.unschedule_service(service)
 
     def load_service(self, name, reload=False):
@@ -99,7 +98,7 @@ class Bot:
             service = module.service
             self.services[service.name] = (service, storage)
 
-            service.run_setup(self, storage)
+            service.run_setup(self)
         except:
             logger.error("Couldn't load service %s", name, exc_info=True)
             del self.services[service.name]

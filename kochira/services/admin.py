@@ -11,7 +11,8 @@ service = Service(__name__)
 
 
 @service.setup
-def setup_eval_locals(bot, storage):
+def setup_eval_locals(bot):
+    storage = service.storage_for(bot)
     storage.eval_locals = {}
 
 @service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)

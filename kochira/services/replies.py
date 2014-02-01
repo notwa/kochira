@@ -24,7 +24,7 @@ def is_regex(what):
 
 
 @service.setup
-def initialize_model(bot, storage):
+def initialize_model(bot):
     Reply.create_table(True)
 
 

@@ -42,8 +42,9 @@ def convert_to_gif(blob):
 
 
 @service.setup
-def make_snapchat(bot, storage):
+def make_snapchat(bot):
     config = service.config_for(bot)
+    storage = service.storage_for(bot)
 
     storage.snapchat = Snapchat()
     if not storage.snapchat.login(config["username"],

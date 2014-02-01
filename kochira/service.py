@@ -104,19 +104,19 @@ class Service:
             except BaseException:
                 self.logger.error("Hook processing failed", exc_info=True)
 
-    def run_setup(self, bot, storage):
+    def run_setup(self, bot):
         """
         Run all setup functions for the service.
         """
         if self.on_setup is not None:
-            self.on_setup(bot, storage)
+            self.on_setup(bot)
 
-    def run_shutdown(self, bot, storage):
+    def run_shutdown(self, bot):
         """
         Run all setup functions for the service.
         """
         if self.on_shutdown is not None:
-            self.on_shutdown(bot, storage)
+            self.on_shutdown(bot)
 
     def config_for(self, bot):
         """

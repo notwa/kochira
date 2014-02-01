@@ -38,7 +38,7 @@ class Reminder(Model):
 
 
 @service.setup
-def initialize_model(bot, storage):
+def initialize_model(bot):
     Reminder.create_table(True)
 
     for reminder in Reminder.select() \
