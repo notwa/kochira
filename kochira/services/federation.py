@@ -156,9 +156,12 @@ class IOLoopThread(threading.Thread):
             self.event.set()
 
         self.io_loop.start()
+        self.io_loop.close(all_fds=True)
 
     def stop(self):
-        self.io_loop.stop()
+        @self.io_loop.add_callback
+        def _callback(self):
+            self.io_loop.stop()
 
 
 def on_router_recv(bot, msg):
