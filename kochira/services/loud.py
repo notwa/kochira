@@ -1,6 +1,6 @@
 import string
 
-from peewee import TextField, CharField, fn
+from peewee import TextField, CharField, fn, SQL
 
 from ..db import Model
 
@@ -16,6 +16,7 @@ class Shout(Model):
     class Meta:
         indexes = (
             (("message",), True),
+            (("who",), False)
         )
 
 
@@ -23,6 +24,30 @@ class Shout(Model):
 def initialize_model(bot, storage):
     Shout.create_table(True)
     storage.last_shout = None
+
+
+@service.command(r"who(?:'s| is| are|'re)(?: the loudest|loud)\??", mention=True)
+def loudest(client, target, origin):
+    loudest = [(shout.who, shout.count) for shout in
+        Shout.select(Shout.who, fn.sum(1).alias("count"))
+            .group_by(Shout.who)
+            .order_by(SQL("count DESC"))
+            .limit(5)
+    ]
+
+    if not loudest:
+        client.message(target, "{origin}: Nobody has shouted yet.".format(
+            origin=origin
+        ))
+    else:
+        client.message(target, "{origin}: Loudest people: {loudest}.".format(
+            origin=origin,
+            loudest=", ".join("{who} ({count} shout{s})".format(
+                who=who,
+                count=count,
+                s="s" if count != 1 else ""
+            ) for who, count in loudest)
+        ))
 
 
 @service.command(r"who said that\??$", mention=True)
