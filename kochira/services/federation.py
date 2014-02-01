@@ -29,7 +29,7 @@ class RequesterConnection:
         @storage.ioloop_thread.io_loop.add_callback
         def _callback():
             socket = storage.zctx.socket(zmq.DEALER)
-            socket.setsockopt(zmq.IDENTITY, config["identity"].encode("utf-8"))
+            socket.identity = config["identity"].encode("utf-8")
 
             if "username" in self.config:
                 socket.plain_username = self.config["username"].encode("utf-8")
@@ -190,10 +190,6 @@ def setup_federation(bot):
     storage.ioloop_thread.start()
 
     zctx = storage.zctx = zmq.Context()
-    auth = storage.auth = zmq.auth.ThreadedAuthenticator(zctx)
-    auth.start()
-
-    auth.configure_plain(domain="*", passwords=config.get("users", {}))
 
     storage.ioloop_thread.event.wait()
 
@@ -202,8 +198,15 @@ def setup_federation(bot):
     @storage.ioloop_thread.io_loop.add_callback
     def _callback():
         try:
+            auth = storage.auth = zmq.auth.IOLoopAuthenticator(zctx,
+                                                               io_loop=storage.ioloop_thread.io_loop)
+            auth.start()
+            auth.configure_plain(domain="*",
+                                 passwords=config.get("users", {}))
+
             socket = zctx.socket(zmq.ROUTER)
-            socket.setsockopt(zmq.IDENTITY, config["identity"].encode("utf-8"))
+            socket.identity = config["identity"].encode("utf-8")
+            socket.plain_server = True
             socket.bind(config["bind_address"])
 
             storage.stream = zmqstream.ZMQStream(
@@ -224,7 +227,11 @@ def setup_federation(bot):
 @service.shutdown
 def shutdown_federation(bot):
     storage = service.storage_for(bot)
-    storage.auth.stop()
+
+    try:
+        storage.auth.stop()
+    except Exception as e:
+        service.logger.error("Error during federation shut down", exc_info=e)
 
     event = threading.Event()
 
@@ -234,12 +241,12 @@ def shutdown_federation(bot):
             for remote in storage.federations.values():
                 try:
                     remote.stream.close()
-                except:
-                    pass
+                except Exception as e:
+                    service.logger.error("Error during federation shut down", exc_info=e)
             try:
                 storage.stream.close()
-            except:
-                pass
+            except Exception as e:
+                service.logger.error("Error during federation shut down", exc_info=e)
             storage.ioloop_thread.stop()
         finally:
             event.set()
