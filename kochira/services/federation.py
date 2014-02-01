@@ -1,6 +1,7 @@
 import functools
 import threading
 import zmq
+import zmq.auth
 from zmq.eventloop import ioloop, zmqstream
 
 from ..auth import requires_permission
@@ -14,10 +15,10 @@ class RequesterConnection:
     A remote connection which facilitates unidirectional communication to
     request responses from an upstream federated bot via its dealer.
     """
-    def __init__(self, bot, identity, url):
+    def __init__(self, bot, identity, config):
         self.bot = bot
         self.identity = identity
-        self.url = url
+        self.config = config
 
         self._connect()
 
@@ -29,6 +30,13 @@ class RequesterConnection:
         def _callback():
             socket = storage.zctx.socket(zmq.DEALER)
             socket.setsockopt(zmq.IDENTITY, config["identity"].encode("utf-8"))
+
+            if "username" in self.config:
+                socket.plain_username = self.config["username"]
+
+            if "password" in self.config:
+                socket.plain_password = self.config["password"]
+
             socket.connect(self.url)
 
             self.stream = zmqstream.ZMQStream(socket,
@@ -182,6 +190,11 @@ def setup_federation(bot):
     storage.ioloop_thread.start()
 
     zctx = storage.zctx = zmq.Context()
+    auth = storage.auth = zmq.authThreadedAuthenticator(zctx)
+    auth.start()
+
+    auth.configure_plain(domain="*", passwords=config.get("users", {}))
+
     storage.ioloop_thread.event.wait()
 
     event = threading.Event()
@@ -201,7 +214,7 @@ def setup_federation(bot):
 
             for name, federation in config["federations"].items():
                 if federation.get("autoconnect", False):
-                    storage.remotes[name] = RequesterConnection(bot, name, federation["url"])
+                    storage.remotes[name] = RequesterConnection(bot, name, federation)
         finally:
             event.set()
 
@@ -211,6 +224,7 @@ def setup_federation(bot):
 @service.shutdown
 def shutdown_federation(bot):
     storage = service.storage_for(bot)
+    storage.auth.stop()
 
     event = threading.Event()
 
@@ -245,7 +259,7 @@ def add_federation(client, target, origin, name):
         ))
     else:
         try:
-            storage.remotes[name] = RequesterConnection(client.bot, name, config["federations"][name]["url"])
+            storage.remotes[name] = RequesterConnection(client.bot, name, config["federations"][name])
         except Exception as e:
             client.message(target, "{origin}: Sorry, I couldn't federate with \"{name}\".".format(
                 origin=origin,
