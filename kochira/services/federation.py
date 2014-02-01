@@ -156,6 +156,7 @@ class IOLoopThread(threading.Thread):
             self.event.set()
 
         self.io_loop.start()
+        self.io_loop.close(all_fds=True)
 
     def stop(self):
         self.io_loop.stop()
