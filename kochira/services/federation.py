@@ -161,15 +161,20 @@ def setup_federation(bot, storage):
         )
         storage.stream.on_recv(functools.partial(on_router_recv, bot))
 
+        for name, federation in config["federations"]:
+            if federation.get("autoconnect", False):
+                storage.remotes[name] = RequesterConnection(bot, name, federation["url"])
+
 
 @service.shutdown
 def shutdown_federation(bot, storage):
     storage.ioloop_thread.stop()
 
 
-@service.command(r"federate with (?P<name>\S+) at (?P<url>\S+)$", mention=True)
+@service.command(r"federate with (?P<name>\S+)$", mention=True)
 @requires_permission("federation")
-def add_federation(client, target, origin, name, url):
+def add_federation(client, target, origin, name):
+    config = service.config_for(client.bot)
     storage = service.storage_for(client.bot)
 
     if name in storage.remotes:
@@ -177,9 +182,14 @@ def add_federation(client, target, origin, name, url):
             origin=origin,
             name=name
         ))
+    elif name not in config["federations"]:
+        client.message(target, "{origin}: Federation with \"{name}\" is not configured.".format(
+            origin=origin,
+            name=name
+        ))
     else:
         try:
-            storage.remotes[name] = RequesterConnection(client.bot, name, url)
+            storage.remotes[name] = RequesterConnection(client.bot, name, config["federations"][name]["url"])
         except Exception as e:
             client.message(target, "{origin}: Sorry, I couldn't federate with \"{name}\".".format(
                 origin=origin,
