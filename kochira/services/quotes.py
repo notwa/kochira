@@ -40,6 +40,11 @@ class Quote(Model):
             quote=self.quote
         )
 
+    class Meta:
+        indexes = (
+            (("channel", "network"), False),
+        )
+
 
 @service.setup
 def initialize_model(bot, storage):
