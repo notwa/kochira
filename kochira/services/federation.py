@@ -150,9 +150,12 @@ class IOLoopThread(threading.Thread):
         super().__init__()
 
     def run(self):
-        self.io_loop = ioloop.IOLoop.instance()
-        self.event.set()
-        self.io_loop.start()
+        try:
+            self.io_loop = ioloop.IOLoop.instance()
+            self.io_loop.start()
+            self.io_loop.close(all_fds=True)
+        except:
+            self.event.set()
 
     def stop(self):
         self.io_loop.stop()
