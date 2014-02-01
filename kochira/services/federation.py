@@ -74,7 +74,7 @@ class RequesterConnection:
             message = message.decode("utf-8")
 
             self.bot.networks[network].message(target,
-                                               "(via {identity}): {message}".format(
+                                               "(via {identity}) {message}".format(
                 identity=self.identity,
                 message=message
             ))
@@ -312,7 +312,7 @@ def remove_federation(client, target, origin, name):
         ))
 
 @service.command(r"ask (?P<name>\S+) (?P<what>.+)$", mention=True)
-@service.command(r"(?P<name>\S+)>> (?P<what>.+)$")
+@service.command(r"~(?P<name>\S+): (?P<what>.+)$")
 def federated_request(client, target, origin, name, what):
     storage = service.storage_for(client.bot)
 

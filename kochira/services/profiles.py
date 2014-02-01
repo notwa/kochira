@@ -23,7 +23,7 @@ def initialize_model(bot):
     Profile.create_table(True)
 
 
-@service.command(r"forget about me$", mention=True)
+@service.command(r"forget(?: about)? me$", mention=True)
 def forget_profile(client, target, origin):
     if Profile.delete().where(Profile.network == client.network,
                               Profile.who == origin).execute():
@@ -53,7 +53,7 @@ def remember_profile(client, target, origin, text):
     ))
 
 
-@service.command(r"who am i\??$", mention=True)
+@service.command(r"who am [Ii]\??$", mention=True)
 @service.command(r"who(?: is|'s| the .* is) (?P<who>\S+)\??$", mention=True)
 def get_profile(client, target, origin, who=None):
     if who is None:
