@@ -132,6 +132,8 @@ class Bot:
 
 
 def main():
+    import sys
+
     logging.basicConfig(level=logging.INFO)
-    bot = Bot()
+    bot = Bot(sys.argv[1] if len(sys.argv) > 1 else "config.yml")
     bot.run()
