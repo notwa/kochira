@@ -84,6 +84,7 @@ class Bot:
 
         # we create an expando storage first for bots to load any locals they
         # need
+        service = None
         storage = Expando()
 
         try:
@@ -101,7 +102,8 @@ class Bot:
             service.run_setup(self)
         except:
             logger.error("Couldn't load service %s", name, exc_info=True)
-            del self.services[service.name]
+            if service is not None:
+                del self.services[service.name]
             raise
 
         logger.info("Loaded service %s", name)
