@@ -37,7 +37,7 @@ class RequesterConnection:
             if "password" in self.config:
                 socket.plain_password = self.config["password"]
 
-            socket.connect(self.url)
+            socket.connect(self.config["url"])
 
             self.stream = zmqstream.ZMQStream(socket,
                                               io_loop=storage.ioloop_thread.io_loop)
@@ -185,7 +185,7 @@ def setup_federation(bot):
     config = service.config_for(bot)
     storage = service.storage_for(bot)
 
-    storage.remotes = {}
+    storage.federations = {}
     storage.ioloop_thread = IOLoopThread()
     storage.ioloop_thread.start()
 
@@ -212,9 +212,9 @@ def setup_federation(bot):
             )
             storage.stream.on_recv(functools.partial(on_router_recv, bot))
 
-            for name, federation in config["federations"].items():
+            for name, federation in config.get("federations", {}).items():
                 if federation.get("autoconnect", False):
-                    storage.remotes[name] = RequesterConnection(bot, name, federation)
+                    storage.federations[name] = RequesterConnection(bot, name, federation)
         finally:
             event.set()
 
@@ -231,7 +231,7 @@ def shutdown_federation(bot):
     @storage.ioloop_thread.io_loop.add_callback
     def _callback():
         try:
-            for remote in storage.remotes.values():
+            for remote in storage.federations.values():
                 remote.stream.close()
             storage.stream.close()
             storage.ioloop_thread.stop()
@@ -247,19 +247,19 @@ def add_federation(client, target, origin, name):
     config = service.config_for(client.bot)
     storage = service.storage_for(client.bot)
 
-    if name in storage.remotes:
+    if name in storage.federations:
         client.message(target, "{origin}: I'm already federating with \"{name}\".".format(
             origin=origin,
             name=name
         ))
-    elif name not in config["federations"]:
+    elif name not in config.get("federations", {}):
         client.message(target, "{origin}: Federation with \"{name}\" is not configured.".format(
             origin=origin,
             name=name
         ))
     else:
         try:
-            storage.remotes[name] = RequesterConnection(client.bot, name, config["federations"][name])
+            storage.federations[name] = RequesterConnection(client.bot, name, config["federations"][name])
         except Exception as e:
             client.message(target, "{origin}: Sorry, I couldn't federate with \"{name}\".".format(
                 origin=origin,
@@ -283,7 +283,7 @@ def remove_federation(client, target, origin, name):
     storage = service.storage_for(client.bot)
 
     try:
-        remote = storage.remotes[name]
+        remote = storage.federations[name]
     except KeyError:
         client.message(target, "{origin}: I'm not federating with \"{name}\".".format(
             origin=origin,
@@ -291,7 +291,7 @@ def remove_federation(client, target, origin, name):
         ))
     else:
         remote.shutdown()
-        del storage.remotes[name]
+        del storage.federations[name]
 
         client.message(target, "{origin}: Okay, I'll stop federating with \"{name}\".".format(
             origin=origin,
@@ -304,7 +304,7 @@ def federated_request(client, target, origin, name, what):
     storage = service.storage_for(client.bot)
 
     try:
-        remote = storage.remotes[name]
+        remote = storage.federations[name]
     except KeyError:
         client.message(target, "{origin}: I'm not federating with \"{name}\".".format(
             origin=origin,
@@ -312,3 +312,14 @@ def federated_request(client, target, origin, name, what):
         ))
     else:
         remote.request(client.network, target, origin, what)
+
+
+@service.command(r"who are you federated with\??$", mention=True)
+@service.command(r"(?:list (?:all )?)?federations$", mention=True)
+def list_federations(client, target, origin):
+    storage = service.storage_for(client.bot)
+
+    client.message(target, "I am federated with: {federation}".format(
+        federation=", ".join(storage.federations))
+    )
+
