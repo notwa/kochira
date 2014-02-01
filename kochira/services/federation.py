@@ -39,9 +39,9 @@ class RequesterConnection:
         storage = service.storage_for(self.bot)
 
         msg = [network.encode("utf-8"),
+               (origin + "!user@federated.kochira").encode("utf-8"),
                b"PRIVMSG",
                target.encode("utf-8"),
-               (origin + "!user@federated.kochira").encode("utf-8"),
                message.encode("utf-8")]
 
         service.logger.info("Sent request to %s: %s", self.identity, msg)
@@ -54,14 +54,15 @@ class RequesterConnection:
         service.logger.info("Received response from %s: %s", self.identity,
                             msg)
 
-        network, type, target, origin, *args = msg
+        network, origin, type, *args = msg
 
         network = network.decode("utf-8")
         origin, _, _ = origin.decode("utf-8").partition("!")
-        target = target.decode("utf-8")
 
         if type == b"PRIVMSG":
-            message, = args
+            target, message = args
+
+            target = target.decode("utf-8")
             message = message.decode("utf-8")
 
             self.bot.networks[network].message(target,
@@ -77,8 +78,10 @@ class RequesterConnection:
 
         @storage.ioloop_thread.io_loop.add_callback
         def _callback():
-            self.stream.close()
-            event.set()
+            try:
+                self.stream.close()
+            finally:
+                event.set()
 
         event.wait()
 
@@ -99,9 +102,9 @@ class ResponderClient:
 
     def message(self, target, message):
         msg = [self.network.encode("utf-8"),
+               (self.identity + "!bot@federated.kochira").encode("utf-8"),
                b"PRIVMSG",
                target.encode("utf-8"),
-               (self.identity + "!bot@federated.kochira").encode("utf-8"),
                message.encode("utf-8")]
 
         service.logger.info("Sent response to %s: %s", self.identity, msg)
@@ -135,15 +138,16 @@ def on_router_recv(bot, msg):
 
     service.logger.info("Received request from %s: %s", ident, msg)
 
-    network, type, target, origin, *args = msg
+    network, origin, type, *args = msg
 
     ident = ident.decode("utf-8")
     network = network.decode("utf-8")
-    target = target.decode("utf-8")
     origin, _, _ = origin.decode("utf-8").partition("!")
 
     if type == b"PRIVMSG":
-        message, = args
+        target, message = args
+
+        target = target.decode("utf-8")
         message = message.decode("utf-8")
 
         client = ResponderClient(bot, ident, network)
@@ -167,21 +171,22 @@ def setup_federation(bot):
 
     @storage.ioloop_thread.io_loop.add_callback
     def _callback():
-        socket = zctx.socket(zmq.ROUTER)
-        socket.setsockopt(zmq.IDENTITY, config["identity"].encode("utf-8"))
-        socket.bind(config["bind_address"])
+        try:
+            socket = zctx.socket(zmq.ROUTER)
+            socket.setsockopt(zmq.IDENTITY, config["identity"].encode("utf-8"))
+            socket.bind(config["bind_address"])
 
-        storage.stream = zmqstream.ZMQStream(
-            socket,
-            io_loop=storage.ioloop_thread.io_loop
-        )
-        storage.stream.on_recv(functools.partial(on_router_recv, bot))
+            storage.stream = zmqstream.ZMQStream(
+                socket,
+                io_loop=storage.ioloop_thread.io_loop
+            )
+            storage.stream.on_recv(functools.partial(on_router_recv, bot))
 
-        for name, federation in config["federations"].items():
-            if federation.get("autoconnect", False):
-                storage.remotes[name] = RequesterConnection(bot, name, federation["url"])
-
-        event.set()
+            for name, federation in config["federations"].items():
+                if federation.get("autoconnect", False):
+                    storage.remotes[name] = RequesterConnection(bot, name, federation["url"])
+        finally:
+            event.set()
 
     event.wait()
 
@@ -194,11 +199,13 @@ def shutdown_federation(bot):
 
     @storage.ioloop_thread.io_loop.add_callback
     def _callback():
-        for remote in storage.remotes.values():
-            remote.stream.close()
-        storage.stream.close()
-        storage.ioloop_thread.stop()
-        event.set()
+        try:
+            for remote in storage.remotes.values():
+                remote.stream.close()
+            storage.stream.close()
+            storage.ioloop_thread.stop()
+        finally:
+            event.set()
 
     event.wait()
 
