@@ -253,6 +253,7 @@ def remove_federation(client, target, origin, name):
         ))
 
 @service.command(r"ask (?P<name>\S+) (?P<what>.+)$", mention=True)
+@service.command(r"(?P<name>\S+)[:,] (?P<what>.+)$")
 def federated_request(client, target, origin, name, what):
     storage = service.storage_for(client.bot)
 
