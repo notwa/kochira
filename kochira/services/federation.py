@@ -106,31 +106,32 @@ class ResponderClient:
     The remoting proxy takes remote queries, runs them and sends them back to
     the remote via the router.
     """
-    def __init__(self, bot, identity, network):
+    def __init__(self, bot, remote_name, network):
         self.bot = bot
-        self.identity = identity
+        self.remote_name = remote_name
         self.network = network
         self.users = FakeUserCollection()
 
     @property
     def nickname(self):
-        return self.identity
+        config = service.config_for(self.bot)
+        return config["identity"]
 
     def message(self, target, message):
         msg = [self.network.encode("utf-8"),
-               (self.identity + "!bot@federated/kochira/" + self.identity).encode("utf-8"),
+               (self.nickname + "!bot@federated/kochira/" + self.nickname).encode("utf-8"),
                b"PRIVMSG",
                target.encode("utf-8"),
                message.encode("utf-8")]
 
-        service.logger.info("Sent response to %s: %s", self.identity, msg)
+        service.logger.info("Sent response to %s: %s", self.remote_name, msg)
 
         storage = service.storage_for(self.bot)
         stream = storage.stream
 
         @storage.ioloop_thread.io_loop.add_callback
         def _callback():
-            stream.send_multipart([self.identity.encode("utf-8")] + msg)
+            stream.send_multipart([self.remote_name.encode("utf-8")] + msg)
 
 
 class IOLoopThread(threading.Thread):
