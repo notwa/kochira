@@ -65,6 +65,11 @@ class Bot:
                 except:
                     pass # it gets logged
 
+
+    def _shutdown_service(self, service):
+        service.run_shutdown(self, service.storage_for(self))
+        self.scheduler.unschedule_service(service)
+
     def load_service(self, name, reload=False):
         """
         Load a service into the bot.
@@ -72,6 +77,10 @@ class Bot:
         The service should expose a variable named ``service`` which is an
         instance of ``kochira.service.Service`` and configured appropriately.
         """
+
+        # ensure that the service's shutdown routine is run
+        if name in self.services:
+            self._shutdown_service(self.services[name])
 
         # we create an expando storage first for bots to load any locals they
         # need
@@ -88,9 +97,6 @@ class Bot:
 
             service = module.service
 
-            # unschedule some old service might have scheduled
-            self.scheduler.unschedule_service(service)
-
             service.run_setup(self, storage)
         except:
             logger.error("Couldn't load service %s", name, exc_info=True)
@@ -103,7 +109,7 @@ class Bot:
         """
         Unload a service from the bot.
         """
-
+        self._shutdown_service(self.services[name])
         del self.services[name]
 
     def run_hooks(self, hook, client, *args):

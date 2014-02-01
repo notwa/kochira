@@ -15,7 +15,8 @@ class Service:
         self.name = name
         self.hooks = {}
         self.tasks = []
-        self.on_setup = []
+        self.on_setup = None
+        self.on_shutdown = None
         self.logger = logging.getLogger(self.name)
 
     def hook(self, hook):
@@ -84,7 +85,13 @@ class Service:
         """
         Register a setup function.
         """
-        self.on_setup.append(f)
+        self.on_setup = f
+
+    def shutdown(self, f):
+        """
+        Register a shutdown function.
+        """
+        self.on_shutdown = f
 
     def run_hooks(self, hook, client, *args):
         """
@@ -101,8 +108,15 @@ class Service:
         """
         Run all setup functions for the service.
         """
-        for setup in self.on_setup:
-            setup(bot, storage)
+        if self.on_setup is not None:
+            self.on_setup(bot, storage)
+
+    def run_shutdown(self, bot, storage):
+        """
+        Run all setup functions for the service.
+        """
+        if self.on_shutdown is not None:
+            self.on_shutdown(bot, storage)
 
     def config_for(self, bot):
         """
