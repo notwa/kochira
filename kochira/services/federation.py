@@ -156,12 +156,9 @@ class IOLoopThread(threading.Thread):
             self.event.set()
 
         self.io_loop.start()
-        self.io_loop.close(all_fds=True)
 
     def stop(self):
-        @self.io_loop.add_callback
-        def _callback():
-            self.io_loop.stop()
+        self.io_loop.stop()
 
 
 def on_router_recv(bot, msg):
@@ -234,15 +231,15 @@ def setup_federation(bot):
 def shutdown_federation(bot):
     storage = service.storage_for(bot)
 
-    try:
-        storage.auth.stop()
-    except Exception as e:
-        service.logger.error("Error during federation shut down", exc_info=e)
-
     event = threading.Event()
 
     @storage.ioloop_thread.io_loop.add_callback
     def _callback():
+        try:
+            storage.auth.stop()
+        except Exception as e:
+            service.logger.error("Error during federation shut down", exc_info=e)
+
         try:
             for remote in storage.federations.values():
                 try:
