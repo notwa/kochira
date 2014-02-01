@@ -32,10 +32,10 @@ class RequesterConnection:
             socket.setsockopt(zmq.IDENTITY, config["identity"].encode("utf-8"))
 
             if "username" in self.config:
-                socket.plain_username = self.config["username"]
+                socket.plain_username = self.config["username"].encode("utf-8")
 
             if "password" in self.config:
-                socket.plain_password = self.config["password"]
+                socket.plain_password = self.config["password"].encode("utf-8")
 
             socket.connect(self.config["url"])
 
