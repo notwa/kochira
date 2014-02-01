@@ -13,4 +13,4 @@ hostmask = None
 while not hostmask:
     hostmask = input("Hostmask: ")
 
-ACLEntry.grant(hostmask, network, "admin")
+ACLEntry.grant(network, hostmask, "admin")
