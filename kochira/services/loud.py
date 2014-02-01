@@ -12,11 +12,12 @@ service = Service(__name__)
 class Shout(Model):
     message = TextField()
     who = CharField(255)
+    network = CharField(255)
 
     class Meta:
         indexes = (
             (("message",), True),
-            (("who",), False)
+            (("who", "network"), False)
         )
 
 
@@ -28,9 +29,9 @@ def initialize_model(bot, storage):
 
 @service.command(r"who(?:'s| is| are|'re)(?: the loudest|loud)\??", mention=True)
 def loudest(client, target, origin):
-    loudest = [(shout.who, shout.count) for shout in
-        Shout.select(Shout.who, fn.sum(1).alias("count"))
-            .group_by(Shout.who)
+    loudest = [(shout.who, shout.network, shout.count) for shout in
+        Shout.select(Shout.who, Shout.network, fn.sum(1).alias("count"))
+            .group_by(Shout.who, Shout.network)
             .order_by(SQL("count DESC"))
             .limit(5)
     ]
@@ -42,11 +43,12 @@ def loudest(client, target, origin):
     else:
         client.message(target, "{origin}: Loudest people: {loudest}.".format(
             origin=origin,
-            loudest=", ".join("{who} ({count} shout{s})".format(
+            loudest=", ".join("{who} from {network} ({count} shout{s})".format(
                 who=who,
+                network=network,
                 count=count,
                 s="s" if count != 1 else ""
-            ) for who, count in loudest)
+            ) for who, network, count in loudest)
         ))
 
 
@@ -100,7 +102,8 @@ def record_or_play_shout(client, target, origin, message):
     message = message.strip()
 
     if not Shout.select().where(Shout.message == message).exists():
-        Shout.create(who=origin, message=message).save()
+        Shout.create(who=origin, network=client.network,
+                     message=message).save()
 
     q = Shout.select().where(Shout.message != message) \
         .order_by(fn.Random()) \
