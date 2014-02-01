@@ -27,7 +27,7 @@ def initialize_model(bot, storage):
     storage.last_shout = None
 
 
-@service.command(r"who(?:'s| is| are|'re)(?: the loudest|loud)\??", mention=True)
+@service.command(r"who(?:'s| is| are|'re)(?: the loudest|loud)(?: .+)?\??$", mention=True)
 def loudest(client, target, origin):
     loudest = [(shout.who, shout.network, shout.count) for shout in
         Shout.select(Shout.who, Shout.network, fn.sum(1).alias("count"))
