@@ -4,12 +4,12 @@ import requests
 import mimetypes
 import tempfile
 from datetime import timedelta
-from lxml import etree
+
+from bs4 import BeautifulSoup
 from PIL import Image
 
 from ..service import Service, background
 
-from io import BytesIO
 
 service = Service(__name__)
 
@@ -17,21 +17,11 @@ HEADERS = {
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:23.0) Gecko/20130426 Firefox/23.0'
 }
 
-DESPACE_EXPR = re.compile(r"\s+")
-
 def handle_html(resp):
-    parser = etree.HTMLParser()
-    tree = etree.parse(BytesIO(resp.content), parser)
-
-    title = tree.xpath("/html/head/title/text()")
-
-    if title:
-        title = DESPACE_EXPR.sub(" ", title[0].replace("\n", " "))
-    else:
-        title = "(no title)"
+    soup = BeautifulSoup(resp.content)
 
     return "\x02Web Page Title:\x02 {title}".format(
-        title=title
+        title=soup.title.string or "(no title)"
     )
 
 
