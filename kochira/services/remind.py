@@ -81,6 +81,9 @@ def add_timed_reminder(client, target, origin, who, duration, message):
     now = datetime.now()
     t = parse_time(duration)
 
+    if who.lower() == "me" and who not in client.channels[target]["users"]:
+        who = origin
+
     if t is None:
         client.message(target, "{origin}: Sorry, I don't understand that time.".format(
             origin=origin
@@ -114,6 +117,9 @@ def add_timed_reminder(client, target, origin, who, duration, message):
 
 @service.command(r"(?:remind|tell) (?P<who>\S+)(?: about| to| that)? (?P<message>.+)$", mention=True)
 def add_reminder(client, target, origin, who, message):
+    if who.lower() == "me" and who not in client.channels[target]["users"]:
+        who = origin
+
     Reminder.create(who=who, channel=target, origin=origin, message=message,
                     network=client.network, ts=datetime.utcnow(),
                     duration=None).save()
