@@ -93,17 +93,6 @@ class RequesterConnection:
         event.wait()
 
 
-class UnsupportedUserCollection:
-    def __init__(self, client):
-        self.client = client
-
-    def __contains__(self, key):
-        self.client.unsupported()
-
-    def __getitem__(self, key):
-        self.client.unsupported()
-
-
 class ResponderClient:
     """
     The remoting proxy takes remote queries, runs them and sends them back to
@@ -114,11 +103,13 @@ class ResponderClient:
         self.remote_name = remote_name
         self.network = network
         self.target = target
-        self.users = UnsupportedUserCollection(self)
 
     @property
     def nickname(self):
         return service.config_for(self.bot)["identity"]
+
+    def __getattr__(self, key):
+        self.unsupported()
 
     def unsupported(self):
         self.message(self.target, "Operation not supported in federated mode.")
