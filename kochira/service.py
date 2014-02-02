@@ -11,6 +11,8 @@ class Service:
     """
     SERVICES_PACKAGE = 'kochira.services'
 
+    EAT = object()
+
     def __init__(self, name, commands=None, tasks=None):
         self.name = name
         self.hooks = {}
@@ -30,7 +32,8 @@ class Service:
 
         return _decorator
 
-    def command(self, pattern, mention=False, strip=True, re_flags=0):
+    def command(self, pattern, mention=False, strip=True, re_flags=re.I,
+                eat=True):
         """
         Register a command for use with the bot.
 
@@ -66,6 +69,9 @@ class Service:
 
                 f(client, origin, target, **kwargs)
 
+                if eat:
+                    return Service.EAT
+
             self.hook("message")(_command_handler)
             return f
 
@@ -100,7 +106,9 @@ class Service:
 
         for hook in self.hooks.get(hook, []):
             try:
-                hook(client, *args)
+                r = hook(client, *args)
+                if r is Service.EAT:
+                    return Service.EAT
             except BaseException:
                 self.logger.error("Hook processing failed", exc_info=True)
 

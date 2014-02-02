@@ -13,6 +13,7 @@ from .client import Client
 from .db import database
 from .scheduler import Scheduler
 from .util import Expando
+from .service import Service
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,10 @@ class Bot:
         """
 
         for service, _ in list(self.services.values()):
-            service.run_hooks(hook, client, *args)
+            r = service.run_hooks(hook, client, *args)
+
+            if r is Service.EAT:
+                return Service.EAT
 
     def rehash(self):
         """
