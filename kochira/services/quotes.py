@@ -60,8 +60,8 @@ def initialize_model(bot):
     Quote.create_table(True)
 
 
-@service.command(r"add quote (?P<quote>.+)", mention=True)
-@service.command(r"!quote add (?P<quote>.+)")
+@service.command(r"add quote (?P<quote>.+)$", mention=True)
+@service.command(r"!quote add (?P<quote>.+)$")
 @requires_permission("quote")
 def add_quote(client, target, origin, quote):
     storage = service.storage_for(client.bot)
@@ -82,9 +82,9 @@ def add_quote(client, target, origin, quote):
     ))
 
 
-@service.command(r"[iI](?: am|'m)(?: very| quite| extremely) butthurt about quote (?P<qid>\d+)", mention=True)
-@service.command(r"(?:destroy|remove|delete) quote (?P<qid>\d+)", mention=True)
-@service.command(r"!quote del (?P<qid>\d+)")
+@service.command(r"[iI](?: am|'m)(?: very| quite| extremely) butthurt about quote (?P<qid>\d+)$", mention=True)
+@service.command(r"(?:destroy|remove|delete) quote (?P<qid>\d+)$", mention=True)
+@service.command(r"!quote del (?P<qid>\d+)$")
 @requires_permission("quote")
 def delete_quote(client, target, origin, qid: int):
     storage = service.storage_for(client.bot)
@@ -108,9 +108,9 @@ def delete_quote(client, target, origin, qid: int):
     ))
 
 
-@service.command(r"what is quote (?P<qid>\d+)\??", mention=True)
-@service.command(r"read quote (?P<qid>\d+)", mention=True)
-@service.command(r"!quote read (?P<qid>\d+)")
+@service.command(r"what is quote (?P<qid>\d+)\??$", mention=True)
+@service.command(r"read quote (?P<qid>\d+)$", mention=True)
+@service.command(r"!quote read (?P<qid>\d+)$")
 def read_quote(client, target, origin, qid: int):
     q = Quote.select() \
         .where(Quote.id == qid,
@@ -131,8 +131,8 @@ def read_quote(client, target, origin, qid: int):
     ))
 
 
-@service.command(r"(?:give me a )?random quote", mention=True)
-@service.command(r"!quote rand")
+@service.command(r"(?:give me a )?random quote$", mention=True)
+@service.command(r"!quote rand$")
 def rand_quote(client, target, origin):
     q = Quote.select() \
         .where(Quote.network == client.network, Quote.channel == target) \
@@ -153,8 +153,8 @@ def rand_quote(client, target, origin):
     ))
 
 
-@service.command(r"find (?:a )?quote matching (?P<query>.+)", mention=True)
-@service.command(r"!quote find (?P<query>.+)")
+@service.command(r"find (?:a )?quote matching (?P<query>.+)$", mention=True)
+@service.command(r"!quote find (?P<query>.+)$")
 def find_quote(client, target, origin, query):
     storage = service.storage_for(client.bot)
 
