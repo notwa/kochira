@@ -34,7 +34,7 @@ def transliterate(client, target, origin, term, from_lang=None):
         sl = None
     else:
         try:
-            sl = LANGUAGES.get(from_lang.lower())
+            sl = LANGUAGES[from_lang.lower()]
         except KeyError:
             client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
                     origin=origin,
@@ -66,7 +66,7 @@ def translate(client, target, origin, term, to_lang=None, from_lang=None):
         sl = "auto"
     else:
         try:
-            sl = LANGUAGES.get(from_lang.lower())
+            sl = LANGUAGES[from_lang.lower()]
         except KeyError:
             client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
                 origin=origin,
@@ -78,7 +78,7 @@ def translate(client, target, origin, term, to_lang=None, from_lang=None):
         tl = "en"
     else:
         try:
-            tl = LANGUAGES.get(to_lang.lower())
+            tl = LANGUAGES[to_lang.lower()]
         except KeyError:
             client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
                 origin=origin,
