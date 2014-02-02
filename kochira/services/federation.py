@@ -234,8 +234,6 @@ def setup_federation(bot):
 def shutdown_federation(bot):
     storage = service.storage_for(bot)
 
-    event = threading.Event()
-
     @storage.ioloop_thread.io_loop.add_callback
     def _callback():
         try:
@@ -257,11 +255,7 @@ def shutdown_federation(bot):
             service.logger.error("Error during federation shut down",
                                  exc_info=e)
 
-        event.set()
-
-    event.wait()
-
-    storage.ioloop_thread.stop()
+        storage.ioloop_thread.stop()
 
 
 @service.command(r"federate with (?P<name>\S+)$", mention=True)
