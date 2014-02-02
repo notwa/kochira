@@ -9,8 +9,6 @@ from ..service import Service
 
 service = Service(__name__)
 
-raise Exception("don't use this unless you know what you're doing")
-
 
 class RequesterConnection:
     """
@@ -54,10 +52,9 @@ class RequesterConnection:
                target.encode("utf-8"),
                message.encode("utf-8")]
 
-        service.logger.info("Sent request to %s: %s", self.identity, msg)
-
         @storage.ioloop_thread.io_loop.add_callback
         def _callback():
+            service.logger.info("Sent request to %s: %s", self.identity, msg)
             self.stream.send_multipart(msg)
 
     def on_raw_recv(self, msg):
@@ -96,19 +93,15 @@ class RequesterConnection:
         event.wait()
 
 
-class FakeUserCollection:
+class UnsupportedUserCollection:
+    def __init__(self, client):
+        self.client = client
+
     def __contains__(self, key):
-        return True
+        self.client.unsupported()
 
     def __getitem__(self, key):
-        return {
-            "username": "user",
-            "hostname": "federated/kochira/" + key,
-            "account": None,
-            "realname": None,
-            "away": False,
-            "away_message": None
-        }
+        self.client.unsupported()
 
 
 class ResponderClient:
@@ -116,16 +109,20 @@ class ResponderClient:
     The remoting proxy takes remote queries, runs them and sends them back to
     the remote via the router.
     """
-    def __init__(self, bot, remote_name, network):
+    def __init__(self, bot, remote_name, network, target):
         self.bot = bot
         self.remote_name = remote_name
         self.network = network
-        self.users = FakeUserCollection()
+        self.target = target
+        self.users = UnsupportedUserCollection(self)
 
     @property
     def nickname(self):
-        config = service.config_for(self.bot)
-        return config["identity"]
+        return service.config_for(self.bot)["identity"]
+
+    def unsupported(self):
+        self.message(self.target, "Operation not supported in federated mode.")
+        raise RuntimeError("operation not supported in federated mode")
 
     def message(self, target, message):
         msg = [self.network.encode("utf-8"),
@@ -134,13 +131,13 @@ class ResponderClient:
                target.encode("utf-8"),
                message.encode("utf-8")]
 
-        service.logger.info("Sent response to %s: %s", self.remote_name, msg)
-
         storage = service.storage_for(self.bot)
         stream = storage.stream
 
         @storage.ioloop_thread.io_loop.add_callback
         def _callback():
+            service.logger.info("Sent response to %s: %s", self.remote_name,
+                                msg)
             stream.send_multipart([self.remote_name.encode("utf-8")] + msg)
 
 
@@ -153,7 +150,7 @@ class IOLoopThread(threading.Thread):
 
     def run(self):
         try:
-            self.io_loop = ioloop.IOLoop.current()
+            self.io_loop = ioloop.IOLoop()
         finally:
             self.event.set()
 
@@ -161,7 +158,7 @@ class IOLoopThread(threading.Thread):
 
     def stop(self):
         @self.io_loop.add_callback
-        def _callback(self):
+        def _callback():
             self.io_loop.stop()
 
 
@@ -182,7 +179,7 @@ def on_router_recv(bot, msg):
         target = target.decode("utf-8")
         message = message.decode("utf-8")
 
-        client = ResponderClient(bot, ident, network)
+        client = ResponderClient(bot, ident, network, target)
 
         bot.run_hooks("message", client, target, origin, message)
 
@@ -205,8 +202,10 @@ def setup_federation(bot):
     @storage.ioloop_thread.io_loop.add_callback
     def _callback():
         try:
-            auth = storage.auth = zmq.auth.IOLoopAuthenticator(zctx,
-                                                               io_loop=storage.ioloop_thread.io_loop)
+            auth = storage.auth = zmq.auth.IOLoopAuthenticator(
+                zctx,
+                io_loop=storage.ioloop_thread.io_loop
+            )
             auth.start()
             auth.configure_plain(domain="*",
                                  passwords=config.get("users", {}))
@@ -242,23 +241,27 @@ def shutdown_federation(bot):
         try:
             storage.auth.stop()
         except Exception as e:
-            service.logger.error("Error during federation shut down", exc_info=e)
+            service.logger.error("Error during federation shut down",
+                                 exc_info=e)
+
+        for remote in storage.federations.values():
+            try:
+                remote.stream.close()
+            except Exception as e:
+                service.logger.error("Error during federation shut down",
+                                     exc_info=e)
 
         try:
-            for remote in storage.federations.values():
-                try:
-                    remote.stream.close()
-                except Exception as e:
-                    service.logger.error("Error during federation shut down", exc_info=e)
-            try:
-                storage.stream.close()
-            except Exception as e:
-                service.logger.error("Error during federation shut down", exc_info=e)
-            storage.ioloop_thread.stop()
-        finally:
-            event.set()
+            storage.stream.close()
+        except Exception as e:
+            service.logger.error("Error during federation shut down",
+                                 exc_info=e)
+
+        event.set()
 
     event.wait()
+
+    storage.ioloop_thread.stop()
 
 
 @service.command(r"federate with (?P<name>\S+)$", mention=True)
