@@ -75,7 +75,8 @@ def play_timed_reminder(bot, reminder):
         reminder.delete_instance()
 
 
-@service.command(r"remind (?P<who>\S+) (?P<duration>(?:in|after) .+) (?:about|to|that) (?P<message>.+)$", mention=True)
+@service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to|that) (?P<message>.+) (?P<duration>(?:in|after) .+|tomorrow)$", mention=True)
+@service.command(r"(?:remind|tell) (?P<who>\S+) (?P<duration>(?:in|after) .+) (?:about|to|that) (?P<message>.+|tomorrow)$", mention=True)
 def add_timed_reminder(client, target, origin, who, duration, message):
     now = datetime.now()
     t = parse_time(duration)
@@ -111,7 +112,7 @@ def add_timed_reminder(client, target, origin, who, duration, message):
     client.bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
 
 
-@service.command(r"tell (?P<who>\S+)(?: about| to| that)? (?P<message>.+)$", mention=True)
+@service.command(r"(?:remind|tell) (?P<who>\S+)(?: about| to| that)? (?P<message>.+)$", mention=True)
 def add_reminder(client, target, origin, who, message):
     Reminder.create(who=who, channel=target, origin=origin, message=message,
                     network=client.network, ts=datetime.utcnow(),
