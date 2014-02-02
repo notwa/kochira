@@ -77,7 +77,7 @@ def load_service(client, target, origin, r, service_name):
             name=service_name
         ))
         client.message(target, "↳ {name}: {info}".format(
-            name=e.__class__.__name__,
+            name=e.__class__.__qualname__,
             info=str(e)
         ))
         return
@@ -100,7 +100,7 @@ def unload_service(client, target, origin, service_name):
             name=service_name
         ))
         client.message(target, "↳ {name}: {info}".format(
-            name=e.__class__.__name__,
+            name=e.__class__.__qualname__,
             info=str(e)
         ))
         return
@@ -151,7 +151,7 @@ def eval_code(client, target, origin, code):
     except BaseException as e:
         client.message(target, "Sorry, evaluation failed.")
         client.message(target, "↳ {name}: {info}".format(
-            name=e.__class__.__name__,
+            name=e.__class__.__qualname__,
             info=str(e)
         ))
         return

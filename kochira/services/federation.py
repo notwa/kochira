@@ -274,7 +274,7 @@ def add_federation(client, target, origin, name):
                 name=name
             ))
             client.message(target, "↳ {name}: {info}".format(
-                name=e.__class__.__name__,
+                name=e.__class__.__qualname__,
                 info=str(e)
             ))
         else:
