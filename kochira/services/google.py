@@ -14,10 +14,13 @@ html_parser = HTMLParser()
 @service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
 def search(client, target, origin, term, num: int=None):
-    r = requests.get("https://ajax.googleapis.com/ajax/services/search/web?" + urlencode({
-        "v": "1.0",
-        "q": term
-    })).json()
+    r = requests.get(
+        "https://ajax.googleapis.com/ajax/services/search/web",
+        params={
+            "v": "1.0",
+            "q": term
+        }
+    ).json()
 
     results = r.get("responseData", {}).get("results", [])
 

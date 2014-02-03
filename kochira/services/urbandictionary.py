@@ -1,5 +1,4 @@
 import requests
-from urllib.parse import urlencode
 
 from ..service import Service, background
 
@@ -11,9 +10,9 @@ service = Service(__name__)
 @service.command(r"what does (?P<term>.+) mean(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
 def define(client, target, origin, term, num: int=None):
-    r = requests.get("http://api.urbandictionary.com/v0/define?" + urlencode({
+    r = requests.get("http://api.urbandictionary.com/v0/define", params={
         "term": term
-    })).json()
+    }).json()
 
     if r["result_type"] != "exact":
         client.message(target, "{origin}: I don't know what \"{term}\" means.".format(

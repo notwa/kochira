@@ -2,7 +2,6 @@ import requests
 from urllib.parse import urlencode
 from peewee import CharField
 from lxml import etree
-from io import BytesIO
 
 from ..db import Model
 from ..service import Service, background
@@ -27,12 +26,19 @@ def initialize_model(bot):
 
 
 def query_lastfm(api_key, method, arguments):
-    r = requests.get("http://ws.audioscrobbler.com/2.0/?" + urlencode({
+    params = arguments.copy()
+    params.update({
         "method": method,
         "api_key": api_key
-    }) + "&" + urlencode(arguments))
+    })
 
-    return etree.parse(BytesIO(r.content))
+    r = requests.get(
+        "http://ws.audioscrobbler.com/2.0/",
+        params=params,
+        stream=True
+    )
+
+    return etree.parse(r.raw)
 
 
 def get_compare_users(api_key, user1, user2):

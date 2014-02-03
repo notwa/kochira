@@ -1,8 +1,6 @@
 import re
 import requests
-from urllib.parse import urlencode
 from lxml import etree
-from io import BytesIO
 
 from ..service import Service, background
 
@@ -15,14 +13,17 @@ service = Service(__name__)
 def query(client, target, origin, query):
     config = service.config_for(client.bot)
 
-    resp = requests.get(url="http://api.wolframalpha.com/v2/query?" + urlencode({
-        "input": query,
-        "appid": config["appid"],
-        "format": "plaintext",
-        "reinterpret": "true"
-    }))
+    resp = requests.get("http://api.wolframalpha.com/v2/query",
+        params={
+            "input": query,
+            "appid": config["appid"],
+            "format": "plaintext",
+            "reinterpret": "true"
+        },
+        stream=True
+    )
 
-    tree = etree.parse(BytesIO(resp.content))
+    tree = etree.parse(resp.raw)
 
     result_node = tree.xpath("/queryresult[@success='true']")
 
