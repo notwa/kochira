@@ -194,7 +194,7 @@ def now_playing(client, target, origin, who=None):
         ))
         return
 
-    client.message(target, "{origin}: {who} is playing: {name} - {artist}{album}{tags}".format(
+    client.message(target, "{origin}: {who} is playing: {artist} - {name}{album}{tags}".format(
         origin=origin,
         who=who,
         name=track["name"],
