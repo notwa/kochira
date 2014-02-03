@@ -3,7 +3,7 @@ import glob
 import humanize
 import requests
 import tempfile
-import time
+import datetime
 import subprocess
 
 from datetime import timedelta
@@ -64,7 +64,6 @@ def poll_for_updates(bot):
     for snap in reversed(storage.snapchat.get_snaps()):
         has_snaps = True
         sender = snap["sender"]
-        dt = timedelta(milliseconds=time.time() * 1000 - snap["sent"])
 
         blob = storage.snapchat.get_blob(snap["id"])
         if blob is None:
@@ -92,7 +91,7 @@ def poll_for_updates(bot):
                 "New snap from {sender}! {link} ({dt})".format(
                     sender=sender,
                     link=link,
-                    dt=humanize.naturaltime(dt)
+                    dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"]))
                 )
             )
 
