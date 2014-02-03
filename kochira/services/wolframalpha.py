@@ -8,8 +8,6 @@ from ..service import Service, background
 
 service = Service(__name__)
 
-XPATH_EXPR = "/queryresult[@success='true']/pod[@primary='true']/subpod[1]/plaintext/text()"
-
 @service.command(r"~~(?P<query>.+)$")
 @service.command(r"!wa (?P<query>.+)$")
 @service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)
@@ -26,16 +24,24 @@ def query(client, target, origin, query):
 
     tree = etree.parse(BytesIO(resp.content))
 
-    result = tree.xpath(XPATH_EXPR)
+    result_node = tree.xpath("/queryresult[@success='true']")
 
-    if result:
-        result = "\n".join(result)
+    if result_node:
+        result_node, = result_node
+        inp = " ".join(result_node.xpath("pod[@id='Input']/subpod[1]/plaintext/text()"))
+        primary = "\n".join(result_node.xpath("pod[@primary='true']/subpod[1]/plaintext/text()"))
+
+        result = inp + " = " + primary
     else:
         result = "(no result)"
 
-    prefix = "Wolfram|Alpha:"
+    prefix = ""
 
     for line in result.split("\n"):
         line = re.sub(r"(?<!\\)\\:([0-9a-fA-F]{4})", lambda x: chr(int(x.group(1), 16)), line)
-        client.message(target, "\x02{}\x02 {}".format(prefix, line))
-        prefix = "↳"
+        client.message(target, "{origin}: {prefix} {line}".format(
+            origin=origin,
+            prefix=prefix,
+            line=line
+        ))
+        prefix = "="
