@@ -99,8 +99,8 @@ def get_lfm_username(client, who):
     except LastFMProfile.DoesNotExist:
         return who
 
-@service.command(r"i(?:'m| am) (?P<lfm_username>\S+) on last\.fm$")
-@service.command(r"my last\.fm username is (?P<lfm_username>\S+)$")
+@service.command(r"i(?:'m| am) (?P<lfm_username>\S+) on last\.fm$", mention=True)
+@service.command(r"my last\.fm username is (?P<lfm_username>\S+)$", mention=True)
 def setup_user(client, target, origin, lfm_username):
     try:
         profile = LastFMProfile.get(LastFMProfile.network == client.network,
@@ -118,8 +118,8 @@ def setup_user(client, target, origin, lfm_username):
     ))
 
 
-@service.command(r"compare my last\.fm with (?P<user1>\S+)$")
-@service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$")
+@service.command(r"compare my last\.fm with (?P<user1>\S+)$", mention=True)
+@service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$", mention=True)
 @background
 def compare_users(client, target, origin, user1, user2=None):
     config = service.config_for(client.bot)
@@ -127,11 +127,11 @@ def compare_users(client, target, origin, user1, user2=None):
     if user2 is not None:
         # compare 2 different users
         # looks up profiles from IRC usernames, otherwise just passes usernames as is
-        user1 = get_lfm_username(client, user1)
-        user2 = get_lfm_username(client, user2)
+        user1 = get_lfm_username(config["api_key"], client, user1)
+        user2 = get_lfm_username(config["api_key"], client, user2)
     else:
-        user1 = get_lfm_username(client, origin)
-        user2 = get_lfm_username(client, user1)
+        user1 = get_lfm_username(config["api_key"], client, origin)
+        user2 = get_lfm_username(config["api_key"], client, user1)
 
     client.message(target, "{origin}: {comparison}".format(
         origin=origin,
@@ -139,10 +139,10 @@ def compare_users(client, target, origin, user1, user2=None):
     ))
 
 
-@service.command(r"!np$", mention=False)
-@service.command(r"!np (?P<who>\S+)$", mention=False)
-@service.command(r"what am i playing\??$")
-@service.command(r"what is (?P<who>\S+) playing\??$")
+@service.command(r"!np$")
+@service.command(r"!np (?P<who>\S+)$")
+@service.command(r"what am i playing\??$", mention=True)
+@service.command(r"what is (?P<who>\S+) playing\??$", mention=True)
 @background
 def now_playing(client, target, origin, who=None):
     config = service.config_for(client.bot)
@@ -152,5 +152,6 @@ def now_playing(client, target, origin, who=None):
 
     client.message(target, "{origin}: {np}".format(
         origin=origin,
-        np=get_user_now_playing(config["api_key"], get_lfm_username(who))
+        np=get_user_now_playing(config["api_key"],
+                                get_lfm_username(config["api_key"], who))
     ))
