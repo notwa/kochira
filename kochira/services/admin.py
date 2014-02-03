@@ -98,8 +98,10 @@ def load_service(client, target, origin, r, service_name):
 @service.command(r"unload service (?P<service_name>\S+)$", mention=True)
 @requires_permission("admin")
 def unload_service(client, target, origin, service_name):
+    if service_name not in client.bot.services:
+        service_name = service.SERVICES_PACKAGE + '.' + service_name
     try:
-        client.bot.unload_service(service.SERVICES_PACKAGE + '.' + service_name)
+        client.bot.unload_service(service_name)
     except Exception as e:
         client.message(target, "Sorry, couldn't unload the service \"{name}\".".format(
             name=service_name
