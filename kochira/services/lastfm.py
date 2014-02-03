@@ -10,7 +10,7 @@ from ..service import Service, background
 service = Service(__name__)
 
 
-class LastfmProfile(Model):
+class LastFMProfile(Model):
     who = CharField(255)
     network = CharField(255)
     lastfm_user = CharField(255)
@@ -23,29 +23,49 @@ class LastfmProfile(Model):
 
 @service.setup
 def initialize_model(bot):
-    LastfmProfile.create_table(True)
+    LastFMProfile.create_table(True)
 
 
-def query_lastfm(method, arguments):
+def query_lastfm(api_key, method, arguments):
     r = requests.get("http://ws.audioscrobbler.com/2.0/?" + urlencode({
-        "method": method,
-        "api_key": "ebfbda6fb42b69b084844b567830513b",
+        "method": method
     }) + "&" + urlencode(arguments))
 
     return etree.parse(BytesIO(r.content))
 
 
-def get_compare_users(user1, user2):
-    res = query_lastfm("tasteometer.compare", {"type1": "user", "type2": "user", "value1": user1, "value2": user2, })
+def get_compare_users(api_key, user1, user2):
+    res = query_lastfm(
+        api_key,
+        "tasteometer.compare",
+        {
+            "type1": "user",
+            "type2": "user",
+            "value1": user1,
+            "value2": user2
+        }
+    )
 
     score = res.xpath("/lfm/comparison/result/score/text()")[0]
     artists = res.xpath('/lfm/comparison/result/artists/artist/name/text()')
 
-    return "[{user1} vs {user2}] {score:.2%} -- {artists}".format(user1=user1, user2=user2, score=float(score), artists=", ".join(artists))
+    return "[{user1} vs {user2}] {score:.2%}: {artists}".format(
+        user1=user1,
+        user2=user2,
+        score=float(score),
+        artists=", ".join(artists)
+    )
 
 
-def get_user_now_playing(user):
-    res = query_lastfm("user.getRecentTracks", {"user": user, "limit": 1, })
+def get_user_now_playing(api_key, user):
+    res = query_lastfm(
+        api_key,
+        "user.getRecentTracks",
+        {
+            "user": user,
+            "limit": 1
+        }
+    )
     track = res.xpath("/lfm/recenttracks/track[@nowplaying='true']")
 
     if len(track) > 0:
@@ -59,89 +79,78 @@ def get_user_now_playing(user):
         track_tags_r = query_lastfm("track.getTopTags", { "artist": artist, "track": name, })
         tags = track_tags_r.xpath("/lfm/toptags/tag/name/text()")
 
-        return "[{user}]: {artist} - {name} [{album}] ({tags})".format(user=user, artist=artist, name=name, album=album, tags=", ".join(tags[:5]))
+        return "{user} is playing {name} by {artist} on {album} ({tags}).".format(
+            user=user,
+            artist=artist,
+            name=name,
+            album=album or "(unknown album)",
+            tags=", ".join(tags[:5])
+        )
 
-    return "[{user}] is not playing anything :( needs moar SCROBBLING".format(user=user)
+    return "{user} is not playing anything.".format(user=user)
 
 
-def get_lfm_username(client, username):
+def get_lfm_username(client, who):
     try:
-        profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                          LastfmProfile.who == username)
+        profile = LastFMProfile.get(LastFMProfile.network == client.network,
+                                    LastFMProfile.who == who)
 
         return profile.lastfm_user
-    except LastfmProfile.DoesNotExist:
-        return username
+    except LastFMProfile.DoesNotExist:
+        return who
 
-
-@service.command(r".lfm (?P<lfm_username>\S+)$", mention=False)
-@background
+@service.command(r"i(?:'m| am) (?P<lfm_username>\S+) on last\.fm$")
+@service.command(r"my last\.fm username is (?P<lfm_username>\S+)$")
 def setup_user(client, target, origin, lfm_username):
     try:
-        profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                              LastfmProfile.who == origin)
-    except LastfmProfile.DoesNotExist:
-        profile = LastfmProfile.create(network=client.network, who=origin,
-                                 lastfm_user=lfm_username)
+        profile = LastFMProfile.get(LastFMProfile.network == client.network,
+                                    LastFMProfile.who == origin)
+    except LastFMProfile.DoesNotExist:
+        profile = LastFMProfile.create(network=client.network, who=origin,
+                                       lastfm_user=lfm_username)
 
     profile.lastfm_user = lfm_username
     profile.save()
 
-    client.message(target, "{origin}: last.fm username set to {user}.".format(
+    client.message(target, "{origin}: You have been associated with last.fm username {user}.".format(
         origin=origin,
         user=lfm_username
     ))
 
 
-@service.command(r".compare (?P<user1>\S+)$", mention=False)
-@service.command(r".compare (?P<user1>\S+) (?P<user2>\S+)$", mention=False)
+@service.command(r"compare my last\.fm with (?P<user1>\S+)$")
+@service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$")
 @background
 def compare_users(client, target, origin, user1, user2=None):
-    result = ""
+    config = service.config_for(client.bot)
 
-    if user2:
+    if user2 is not None:
         # compare 2 different users
         # looks up profiles from IRC usernames, otherwise just passes usernames as is
         user1 = get_lfm_username(client, user1)
         user2 = get_lfm_username(client, user2)
-
-        result = get_compare_users(user1, user2)
     else:
-        # compare current user against other user
-        from_user = ""
+        user1 = get_lfm_username(client, origin)
+        user2 = get_lfm_username(client, user1)
 
-        try:
-            profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                              LastfmProfile.who == origin)
-
-            from_user = profile.lastfm_user
-        except LastfmProfile.DoesNotExist:
-            client.message(target, "Setup your damn last.fm username with .lfm username")
-            return
-
-        user1 = get_lfm_username(client, user1)
-
-        result = get_compare_users(from_user, user1)
-
-    client.message(target, "last.fm: {0}".format(result))
+    client.message(target, "{origin}: {comparison}".format(
+        origin=origin,
+        comparison=get_compare_users(config["api_key"], user1, user2)
+    ))
 
 
-@service.command(r".np$", mention=False)
+@service.command(r"!np$", mention=False)
+@service.command(r"!np (?P<who>\S+)$", mention=False)
+@service.command(r"what am i playing\??$")
+@service.command(r"what is (?P<who>\S+) playing\??$")
 @background
-def now_playing(client, target, origin):
-    try:
-        profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                          LastfmProfile.who == origin)
+def now_playing(client, target, origin, who=None):
+    config = service.config_for(client.bot)
 
-        result = get_user_now_playing(profile.lastfm_user)
+    if who is None:
+        who = origin
 
-        client.message(target, "last.fm: {0}".format(result))
-
-    except LastfmProfile.DoesNotExist:
-        client.message(target, "Setup your damn last.fm username with .lfm username")
-        return
-
-
-
-
-
+    client.message(target, "{origin}: {np}".format(
+        origin=origin,
+        np=get_user_now_playing(config["api_key"], get_lfm_username(who))
+    ))
