@@ -55,12 +55,14 @@ def get_compare_users(api_key, user1, user2):
         score, = comparison.xpath("score/text()")
         artists = comparison.xpath("artists/artist/name/text()")
 
-    return {
-        "user1": user1,
-        "user2": user2,
-        "score": float(score),
-        "artists": artists
-    }
+        return {
+            "user1": user1,
+            "user2": user2,
+            "score": float(score),
+            "artists": artists
+        }
+
+    return None
 
 
 def get_user_now_playing(api_key, user):
@@ -164,6 +166,12 @@ def compare_users(client, target, origin, user2, user1=None):
         get_lfm_username(client, user1),
         get_lfm_username(client, user2)
     )
+
+    if comparison is None:
+        client.message(target, "{origin}: Couldn't compare.".format(
+            origin=origin
+        ))
+        return
 
     client.message(target, "{origin}: {user1} and {user2} are {score:.2%} similar: {artists}".format(
         origin=origin,
