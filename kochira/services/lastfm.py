@@ -113,7 +113,7 @@ def get_lfm_username(client, who):
         return who
 
 
-@service.command(r"!lfm (?P<lfm_username>\S+)$", mention=True)
+@service.command(r"!lfm (?P<lfm_username>\S+)$")
 @service.command(r"my last\.fm username is (?P<lfm_username>\S+)$", mention=True)
 def setup_user(client, target, origin, lfm_username):
     try:
@@ -131,7 +131,7 @@ def setup_user(client, target, origin, lfm_username):
         user=lfm_username
     ))
 
-@service.command(r"!lfm$", mention=True)
+@service.command(r"!lfm$")
 @service.command(r"what is my last\.fm username\??$", mention=True)
 def check_user(client, target, origin):
     try:
