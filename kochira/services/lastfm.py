@@ -153,5 +153,5 @@ def now_playing(client, target, origin, who=None):
     client.message(target, "{origin}: {np}".format(
         origin=origin,
         np=get_user_now_playing(config["api_key"],
-                                get_lfm_username(config["api_key"], who))
+                                get_lfm_username(config["api_key"], client, who))
     ))
