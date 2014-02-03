@@ -33,7 +33,7 @@ def query_lastfm(method, arguments):
     return r
 
 
-def compare_users(user1, user2):
+def get_compare_users(user1, user2):
     res = query_lastfm("tasteometer.compare", {"type1": "user", "type2": "user", "value1": user1, "value2": user2, })
 
     score = res['comparison']['result']['score']
@@ -42,7 +42,7 @@ def compare_users(user1, user2):
     return "[{0} vs {1}] {2:.2%} -- {3}".format(user1, user2, float(score), ", ".join(artists))
 
 
-def user_now_playing(user):
+def get_user_now_playing(user):
     res = query_lastfm("user.getRecentTracks", {"user": user, "limit": 1, })
     track = [t for t in res.get("recenttracks", {}).get("track", []) if t.get("@attr", {}).get("nowplaying", {}) == "true"]
 
@@ -106,7 +106,7 @@ def compare_users(client, target, origin, user1, user2=None):
         except LastfmProfile.DoesNotExist:
             pass
 
-        result = compare_users(user1, user2)
+        result = get_compare_users(user1, user2)
     else:
         # compare current user against other user
         from_user = ""
@@ -128,7 +128,7 @@ def compare_users(client, target, origin, user1, user2=None):
         except LastfmProfile.DoesNotExist:
             pass
 
-        result = compare_users(from_user, user1)
+        result = get_compare_users(from_user, user1)
 
     client.message(target, "last.fm: {0}".format(result))
 
@@ -140,7 +140,7 @@ def now_playing(client, target, origin):
         profile = LastfmProfile.get(LastfmProfile.network == client.network,
                           LastfmProfile.who == origin)
 
-        result = user_now_playing(profile.lastfm_user)
+        result = get_user_now_playing(profile.lastfm_user)
 
         client.message(target, "last.fm: {0}".format(result))
 
