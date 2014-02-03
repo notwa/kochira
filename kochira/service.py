@@ -67,7 +67,10 @@ class Service:
                     if k in f.__annotations__ and v is not None:
                         kwargs[k] = f.__annotations__[k](v)
 
-                f(client, origin, target, **kwargs)
+                r = f(client, origin, target, **kwargs)
+
+                if r is not None:
+                    return r
 
                 if eat:
                     return Service.EAT
