@@ -165,6 +165,13 @@ def now_playing(client, target, origin, who=None):
 
     track = get_user_now_playing(config["api_key"], get_lfm_username(client, who))
 
+    if track is None:
+        client.message(target, "{origin}: {who} isn't playing anything right now".format(
+            origin=origin,
+            who=who
+        ))
+        return
+
     client.message(target, "{origin}: {who} is playing {name} by {artist} on album {album} ({tags})".format(
         origin=origin,
         who=who,
