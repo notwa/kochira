@@ -80,20 +80,23 @@ def get_user_now_playing(api_key, user):
 
         artist, = track.xpath("artist/text()")
         name, = track.xpath("name/text()")
-        album, = track.xpath("album/text()")
+        album, = track.xpath("album/text()") or [None]
 
         # get track info
-        track_tags_r = query_lastfm("track.getTopTags", {
-            "artist": artist,
-            "track": name
-        })
+        track_tags_r = query_lastfm(
+            api_key,
+            "track.getTopTags", {
+                "artist": artist,
+                "track": name
+            }
+        )
         tags = track_tags_r.xpath("/lfm[@status='ok']/toptags/tag/name/text()")
 
         return {
             "user": user,
             "artist": artist,
             "name": name,
-            "album": album or "(unknown album)",
+            "album": album,
             "tags": tags[:5]
         }
 
@@ -166,17 +169,17 @@ def now_playing(client, target, origin, who=None):
     track = get_user_now_playing(config["api_key"], get_lfm_username(client, who))
 
     if track is None:
-        client.message(target, "{origin}: {who} isn't playing anything right now".format(
+        client.message(target, "{origin}: {who} isn't playing anything right now.".format(
             origin=origin,
             who=who
         ))
         return
 
-    client.message(target, "{origin}: {who} is playing {name} by {artist} on album {album} ({tags})".format(
+    client.message(target, "{origin}: {who} is playing: {name} by {artist}{album}{tags}".format(
         origin=origin,
         who=who,
         name=track["name"],
         artist=track["artist"],
-        album=track["album"] or "(unknown album)",
-        tags=", ".join(track["tags"])
+        album=(" on " + track["album"]) if track["album"] else "",
+        tags=(" (" + ", ".join(track["tags"]) + ")") if track["tags"] else ""
     ))
