@@ -127,11 +127,11 @@ def compare_users(client, target, origin, user1, user2=None):
     if user2 is not None:
         # compare 2 different users
         # looks up profiles from IRC usernames, otherwise just passes usernames as is
-        user1 = get_lfm_username(config["api_key"], client, user1)
-        user2 = get_lfm_username(config["api_key"], client, user2)
+        user1 = get_lfm_username(client, user1)
+        user2 = get_lfm_username(client, user2)
     else:
-        user1 = get_lfm_username(config["api_key"], client, origin)
-        user2 = get_lfm_username(config["api_key"], client, user1)
+        user1 = get_lfm_username(client, origin)
+        user2 = get_lfm_username(client, user1)
 
     client.message(target, "{origin}: {comparison}".format(
         origin=origin,
@@ -153,5 +153,5 @@ def now_playing(client, target, origin, who=None):
     client.message(target, "{origin}: {np}".format(
         origin=origin,
         np=get_user_now_playing(config["api_key"],
-                                get_lfm_username(config["api_key"], client, who))
+                                get_lfm_username(client, who))
     ))
