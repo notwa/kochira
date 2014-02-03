@@ -47,7 +47,7 @@ def query(client, target, origin, query):
         ))
 
         for line in primary:
-            client.message(target, "{origin}: | {line}".format(
+            client.message(target, "{origin}: = {line}".format(
                 origin=origin,
                 line=line
             ))
@@ -55,5 +55,5 @@ def query(client, target, origin, query):
         client.message(target, "{origin}: {inp} = {primary}".format(
             origin=origin,
             inp=inp,
-            primary=primary
+            primary=primary[0]
         ))
