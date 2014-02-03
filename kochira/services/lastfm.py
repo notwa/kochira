@@ -64,6 +64,16 @@ def get_user_now_playing(user):
     return "[{user}] is not playing anything :( needs moar SCROBBLING".format(user=user)
 
 
+def get_lfm_username(client, username):
+    try:
+        profile = LastfmProfile.get(LastfmProfile.network == client.network,
+                          LastfmProfile.who == username)
+
+        return profile.lastfm_user
+    except LastfmProfile.DoesNotExist:
+        return username
+
+
 @service.command(r".lfm (?P<lfm_username>\S+)$", mention=False)
 @background
 def setup_user(client, target, origin, lfm_username):
@@ -92,21 +102,8 @@ def compare_users(client, target, origin, user1, user2=None):
     if user2:
         # compare 2 different users
         # looks up profiles from IRC usernames, otherwise just passes usernames as is
-        try:
-            profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                              LastfmProfile.who == user1)
-
-            user1 = profile.lastfm_user
-        except LastfmProfile.DoesNotExist:
-            pass
-
-        try:
-            profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                              LastfmProfile.who == user2)
-
-            user2 = profile.lastfm_user
-        except LastfmProfile.DoesNotExist:
-            pass
+        user1 = get_lfm_username(client, user1)
+        user2 = get_lfm_username(client, user2)
 
         result = get_compare_users(user1, user2)
     else:
@@ -122,13 +119,7 @@ def compare_users(client, target, origin, user1, user2=None):
             client.message(target, "Setup your damn last.fm username with .lfm username")
             return
 
-        try:
-            profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                              LastfmProfile.who == user1)
-
-            user1 = profile.lastfm_user
-        except LastfmProfile.DoesNotExist:
-            pass
+        user1 = get_lfm_username(client, user1)
 
         result = get_compare_users(from_user, user1)
 
