@@ -159,7 +159,7 @@ def check_user(client, target, origin):
         profile = LastFMProfile.get(LastFMProfile.network == client.network,
                                     LastFMProfile.who == origin)
     except LastFMProfile.DoesNotExist:
-        client.message(target, "{origin}: You don't have a Last.fm username associated with it. Please use \"!lfm\" to associate one.".format(
+        client.message(target, "{origin}: You don't have a Last.fm username associated with your nickname. Please use \"!lfm\" to associate one.".format(
             origin=origin
         ))
     else:
@@ -229,7 +229,7 @@ def now_playing(client, target, origin, who=None):
     )
 
     if not track["now_playing"]:
-        client.message(target, "{origin}: {who} is was playing about {dt}: {descr}".format(
+        client.message(target, "{origin}: {who} was playing about {dt}: {descr}".format(
             origin=origin,
             who=who,
             dt=humanize.naturaltime(datetime.fromtimestamp(track["ts"])),
