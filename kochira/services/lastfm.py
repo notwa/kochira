@@ -28,7 +28,8 @@ def initialize_model(bot):
 
 def query_lastfm(api_key, method, arguments):
     r = requests.get("http://ws.audioscrobbler.com/2.0/?" + urlencode({
-        "method": method
+        "method": method,
+        "api_key": api_key
     }) + "&" + urlencode(arguments))
 
     return etree.parse(BytesIO(r.content))
@@ -46,15 +47,20 @@ def get_compare_users(api_key, user1, user2):
         }
     )
 
-    score = res.xpath("/lfm/comparison/result/score/text()")[0]
-    artists = res.xpath('/lfm/comparison/result/artists/artist/name/text()')
+    comparison = res.xpath("/lfm[@status='ok']/comparison/result")
 
-    return "[{user1} vs {user2}] {score:.2%}: {artists}".format(
-        user1=user1,
-        user2=user2,
-        score=float(score),
-        artists=", ".join(artists)
-    )
+    if len(comparison) > 0:
+        comparison, = comparison
+
+        score, = comparison.xpath("score/text()")
+        artists = res.xpath("artists/artist/name/text()")
+
+    return {
+        "user1": user1,
+        "user2": user2,
+        "score": float(score),
+        "artists": artists
+    }
 
 
 def get_user_now_playing(api_key, user):
@@ -66,28 +72,32 @@ def get_user_now_playing(api_key, user):
             "limit": 1
         }
     )
-    track = res.xpath("/lfm/recenttracks/track[@nowplaying='true']")
+
+    track = res.xpath("/lfm[@status='ok']/recenttracks/track[@nowplaying='true']")
 
     if len(track) > 0:
-        track = track[0]
+        track, = track
 
-        artist = track.xpath("artist/text()")[0]
-        name = track.xpath("name/text()")[0]
-        album = track.xpath("album/text()")[0]
+        artist, = track.xpath("artist/text()")
+        name, = track.xpath("name/text()")
+        album, = track.xpath("album/text()")
 
         # get track info
-        track_tags_r = query_lastfm("track.getTopTags", { "artist": artist, "track": name, })
-        tags = track_tags_r.xpath("/lfm/toptags/tag/name/text()")
+        track_tags_r = query_lastfm("track.getTopTags", {
+            "artist": artist,
+            "track": name
+        })
+        tags = track_tags_r.xpath("/lfm[@status='ok']/toptags/tag/name/text()")
 
-        return "{user} is playing {name} by {artist} on {album} ({tags}).".format(
-            user=user,
-            artist=artist,
-            name=name,
-            album=album or "(unknown album)",
-            tags=", ".join(tags[:5])
-        )
+        return {
+            "user": user,
+            "artist": artist,
+            "name": name,
+            "album": album or "(unknown album)",
+            "tags": tags[:5]
+        }
 
-    return "{user} is not playing anything.".format(user=user)
+    return None
 
 
 def get_lfm_username(client, who):
@@ -99,7 +109,7 @@ def get_lfm_username(client, who):
     except LastFMProfile.DoesNotExist:
         return who
 
-@service.command(r"i(?:'m| am) (?P<lfm_username>\S+) on last\.fm$", mention=True)
+
 @service.command(r"my last\.fm username is (?P<lfm_username>\S+)$", mention=True)
 def setup_user(client, target, origin, lfm_username):
     try:
@@ -112,30 +122,33 @@ def setup_user(client, target, origin, lfm_username):
     profile.lastfm_user = lfm_username
     profile.save()
 
-    client.message(target, "{origin}: You have been associated with last.fm username {user}.".format(
+    client.message(target, "{origin}: You have been associated with the last.fm username {user}.".format(
         origin=origin,
         user=lfm_username
     ))
 
 
-@service.command(r"compare my last\.fm with (?P<user1>\S+)$", mention=True)
+@service.command(r"compare my last\.fm with (?P<user2>\S+)$", mention=True)
 @service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$", mention=True)
 @background
-def compare_users(client, target, origin, user1, user2=None):
+def compare_users(client, target, origin, user2, user1=None):
     config = service.config_for(client.bot)
 
-    if user2 is not None:
-        # compare 2 different users
-        # looks up profiles from IRC usernames, otherwise just passes usernames as is
-        user1 = get_lfm_username(client, user1)
-        user2 = get_lfm_username(client, user2)
-    else:
-        user1 = get_lfm_username(client, origin)
-        user2 = get_lfm_username(client, user1)
+    if user2 is None:
+        user1 = origin
 
-    client.message(target, "{origin}: {comparison}".format(
+    comparison = get_compare_users(
+        config["api_key"],
+        get_lfm_username(client, user1),
+        get_lfm_username(client, user2)
+    )
+
+    client.message(target, "{origin}: {user1} vs {user2} are {score:.2%} similar: {artists}".format(
         origin=origin,
-        comparison=get_compare_users(config["api_key"], user1, user2)
+        user1=user1,
+        user2=user2,
+        score=comparison["score"],
+        artists=", ".join(comparison["artists"])
     ))
 
 
@@ -150,8 +163,13 @@ def now_playing(client, target, origin, who=None):
     if who is None:
         who = origin
 
-    client.message(target, "{origin}: {np}".format(
+    track = get_user_now_playing(config["api_key"], get_lfm_username(client, who))
+
+    client.message(target, "{origin}: {who} is playing {name} by {artist} on album {album} ({tags})".format(
         origin=origin,
-        np=get_user_now_playing(config["api_key"],
-                                get_lfm_username(client, who))
+        who=who,
+        name=track["name"],
+        artist=track["artist"],
+        album=track["album"] or "(unknown album)",
+        tags=", ".join(track["tags"])
     ))
