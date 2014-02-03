@@ -53,7 +53,7 @@ def get_compare_users(api_key, user1, user2):
         comparison, = comparison
 
         score, = comparison.xpath("score/text()")
-        artists = res.xpath("artists/artist/name/text()")
+        artists = comparison.xpath("artists/artist/name/text()")
 
     return {
         "user1": user1,
