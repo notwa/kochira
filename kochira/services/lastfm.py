@@ -215,7 +215,7 @@ def now_playing(client, target, origin, who=None):
     track = get_user_now_playing(config["api_key"], get_lfm_username(client, who))
 
     if track is None:
-        client.message(target, "{origin}: {who} isn't playing anything right now.".format(
+        client.message(target, "{origin}: {who} has never scrobbled anything.".format(
             origin=origin,
             who=who
         ))
