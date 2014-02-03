@@ -72,7 +72,11 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
 @requires_permission("admin")
 def load_service(client, target, origin, r, service_name):
     try:
-        client.bot.load_service(service.SERVICES_PACKAGE + '.' + service_name, r is not None)
+        try:
+            client.bot.load_service(service_name, r is not None)
+        except ImportError:
+            service_name = service.SERVICES_PACKAGE + '.' + service_name
+            client.bot.load_service(service_name, r is not None)
     except Exception as e:
         client.message(target, "Sorry, couldn't load the service \"{name}\".".format(
             name=service_name
