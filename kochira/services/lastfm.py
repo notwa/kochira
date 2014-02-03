@@ -62,7 +62,7 @@ def get_user_now_playing(user):
     return "[{0}] is not playing anything :( needs moar SCROBBLING".format(user)
 
 
-@service.command(r".lfm (?P<lfm_username>.+)$", mention=False)
+@service.command(r".lfm (?P<lfm_username>\S+)$", mention=False)
 @background
 def setup_user(client, target, origin, lfm_username):
     try:
