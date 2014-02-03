@@ -39,7 +39,7 @@ def get_compare_users(user1, user2):
     res = query_lastfm("tasteometer.compare", {"type1": "user", "type2": "user", "value1": user1, "value2": user2, })
 
     score = res.xpath("/lfm/comparison/result/score/text()")[0]
-    artists = [a for a in res.xpath('/lfm/comparison/result/artists/artist/name/text()')]
+    artists = res.xpath('/lfm/comparison/result/artists/artist/name/text()')
 
     return "[{user1} vs {user2}] {score:.2%} -- {artists}".format(user1=user1, user2=user2, score=float(score), artists=", ".join(artists))
 
@@ -57,7 +57,7 @@ def get_user_now_playing(user):
 
         # get track info
         track_tags_r = query_lastfm("track.getTopTags", { "artist": artist, "track": name, })
-        tags = [t for t in track_tags_r.xpath("/lfm/toptags/tag/name/text()")]
+        tags = track_tags_r.xpath("/lfm/toptags/tag/name/text()")
 
         return "[{user}]: {artist} - {name} [{album}] ({tags})".format(user=user, artist=artist, name=name, album=album, tags=", ".join(tags[:5]))
 
