@@ -1,6 +1,8 @@
 import requests
-from urllib.parse import urlencode, unquote
-from peewee import CharField, TextField
+from urllib.parse import urlencode
+from peewee import CharField
+from lxml import etree
+from io import BytesIO
 
 from ..db import Model
 from ..service import Service, background
@@ -28,38 +30,48 @@ def query_lastfm(method, arguments):
     r = requests.get("http://ws.audioscrobbler.com/2.0/?" + urlencode({
         "method": method,
         "api_key": "ebfbda6fb42b69b084844b567830513b",
-        "format": "json",
-    }) + "&" + urlencode(arguments)).json()
-    return r
+    }) + "&" + urlencode(arguments))
+
+    return etree.parse(BytesIO(r.content))
 
 
 def get_compare_users(user1, user2):
     res = query_lastfm("tasteometer.compare", {"type1": "user", "type2": "user", "value1": user1, "value2": user2, })
 
-    score = res['comparison']['result']['score']
-    artists = [a['name'] for a in res['comparison']['result']['artists']['artist']]
+    score = res.xpath("/lfm/comparison/result/score/text()")[0]
+    artists = res.xpath('/lfm/comparison/result/artists/artist/name/text()')
 
-    return "[{0} vs {1}] {2:.2%} -- {3}".format(user1, user2, float(score), ", ".join(artists))
+    return "[{user1} vs {user2}] {score:.2%} -- {artists}".format(user1=user1, user2=user2, score=float(score), artists=", ".join(artists))
 
 
 def get_user_now_playing(user):
     res = query_lastfm("user.getRecentTracks", {"user": user, "limit": 1, })
-    track = [t for t in res.get("recenttracks", {}).get("track", []) if t.get("@attr", {}).get("nowplaying", {}) == "true"]
+    track = res.xpath("/lfm/recenttracks/track[@nowplaying='true']")
 
     if len(track) > 0:
         track = track[0]
 
-        artist = track["artist"]
-        name = track["name"]
-        album = track["album"]
+        artist = track.xpath("artist/text()")[0]
+        name = track.xpath("name/text()")[0]
+        album = track.xpath("album/text()")[0]
 
         # get track info
         track_tags_r = query_lastfm("track.getTopTags", { "artist": artist, "track": name, })
-        tags = [t['name'] for t in track_tags_r.get("toptags", {}).get("tag", [])]
+        tags = track_tags_r.xpath("/lfm/toptags/tag/name/text()")
 
-        return "[{0}]: {1} - {2} [{3}] ({4})".format(user, artist, name, album, ", ".join(tags[:5]))
+        return "[{user}]: {artist} - {name} [{album}] ({tags})".format(user=user, artist=artist, name=name, album=album, tags=", ".join(tags[:5]))
 
-    return "[{0}] is not playing anything :( needs moar SCROBBLING".format(user)
+    return "[{user}] is not playing anything :( needs moar SCROBBLING".format(user=user)
+
+
+def get_lfm_username(client, username):
+    try:
+        profile = LastfmProfile.get(LastfmProfile.network == client.network,
+                          LastfmProfile.who == username)
+
+        return profile.lastfm_user
+    except LastfmProfile.DoesNotExist:
+        return username
 
 
 @service.command(r".lfm (?P<lfm_username>\S+)$", mention=False)
@@ -90,21 +102,8 @@ def compare_users(client, target, origin, user1, user2=None):
     if user2:
         # compare 2 different users
         # looks up profiles from IRC usernames, otherwise just passes usernames as is
-        try:
-            profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                              LastfmProfile.who == user1)
-
-            user1 = profile.lastfm_user
-        except LastfmProfile.DoesNotExist:
-            pass
-
-        try:
-            profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                              LastfmProfile.who == user2)
-
-            user2 = profile.lastfm_user
-        except LastfmProfile.DoesNotExist:
-            pass
+        user1 = get_lfm_username(client, user1)
+        user2 = get_lfm_username(client, user2)
 
         result = get_compare_users(user1, user2)
     else:
@@ -120,13 +119,7 @@ def compare_users(client, target, origin, user1, user2=None):
             client.message(target, "Setup your damn last.fm username with .lfm username")
             return
 
-        try:
-            profile = LastfmProfile.get(LastfmProfile.network == client.network,
-                              LastfmProfile.who == user1)
-
-            user1 = profile.lastfm_user
-        except LastfmProfile.DoesNotExist:
-            pass
+        user1 = get_lfm_username(client, user1)
 
         result = get_compare_users(from_user, user1)
 
