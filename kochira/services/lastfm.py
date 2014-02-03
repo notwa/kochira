@@ -113,6 +113,7 @@ def get_lfm_username(client, who):
         return who
 
 
+@service.command(r"!lfm (?P<lfm_username>\S+)$", mention=True)
 @service.command(r"my last\.fm username is (?P<lfm_username>\S+)$", mention=True)
 def setup_user(client, target, origin, lfm_username):
     try:
@@ -125,19 +126,37 @@ def setup_user(client, target, origin, lfm_username):
     profile.lastfm_user = lfm_username
     profile.save()
 
-    client.message(target, "{origin}: You have been associated with the last.fm username {user}.".format(
+    client.message(target, "{origin}: You have been associated with the Last.fm username {user}.".format(
         origin=origin,
         user=lfm_username
     ))
 
+@service.command(r"!lfm$", mention=True)
+@service.command(r"what is my last\.fm username\??$", mention=True)
+def check_user(client, target, origin):
+    try:
+        profile = LastFMProfile.get(LastFMProfile.network == client.network,
+                                    LastFMProfile.who == origin)
+    except LastFMProfile.DoesNotExist:
+        client.message(target, "{origin}: You don't have a Last.fm username associated with it. Please use \"!lfm\" to associate one.".format(
+            origin=origin
+        ))
+    else:
+        client.message(target, "{origin}: Your nickname is associated with {user}.".format(
+            origin=origin,
+            user=profile.lfm_username
+        ))
 
+
+@service.command(r"!tasteometer (?P<user1>\S+) (?P<user2>\S+)$")
+@service.command(r"!tasteometer (?P<user2>\S+)$")
 @service.command(r"compare my last\.fm with (?P<user2>\S+)$", mention=True)
 @service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$", mention=True)
 @background
 def compare_users(client, target, origin, user2, user1=None):
     config = service.config_for(client.bot)
 
-    if user2 is None:
+    if user1 is None:
         user1 = origin
 
     comparison = get_compare_users(
