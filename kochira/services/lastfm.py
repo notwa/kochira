@@ -1,5 +1,7 @@
 import requests
 import gzip
+import humanize
+from datetime import datetime
 from peewee import CharField
 from lxml import etree
 
@@ -55,7 +57,7 @@ def get_compare_users(api_key, user1, user2):
 
     comparison = res.xpath("/lfm[@status='ok']/comparison/result")
 
-    if len(comparison) > 0:
+    if comparison:
         comparison, = comparison
 
         score, = comparison.xpath("score/text()")
@@ -83,12 +85,21 @@ def get_user_now_playing(api_key, user):
 
     track = res.xpath("/lfm[@status='ok']/recenttracks/track[@nowplaying='true']")
 
-    if len(track) > 0:
-        track, = track
+    now_playing = True
+
+    if not track:
+        track = res.xpath("/lfm[@status='ok']/recenttracks/track")
+        now_playing = False
+
+    if track:
+        track = track[0]
 
         artist, = track.xpath("artist/text()")
         name, = track.xpath("name/text()")
         album, = track.xpath("album/text()") or [None]
+        ts, = track.xpath("date/@uts")
+
+        ts = int(ts)
 
         # get track info
         track_tags_r = query_lastfm(
@@ -105,7 +116,9 @@ def get_user_now_playing(api_key, user):
             "artist": artist,
             "name": name,
             "album": album,
-            "tags": tags[:5]
+            "tags": tags[:5],
+            "ts": ts,
+            "now_playing": now_playing
         }
 
     return None
@@ -208,11 +221,23 @@ def now_playing(client, target, origin, who=None):
         ))
         return
 
-    client.message(target, "{origin}: {who} is playing: {artist} - {name}{album}{tags}".format(
-        origin=origin,
-        who=who,
+    track_descr = "{artist} - {name}{album}{tags}".format(
         name=track["name"],
         artist=track["artist"],
         album=(" - " + track["album"]) if track["album"] else "",
         tags=(" (" + ", ".join(track["tags"]) + ")") if track["tags"] else ""
-    ))
+    )
+
+    if not track["now_playing"]:
+        client.message(target, "{origin}: {who} is was playing about {dt}: {descr}".format(
+            origin=origin,
+            who=who,
+            dt=humanize.naturaltime(datetime.fromtimestamp(track["ts"])),
+            descr=track_descr
+        ))
+    else:
+        client.message(target, "{origin}: {who} is playing: {descr}".format(
+            origin=origin,
+            who=who,
+            descr=track_descr
+        ))
