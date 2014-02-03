@@ -165,7 +165,7 @@ def compare_users(client, target, origin, user2, user1=None):
         get_lfm_username(client, user2)
     )
 
-    client.message(target, "{origin}: {user1} vs {user2} are {score:.2%} similar: {artists}".format(
+    client.message(target, "{origin}: {user1} and {user2} are {score:.2%} similar: {artists}".format(
         origin=origin,
         user1=user1,
         user2=user2,
@@ -194,11 +194,11 @@ def now_playing(client, target, origin, who=None):
         ))
         return
 
-    client.message(target, "{origin}: {who} is playing: {name} by {artist}{album}{tags}".format(
+    client.message(target, "{origin}: {who} is playing: {name} - {artist}{album}{tags}".format(
         origin=origin,
         who=who,
         name=track["name"],
         artist=track["artist"],
-        album=(" on " + track["album"]) if track["album"] else "",
+        album=(" - " + track["album"]) if track["album"] else "",
         tags=(" (" + ", ".join(track["tags"]) + ")") if track["tags"] else ""
     ))
