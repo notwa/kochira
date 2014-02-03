@@ -1,5 +1,5 @@
 import requests
-from urllib.parse import urlencode
+import gzip
 from peewee import CharField
 from lxml import etree
 
@@ -38,7 +38,7 @@ def query_lastfm(api_key, method, arguments):
         stream=True
     )
 
-    return etree.parse(r.raw)
+    return etree.parse(gzip.GzipFile(fileobj=r.raw))
 
 
 def get_compare_users(api_key, user1, user2):
