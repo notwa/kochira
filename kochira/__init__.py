@@ -154,7 +154,7 @@ class Bot:
         Attempt to dispatch a command to all command handlers.
         """
 
-        for _, hook in self._compute_hooks(hook):
+        for hook in self._compute_hooks(hook):
             try:
                 r = hook(client, *args)
                 if r is Service.EAT:
