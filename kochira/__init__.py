@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import imp
 import importlib
+import heapq
 import logging
 import multiprocessing
 from peewee import SqliteDatabase
@@ -138,16 +139,28 @@ class Bot:
         self._shutdown_service(service)
         del self.services[name]
 
+    def _compute_hooks(self, hook):
+        """
+        Create an ordering of hooks to run.
+        """
+
+        return (hook for _, _, hook in heapq.merge(*[
+            ((priority, uid, hook) for priority, uid, hook in service.hooks.get(hook, []))
+            for service, storage in list(self.services.values())
+        ]))
+
     def run_hooks(self, hook, client, *args):
         """
         Attempt to dispatch a command to all command handlers.
         """
 
-        for service, _ in list(self.services.values()):
-            r = service.run_hooks(hook, client, *args)
-
-            if r is Service.EAT:
-                return Service.EAT
+        for _, hook in self._compute_hooks(hook):
+            try:
+                r = hook(client, *args)
+                if r is Service.EAT:
+                    return Service.EAT
+            except BaseException:
+                logger.error("Hook processing failed", exc_info=True)
 
     def rehash(self):
         """

@@ -1,6 +1,7 @@
 import functools
 import re
 import logging
+import bisect
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class Service:
 
     EAT = object()
 
-    def __init__(self, name, commands=None, tasks=None):
+    def __init__(self, name):
         self.name = name
         self.hooks = {}
         self.tasks = []
@@ -21,19 +22,19 @@ class Service:
         self.on_shutdown = None
         self.logger = logging.getLogger(self.name)
 
-    def hook(self, hook):
+    def hook(self, hook, priority=0):
         """
         Register a hook with the service.
         """
 
         def _decorator(f):
-            self.hooks.setdefault(hook, []).append(f)
+            bisect.insort(self.hooks.setdefault(hook, []), (-priority, id(f), f))
             return f
 
         return _decorator
 
-    def command(self, pattern, mention=False, strip=True, re_flags=re.I,
-                eat=True):
+    def command(self, pattern, priority=0, mention=False, strip=True,
+                re_flags=re.I, eat=True):
         """
         Register a command for use with the bot.
 
@@ -75,7 +76,7 @@ class Service:
                 if eat:
                     return Service.EAT
 
-            self.hook("message")(_command_handler)
+            self.hook("message", priority=priority)(_command_handler)
             return f
 
         return _decorator
@@ -101,19 +102,6 @@ class Service:
         Register a shutdown function.
         """
         self.on_shutdown = f
-
-    def run_hooks(self, hook, client, *args):
-        """
-        Attempt to dispatch a command to all command handlers.
-        """
-
-        for hook in self.hooks.get(hook, []):
-            try:
-                r = hook(client, *args)
-                if r is Service.EAT:
-                    return Service.EAT
-            except BaseException:
-                self.logger.error("Hook processing failed", exc_info=True)
 
     def run_setup(self, bot):
         """
