@@ -22,7 +22,7 @@ def initialize_model(bot):
     Ignore.create_table(True)
 
 
-@service.command(r"(?:ignore|add ignore for) (?P<hostmask>\S+)$")
+@service.command(r"(?:ignore|add ignore for) (?P<hostmask>\S+)$", mention=True)
 @requires_permission("ignore")
 def add_ignore(client, target, origin, hostmask):
     if Ignore.select().where(Ignore.hostmask == hostmask,
@@ -41,7 +41,7 @@ def add_ignore(client, target, origin, hostmask):
     ))
 
 
-@service.command(r"(?:unignore|don't ignore|stop ignoring|remove ignore from) (?P<hostmask>\S+)$")
+@service.command(r"(?:unignore|don't ignore|stop ignoring|remove ignore from) (?P<hostmask>\S+)$", mention=True)
 @requires_permission("ignore")
 def remove_ignore(client, target, origin, hostmask):
     if Ignore.delete().where(Ignore.hostmask == hostmask,
