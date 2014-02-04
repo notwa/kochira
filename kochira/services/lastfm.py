@@ -99,7 +99,7 @@ def get_user_now_playing(api_key, user):
         album, = track.xpath("album/text()") or [None]
         ts, = track.xpath("date/@uts") or [None]
 
-        ts = int(ts)
+        ts = int(ts) if ts is not None else None
 
         # get track info
         track_tags_r = query_lastfm(
