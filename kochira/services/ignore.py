@@ -41,12 +41,23 @@ def add_ignore(client, target, origin, hostmask):
     ))
 
 
+@service.command(r"(?:list )?ignores$", mention=True)
+@requires_permission("ignore")
+def list_ignores(client, target, origin):
+    client.message(target, "{origin}: Ignores for {network}: {ignores}".format(
+        origin=origin,
+        network=client.network,
+        ignores=", ".join(ignore.hostmask for ignore in
+                          Ignore.select().where(Ignore.network == client.network))
+    ))
+
+
 @service.command(r"(?:unignore|don't ignore|stop ignoring|remove ignore from) (?P<hostmask>\S+)$", mention=True)
 @requires_permission("ignore")
 def remove_ignore(client, target, origin, hostmask):
     if Ignore.delete().where(Ignore.hostmask == hostmask,
                              Ignore.network == client.network).execute() == 0:
-        client.message(target, "{origin}: I'm not ignoring this {hostmask}.".format(
+        client.message(target, "{origin}: I'm not ignoring {hostmask}.".format(
             origin=origin,
             hostmask=hostmask
         ))
