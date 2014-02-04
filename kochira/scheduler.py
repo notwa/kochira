@@ -113,20 +113,23 @@ class Scheduler(threading.Thread):
                 .setdefault((task.service.name, task.__name__), []) \
                 .append(work)
 
+        return work
+
     def schedule_after(self, time, task, *args, **kwargs):
         """
         Schedule a task to run after a given amount of time.
         """
-        self._schedule_work(task,
-                            Work(time.total_seconds(), None, args, kwargs))
+        return self._schedule_work(task,
+                                   Work(time.total_seconds(),
+                                        None, args, kwargs))
 
     def schedule_every(self, interval, task, *args, **kwargs):
         """
         Schedule a task to run every given interval.
         """
-        self._schedule_work(task,
-                            Work(interval.total_seconds(), interval,
-                                 args, kwargs))
+        return self._schedule_work(task,
+                                   Work(interval.total_seconds(), interval,
+                                        args, kwargs))
 
     def unschedule_task(self, task):
         logger.info("Unscheduling all work for task %s.%s",
