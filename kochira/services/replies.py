@@ -66,7 +66,7 @@ def do_reply(client, target, origin, message):
     client.message(target, random.choice(replies))
 
 
-@service.command(r"reply to (?P<what>.+) with (?P<reply>.+)$", mention=True)
+@service.command(r"reply to (?P<what>.+?) with (?P<reply>.+)$", mention=True)
 @requires_permission("reply")
 def add_reply(client, target, origin, what, reply):
     if Reply.select().where(Reply.what == what).exists():
