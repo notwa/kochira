@@ -25,6 +25,9 @@ class Bot:
 
     def __init__(self, config_file="config.yml"):
         self.services = {}
+        self.networks = {}
+        self.pool = ClientPool([])
+
         self.config_file = config_file
 
         self.rehash()
@@ -38,6 +41,23 @@ class Bot:
         self._load_services()
         self._connect_to_irc()
 
+    def connect(self, network_name):
+        config = self.config["networks"][network_name]
+
+        client = Client(self, network_name, config["nickname"])
+        client.connect(hostname=config["hostname"], port=config.get("port"),
+                       password=config.get("password"),
+                       channels=config.get("channels", []))
+        self.networks[network_name] = client
+
+        return client
+
+    def disconnect(self, network_name):
+        client = self.networks[network_name]
+        client.quit()
+        self.pool.remove(client)
+        del self.networks[network_name]
+
     def _connect_to_db(self):
         database.initialize(SqliteDatabase(self.config["core"].get("database", "kochira.db"),
                                            threadlocals=True))
@@ -46,16 +66,9 @@ class Bot:
         ACLEntry.create_table(True)
 
     def _connect_to_irc(self):
-        self.networks = {}
+        for network_name in self.config["networks"]:
+            self.pool.add(self.connect(network_name))
 
-        for network, config in self.config["networks"].items():
-            client = Client(self, network, config["nickname"])
-            client.connect(hostname=config["hostname"], port=config.get("port"),
-                           password=config.get("password"),
-                           channels=config.get("channels", []))
-            self.networks[network] = client
-
-        self.pool = ClientPool(self.networks.values())
         self.pool.handle_forever()
 
     def _load_services(self):
