@@ -1,6 +1,6 @@
 import functools
 
-from peewee import CharField, Expression
+from peewee import CharField, Expression, fn
 from .db import Model
 
 
@@ -43,7 +43,7 @@ class ACLEntry(Model):
         """
         Check if a hostmask has a given permission.
         """
-        return ACLEntry.select().where(Expression(hostmask, "ilike", ACLEntry.hostmask),
+        return ACLEntry.select().where(Expression(hostmask, "ilike", fn.replace(ACLEntry.hostmask, "*", "%")),
                                        ACLEntry.network == network,
                                        ACLEntry.permission << [permission, "admin"],
                                        (ACLEntry.channel == channel) |
@@ -65,7 +65,7 @@ class ACLEntry(Model):
         """
         Revoke a permission from a hostmask.
         """
-        ACLEntry.delete().where(Expression(ACLEntry.hostmask, "ilike", hostmask),
+        ACLEntry.delete().where(Expression(fn.replace(ACLEntry.hostmask, "*", "%"), "ilike", hostmask),
                                 ACLEntry.network == network,
                                 permission is None or ACLEntry.permission == permission,
                                 channel is None or ACLEntry.channel == channel).execute()

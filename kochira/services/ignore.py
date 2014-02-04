@@ -1,5 +1,5 @@
 from ..db import Model
-from peewee import CharField, Expression
+from peewee import CharField, Expression, fn
 
 from ..auth import requires_permission
 from ..service import Service
@@ -66,6 +66,6 @@ def ignore_message(client, target, origin, message):
         hostname=client.users[origin]["hostname"]
     )
 
-    if Ignore.select().where(Expression(hostmask, "ilike", Ignore.hostmask),
+    if Ignore.select().where(Expression(hostmask, "ilike", fn.replace(Ignore.hostmask, "*", "%")),
                              Ignore.network == client.network).exists():
         return service.EAT
