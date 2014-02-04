@@ -66,8 +66,9 @@ class Bot:
         ACLEntry.create_table(True)
 
     def _connect_to_irc(self):
-        for network_name in self.config["networks"]:
-            self.pool.add(self.connect(network_name))
+        for network_name, config in self.config["networks"].items():
+            if config.get("autoconnect", False):
+                self.pool.add(self.connect(network_name))
 
         self.pool.handle_forever()
 
