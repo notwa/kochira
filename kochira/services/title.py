@@ -21,7 +21,7 @@ def handle_html(resp):
     soup = BeautifulSoup(resp.content)
 
     return "\x02Web Page Title:\x02 {title}".format(
-        title=soup.title.string or "(no title)"
+        title=soup.title.string.replace("\n", " ") or "(no title)"
     )
 
 
