@@ -48,15 +48,20 @@ class Bot:
         client.connect(hostname=config["hostname"], port=config.get("port"),
                        password=config.get("password"),
                        channels=config.get("channels", []))
+
         self.networks[network_name] = client
+        self.pool.add(client)
 
         return client
 
     def disconnect(self, network_name):
         client = self.networks[network_name]
-        client.quit()
-        self.pool.remove(client)
-        del self.networks[network_name]
+
+        try:
+            client.quit()
+        finally:
+            self.pool.remove(client)
+            del self.networks[network_name]
 
     def _connect_to_db(self):
         database.initialize(SqliteDatabase(self.config["core"].get("database", "kochira.db"),
@@ -68,7 +73,7 @@ class Bot:
     def _connect_to_irc(self):
         for network_name, config in self.config["networks"].items():
             if config.get("autoconnect", False):
-                self.pool.add(self.connect(network_name))
+                self.connect(network_name)
 
         self.pool.handle_forever()
 
