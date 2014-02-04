@@ -52,7 +52,7 @@ def remove_ignore(client, target, origin, hostmask):
         ))
         return
 
-    client.message(target, "{origin}: Okay, now ignoring everything from {hostmask}.".format(
+    client.message(target, "{origin}: Okay, stopped ignoring everything from {hostmask}.".format(
         origin=origin,
         hostmask=hostmask
     ))
