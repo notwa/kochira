@@ -229,10 +229,10 @@ def now_playing(client, target, origin, who=None):
     )
 
     if not track["now_playing"]:
-        client.message(target, "{origin}: {who} was playing about {dt}: {descr}".format(
+        client.message(target, "{origin}: {who} was playing{dt}: {descr}".format(
             origin=origin,
             who=who,
-            dt=humanize.naturaltime(datetime.fromtimestamp(track["ts"])),
+            dt=" about " + humanize.naturaltime(datetime.fromtimestamp(track["ts"])) if track["ts"] is not None else "",
             descr=track_descr
         ))
     else:
