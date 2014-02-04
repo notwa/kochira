@@ -6,8 +6,7 @@ import logging
 import multiprocessing
 from peewee import SqliteDatabase
 import yaml
-
-from pydle.client import ClientPool
+from zmq.eventloop import ioloop
 
 from .auth import ACLEntry
 from .client import Client
@@ -27,7 +26,7 @@ class Bot:
     def __init__(self, config_file="config.yml"):
         self.services = {}
         self.networks = {}
-        self.pool = ClientPool([])
+        self.io_loop = ioloop.IOLoop()
 
         self.config_file = config_file
 
@@ -53,17 +52,20 @@ class Bot:
                        tls_verify=config.get("tls_verify", True))
 
         self.networks[network_name] = client
-        self.pool.add(client)
+        self.io_loop.add_handler(client.connection.socket.fileno(),
+                                 lambda fd, events: client._handle_message(),
+                                 ioloop.IOLoop.READ)
 
         return client
 
     def disconnect(self, network_name):
         client = self.networks[network_name]
+        fileno = client.connection.socket.fileno()
+        self.io_loop.remove_handler(fileno)
 
         try:
             client.quit()
         finally:
-            self.pool.remove(client)
             del self.networks[network_name]
 
     def _connect_to_db(self):
@@ -78,7 +80,7 @@ class Bot:
             if config.get("autoconnect", False):
                 self.connect(network_name)
 
-        self.pool.handle_forever()
+        self.io_loop.start()
 
     def _load_services(self):
         for service, config in self.config["services"].items():
