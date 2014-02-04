@@ -49,9 +49,7 @@ class Bot:
                        password=config.get("password"),
                        channels=config.get("channels", []),
                        tls=config.get("tls", False),
-                       tls_verify=config.get("tls_verify", True),
-                       tls_certificate_file=config.get("tls_certificate_file"),
-                       tls_certificate_keyfile=config.get("tls_certificate_keyfile"))
+                       tls_verify=config.get("tls_verify", True))
 
         self.networks[network_name] = client
         self.pool.add(client)
