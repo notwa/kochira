@@ -97,7 +97,7 @@ def get_user_now_playing(api_key, user):
         artist, = track.xpath("artist/text()")
         name, = track.xpath("name/text()")
         album, = track.xpath("album/text()") or [None]
-        ts, = track.xpath("date/@uts")
+        ts, = track.xpath("date/@uts") or [None]
 
         ts = int(ts)
 
