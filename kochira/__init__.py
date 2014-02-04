@@ -145,7 +145,7 @@ class Bot:
         """
 
         return (hook for _, _, hook in heapq.merge(*[
-            ((priority, uid, hook) for priority, uid, hook in service.hooks.get(hook, []))
+            service.hooks.get(hook, [])
             for service, storage in list(self.services.values())
         ]))
 
