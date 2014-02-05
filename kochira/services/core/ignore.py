@@ -69,7 +69,7 @@ def remove_ignore(client, target, origin, hostmask):
     ))
 
 
-@service.hook("message", priority=9999)
+@service.hook("channel_message", priority=9999)
 def ignore_message(client, target, origin, message):
     hostmask = "{nickname}!{username}@{hostname}".format(
         nickname=origin,
