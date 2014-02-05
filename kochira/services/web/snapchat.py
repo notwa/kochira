@@ -88,7 +88,7 @@ def poll_for_updates(bot):
                 "New snap from {sender}! {link} ({dt})".format(
                     sender=sender,
                     link=link,
-                    dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"]))
+                    dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"] / 1000.0))
                 )
             )
 
