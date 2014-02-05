@@ -46,16 +46,15 @@ class Bot:
         config = self.config["networks"][network_name]
 
         tls_config = config.get("tls", {})
+        sasl_config = config.get("sasl", {})
 
-        client = Client(self, network_name, config["nickname"])
-
-        client.tls_certificate_file = tls_config.get("certificate_file")
-        client.tls_certificate_keyfile = tls_config.get("certificate_keyfile")
-        client.tls_certificate_password = tls_config.get("certificate_password")
-
-        if "sasl" in config:
-            client.sasl_username = config["sasl"]["username"]
-            client.sasl_password = config["sasl"]["password"]
+        client = Client(self, network_name, config["nickname"],
+            tls_client_cert=tls_config.get("certificate_file"),
+            tls_client_cert_key=tls_config.get("certificate_keyfile"),
+            tls_client_cert_password=tls_config.get("certificate_password"),
+            sasl_username=sasl_config.get("username"),
+            sasl_password=sasl_config.get("password")
+        )
 
         client.connect(
             hostname=config["hostname"],
