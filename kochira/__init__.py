@@ -56,7 +56,8 @@ class Bot:
             tls=tls_config.get("enabled", False),
             tls_verify=tls_config.get("verify", True),
             tls_certificate_file=tls_config.get("certificate_file"),
-            tls_certificate_keyfile=tls_config.get("certificate_keyfile")
+            tls_certificate_keyfile=tls_config.get("certificate_keyfile"),
+            pem_password=tls_config.get("pem_password")
         )
 
         if "sasl" in config:
