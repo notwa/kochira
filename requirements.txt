@@ -10,3 +10,4 @@ pillow
 humanize
 BeautifulSoup4
 pyzmq
+puresasl

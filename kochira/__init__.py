@@ -50,6 +50,10 @@ class Bot:
                        tls=config.get("tls", False),
                        tls_verify=config.get("tls_verify", True))
 
+        if "sasl" in config:
+            client.sasl_username = config["sasl"]["username"]
+            client.sasl_password = config["sasl"]["password"]
+
         self.networks[network_name] = client
         self.io_loop.add_handler(client.connection.socket.fileno(),
                                  lambda fd, events: client._handle_message(),
