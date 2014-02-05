@@ -9,7 +9,6 @@ service = Service(__name__)
 html_parser = HTMLParser()
 
 
-@service.command(r"\?\?(?P<term>.+?)(?: (?P<num>\d+))?$")
 @service.command(r"!g (?P<term>.+?)(?: (?P<num>\d+))?$")
 @service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background

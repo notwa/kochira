@@ -6,7 +6,6 @@ from kochira.service import Service, background
 
 service = Service(__name__)
 
-@service.command(r"~~(?P<query>.+)$")
 @service.command(r"!wa (?P<query>.+)$")
 @service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)
 @background
