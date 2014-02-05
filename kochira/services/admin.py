@@ -156,8 +156,7 @@ def eval_code(client, target, origin, code):
         eval(compile(code, "<irc>", "single"),
              {"bot": client.bot}, storage.eval_locals)
     except BaseException as e:
-        client.message(target, "Sorry, evaluation failed.")
-        client.message(target, "↳ {name}: {info}".format(
+        client.message(target, "<<! {name}: {info}".format(
             name=e.__class__.__name__,
             info=str(e)
         ))
