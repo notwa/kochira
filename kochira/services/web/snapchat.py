@@ -5,7 +5,7 @@ import requests
 import tempfile
 import subprocess
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pysnap import Snapchat, MEDIA_VIDEO_NOAUDIO, MEDIA_VIDEO
 
 from kochira.service import Service
