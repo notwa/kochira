@@ -3,7 +3,6 @@ import glob
 import humanize
 import requests
 import tempfile
-import datetime
 import subprocess
 
 from datetime import datetime
@@ -83,8 +82,6 @@ def poll_for_updates(bot):
         else:
             link = "(could not convert video)"
 
-        storage.snapchat.mark_viewed(snap["id"])
-
         for announce in config["announce"]:
             bot.networks[announce["network"]].message(
                 announce["channel"],
@@ -94,6 +91,8 @@ def poll_for_updates(bot):
                     dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"]))
                 )
             )
+
+        storage.snapchat.mark_viewed(snap["id"])
 
     if has_snaps:
         storage.snapchat._request("clear", {
