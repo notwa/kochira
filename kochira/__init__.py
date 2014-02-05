@@ -5,6 +5,7 @@ import heapq
 import logging
 import multiprocessing
 from peewee import SqliteDatabase
+from pydle.connection import Connection
 import yaml
 from zmq.eventloop import ioloop
 
@@ -44,17 +45,29 @@ class Bot:
     def connect(self, network_name):
         config = self.config["networks"][network_name]
 
+        tls_config = config.get("tls", {})
+
         client = Client(self, network_name, config["nickname"])
-        client.connect(hostname=config["hostname"], port=config.get("port"),
-                       password=config.get("password"),
-                       tls=config.get("tls", False),
-                       tls_verify=config.get("tls_verify", True))
+        client.password = config.get("password")
+
+        client.connection = Connection(
+            hostname=config["hostname"],
+            port=config.get("port"),
+            tls=tls_config.get("enabled", False),
+            tls_verify=tls_config.get("verify", True),
+            tls_certificate_file=tls_config.get("certificate_file"),
+            tls_certificate_keyfile=tls_config.get("certificate_keyfile")
+        )
 
         if "sasl" in config:
             client.sasl_username = config["sasl"]["username"]
             client.sasl_password = config["sasl"]["password"]
 
         self.networks[network_name] = client
+
+        client.connection.connect()
+        client._register()
+
         self.io_loop.add_handler(client.connection.socket.fileno(),
                                  lambda fd, events: client._handle_message(),
                                  ioloop.IOLoop.READ)
