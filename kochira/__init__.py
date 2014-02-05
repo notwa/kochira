@@ -47,7 +47,6 @@ class Bot:
         client = Client(self, network_name, config["nickname"])
         client.connect(hostname=config["hostname"], port=config.get("port"),
                        password=config.get("password"),
-                       channels=config.get("channels", []),
                        tls=config.get("tls", False),
                        tls_verify=config.get("tls_verify", True))
 
