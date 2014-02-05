@@ -48,26 +48,24 @@ class Bot:
         tls_config = config.get("tls", {})
 
         client = Client(self, network_name, config["nickname"])
-        client.password = config.get("password")
 
-        client.connection = Connection(
-            hostname=config["hostname"],
-            port=config.get("port"),
-            tls=tls_config.get("enabled", False),
-            tls_verify=tls_config.get("verify", True),
-            tls_certificate_file=tls_config.get("certificate_file"),
-            tls_certificate_keyfile=tls_config.get("certificate_keyfile"),
-            tls_certificate_password=tls_config.get("certificate_password")
-        )
+        client.tls_certificate_file = tls_config.get("certificate_file")
+        client.tls_certificate_keyfile = tls_config.get("certificate_keyfile")
+        client.tls_certificate_password = tls_config.get("certificate_password")
 
         if "sasl" in config:
             client.sasl_username = config["sasl"]["username"]
             client.sasl_password = config["sasl"]["password"]
 
-        self.networks[network_name] = client
+        client.connect(
+            hostname=config["hostname"],
+            password=config.get("password"),
+            port=config.get("port"),
+            tls=tls_config.get("enabled", False),
+            tls_verify=tls_config.get("verify", True)
+        )
 
-        client.connection.connect()
-        client._register()
+        self.networks[network_name] = client
 
         def handle_all_messages(fd, events):
             while client._has_message():
