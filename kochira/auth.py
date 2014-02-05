@@ -14,7 +14,6 @@ def requires_permission(permission):
                 hostname=client.users[origin]["hostname"]
             )
             if not ACLEntry.has(client.network, hostmask, permission, target):
-                client.message(target, "Sorry, {origin}, I can't let you do that.".format(origin=origin))
                 return
             return f(client, target, origin, *args, **kwargs)
         return _inner
