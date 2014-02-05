@@ -26,13 +26,23 @@ class Client(Client):
         super().on_connect()
         self.bot.run_hooks("connect", self)
 
-    def on_message(self, target, origin, message):
+    def on_channel_message(self, target, origin, message):
         backlog = self.backlogs.setdefault(target, deque([]))
         backlog.appendleft((origin, message))
 
         while len(backlog) > self.bot.config["core"].get("max_backlog", 10):
             backlog.pop()
 
-        self.bot.run_hooks("message", self, target, origin, message)
+        self.bot.run_hooks("channel_message", self, target, origin, message)
+
+
+    def on_private_message(self, origin, message):
+        backlog = self.backlogs.setdefault(origin, deque([]))
+        backlog.appendleft((origin, message))
+
+        while len(backlog) > self.bot.config["core"].get("max_backlog", 10):
+            backlog.pop()
+
+        self.bot.run_hooks("private_message", self, origin, message)
 
     on_join = make_hook("join")

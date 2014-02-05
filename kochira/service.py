@@ -34,7 +34,7 @@ class Service:
         return _decorator
 
     def command(self, pattern, priority=0, mention=False, strip=True,
-                re_flags=re.I, eat=True):
+                re_flags=re.I, eat=True, allow_private=False):
         """
         Register a command for use with the bot.
 
@@ -49,11 +49,12 @@ class Service:
                 if strip:
                     message = message.strip()
 
-                if mention:
+                # check if we're either being mentioned or being PMed
+                if mention and origin != target:
                     first, _, rest = message.partition(" ")
                     first = first.rstrip(",:")
 
-                    if first != client.nickname:
+                    if first.lower() != client.nickname.lower():
                         return
 
                     message = rest
@@ -76,7 +77,12 @@ class Service:
                 if eat:
                     return Service.EAT
 
-            self.hook("message", priority=priority)(_command_handler)
+            self.hook("channel_message", priority=priority)(_command_handler)
+
+            if allow_private:
+                self.hook("private_message", priority=priority)(
+                    lambda client, origin, message: _command_handler(client, origin, origin, message)
+                )
             return f
 
         return _decorator

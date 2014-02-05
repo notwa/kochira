@@ -92,7 +92,7 @@ def how_many_shouts(client, target, origin, who=None):
         ))
 
 
-@service.hook("message")
+@service.hook("channel_message")
 def record_or_play_shout(client, target, origin, message):
     storage = service.storage_for(client.bot)
 

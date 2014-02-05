@@ -130,7 +130,7 @@ def add_reminder(client, target, origin, who, message):
     ))
 
 
-@service.hook("message")
+@service.hook("channel_message")
 def play_reminder_on_message(client, target, origin, message):
     play_reminder(client, target, origin)
 

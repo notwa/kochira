@@ -16,7 +16,7 @@ def setup_eval_locals(bot):
     storage = service.storage_for(bot)
     storage.eval_locals = {}
 
-@service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
+@service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True, allow_private=True)
 @requires_permission("admin")
 def grant(client, target, origin, permission, hostmask, channel=None):
     ACLEntry.grant(client.network, hostmask, permission, channel)
@@ -38,7 +38,7 @@ def grant(client, target, origin, permission, hostmask, channel=None):
     client.message(target, message)
 
 
-@service.command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
+@service.command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True, allow_private=True)
 @requires_permission("admin")
 def revoke(client, target, origin, permission, hostmask, channel=None):
     if permission == "everything":
@@ -68,7 +68,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
     client.message(target, message)
 
 
-@service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True)
+@service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True, allow_private=True)
 @requires_permission("admin")
 def load_service(client, target, origin, r, service_name):
     try:
@@ -95,7 +95,7 @@ def load_service(client, target, origin, r, service_name):
     client.message(target, message)
 
 
-@service.command(r"unload service (?P<service_name>\S+)$", mention=True)
+@service.command(r"unload service (?P<service_name>\S+)$", mention=True, allow_private=True)
 @requires_permission("admin")
 def unload_service(client, target, origin, service_name):
     if service_name not in client.bot.services:
@@ -115,8 +115,8 @@ def unload_service(client, target, origin, service_name):
     client.message(target, "Unloaded service \"{name}\".".format(name=service_name))
 
 
-@service.command(r"what services are(?: you)? running\??$", mention=True)
-@service.command(r"(?:list )?services$", mention=True)
+@service.command(r"what services are(?: you)? running\??$", mention=True, allow_private=True)
+@service.command(r"(?:list )?services$", mention=True, allow_private=True)
 @requires_permission("admin")
 def list_services(client, target, origin):
     client.message(target, "I am running: {services}".format(
@@ -124,7 +124,7 @@ def list_services(client, target, origin):
     )
 
 
-@service.command(r"reload(?: all)? services$", mention=True)
+@service.command(r"reload(?: all)? services$", mention=True, allow_private=True)
 @requires_permission("admin")
 def reload_services(client, target, origin):
     failed_services = []
@@ -143,8 +143,8 @@ def reload_services(client, target, origin):
         client.message(target, "All services reloaded!")
 
 
-@service.command(r">>> (?P<code>.+)$")
-@service.command(r"eval (?P<code>.+)$", mention=True)
+@service.command(r">>> (?P<code>.+)$", allow_private=True)
+@service.command(r"eval (?P<code>.+)$", mention=True, allow_private=True)
 @requires_permission("admin")
 def eval_code(client, target, origin, code):
     storage = service.storage_for(client.bot)
@@ -173,14 +173,14 @@ def eval_code(client, target, origin, code):
         client.message(target, "(no result)")
 
 
-@service.command(r"rehash$", mention=True)
+@service.command(r"rehash$", mention=True, allow_private=True)
 @requires_permission("admin")
 def rehash(client, target, origin):
     client.bot.rehash()
     client.message(target, "Configuration rehashed.")
 
 
-@service.command(r"re(?:start|boot)$", mention=True)
+@service.command(r"re(?:start|boot)$", mention=True, allow_private=True)
 @requires_permission("admin")
 def restart(client, target, origin):
     for client in list(client.bot.networks.values()):
@@ -228,7 +228,7 @@ def restart(client, target, origin):
                       [sys.executable] + sys.argv)
             sys.exit(0)
 
-@service.command(r"(?:windows )?update(?:s)?!?$", mention=True)
+@service.command(r"(?:windows )?update(?:s)?!?$", mention=True, allow_private=True)
 @requires_permission("admin")
 def update(client, target, origin):
     client.message(target, "Checking for updates...")

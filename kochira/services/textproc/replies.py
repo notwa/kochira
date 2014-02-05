@@ -48,7 +48,7 @@ def remove_reply(client, target, origin, what):
     ))
 
 
-@service.hook("message")
+@service.hook("channel_message")
 def do_reply(client, target, origin, message):
     replies = []
 

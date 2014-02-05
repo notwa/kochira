@@ -67,7 +67,7 @@ HANDLERS = {
     "image/gif": handle_image
 }
 
-@service.hook("message")
+@service.hook("channel_message")
 @background
 def detect_urls(client, target, origin, message):
     found_info = {}
