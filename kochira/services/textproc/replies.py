@@ -2,10 +2,10 @@ import random
 import re
 from peewee import CharField
 
-from ..db import Model
+from kochira.db import Model
 
-from ..service import Service
-from ..auth import requires_permission
+from kochira.service import Service
+from kochira.auth import requires_permission
 
 service = Service(__name__)
 

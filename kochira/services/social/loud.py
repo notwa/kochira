@@ -2,9 +2,9 @@ import string
 
 from peewee import TextField, CharField, fn, SQL
 
-from ..db import Model
+from kochira.db import Model
 
-from ..service import Service
+from kochira.service import Service
 
 service = Service(__name__)
 

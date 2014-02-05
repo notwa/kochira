@@ -8,7 +8,7 @@ from datetime import timedelta
 from bs4 import BeautifulSoup
 from PIL import Image
 
-from ..service import Service, background
+from kochira.service import Service, background
 
 
 service = Service(__name__)

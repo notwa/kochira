@@ -2,7 +2,7 @@ import re
 import requests
 from lxml import etree
 
-from ..service import Service, background
+from kochira.service import Service, background
 
 service = Service(__name__)
 

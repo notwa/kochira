@@ -4,8 +4,8 @@ import signal
 import subprocess
 import sys
 
-from ..auth import requires_permission, ACLEntry
-from ..service import Service
+from kochira.auth import requires_permission, ACLEntry
+from kochira.service import Service
 
 
 service = Service(__name__)

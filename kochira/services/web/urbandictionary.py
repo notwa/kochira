@@ -1,6 +1,6 @@
 import requests
 
-from ..service import Service, background
+from kochira.service import Service, background
 
 service = Service(__name__)
 

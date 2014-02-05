@@ -7,10 +7,10 @@ import whoosh.query
 import whoosh.writing
 from whoosh.qparser import QueryParser
 
-from ..db import Model, database
+from kochira.db import Model, database
 
-from ..service import Service
-from ..auth import requires_permission
+from kochira.service import Service
+from kochira.auth import requires_permission
 
 service = Service(__name__)
 

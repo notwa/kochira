@@ -6,9 +6,9 @@ from peewee import TextField, CharField, DateTimeField, IntegerField
 
 import math
 
-from ..db import Model
+from kochira.db import Model
 
-from ..service import Service
+from kochira.service import Service
 
 service = Service(__name__)
 

@@ -4,8 +4,8 @@ import zmq
 import zmq.auth
 from zmq.eventloop import ioloop, zmqstream
 
-from ..auth import requires_permission
-from ..service import Service
+from kochira.auth import requires_permission
+from kochira.service import Service
 
 service = Service(__name__)
 

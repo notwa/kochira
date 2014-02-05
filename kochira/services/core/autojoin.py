@@ -1,4 +1,4 @@
-from ..service import Service
+from kochira.service import Service
 
 service = Service(__name__)
 

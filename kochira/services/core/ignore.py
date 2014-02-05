@@ -1,8 +1,8 @@
-from ..db import Model
+from kochira.db import Model
 from peewee import CharField, Expression, fn
 
-from ..auth import requires_permission
-from ..service import Service
+from kochira.auth import requires_permission
+from kochira.service import Service
 
 service = Service(__name__)
 

@@ -5,8 +5,8 @@ from datetime import datetime
 from peewee import CharField
 from lxml import etree
 
-from ..db import Model
-from ..service import Service, background
+from kochira.db import Model
+from kochira.service import Service, background
 
 service = Service(__name__)
 

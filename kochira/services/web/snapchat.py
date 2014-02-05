@@ -9,7 +9,7 @@ import subprocess
 from datetime import timedelta
 from pysnap import Snapchat, MEDIA_VIDEO_NOAUDIO, MEDIA_VIDEO
 
-from ..service import Service
+from kochira.service import Service
 
 service = Service(__name__)
 

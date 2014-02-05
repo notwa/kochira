@@ -1,8 +1,8 @@
 import requests
-from urllib.parse import urlencode, unquote
+from urllib.parse import unquote
 from html.parser import HTMLParser
 
-from ..service import Service, background
+from kochira.service import Service, background
 
 service = Service(__name__)
 
