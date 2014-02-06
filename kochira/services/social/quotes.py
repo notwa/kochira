@@ -1,7 +1,8 @@
 """
 Quote database.
 
-This enables the bot to record and search quotes.
+This enables the bot to record and search quotes. If the web server service is
+running, a web interface to quotes will be made available at ``/quotes/``.
 
 Configuration Options
 =====================
