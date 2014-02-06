@@ -7,10 +7,9 @@ This service allows bots to network to each other.
 """
 
 import functools
-import threading
 import zmq
 import zmq.auth
-from zmq.eventloop import ioloop, zmqstream
+from zmq.eventloop import zmqstream
 
 from kochira.auth import requires_permission
 from kochira.service import Service
@@ -34,7 +33,7 @@ class RequesterConnection:
         config = service.config_for(self.bot)
         storage = service.storage_for(self.bot)
 
-        @storage.ioloop_thread.io_loop.add_callback
+        @self.bot.io_loop.add_callback
         def _callback():
             socket = storage.zctx.socket(zmq.DEALER)
             socket.identity = config["identity"].encode("utf-8")
@@ -48,19 +47,17 @@ class RequesterConnection:
             socket.connect(self.config["url"])
 
             self.stream = zmqstream.ZMQStream(socket,
-                                              io_loop=storage.ioloop_thread.io_loop)
+                                              io_loop=self.bot.io_loop)
             self.stream.on_recv(self.on_raw_recv)
 
     def request(self, network, target, origin, message):
-        storage = service.storage_for(self.bot)
-
         msg = [network.encode("utf-8"),
                (origin + "!user@federated/kochira/" + origin).encode("utf-8"),
                b"PRIVMSG",
                target.encode("utf-8"),
                message.encode("utf-8")]
 
-        @storage.ioloop_thread.io_loop.add_callback
+        @self.bot.io_loop.add_callback
         def _callback():
             service.logger.info("Sent request to %s: %s", self.identity, msg)
             self.stream.send_multipart(msg)
@@ -80,25 +77,18 @@ class RequesterConnection:
             target = target.decode("utf-8")
             message = message.decode("utf-8")
 
-            self.bot.networks[network].message(target,
-                                               "(via {identity}) {message}".format(
-                identity=self.identity,
-                message=message
-            ))
+            self.bot.networks[network].message(
+                target,
+                "(via {identity}) {message}".format(
+                    identity=self.identity,
+                    message=message
+                )
+            )
 
     def shutdown(self):
-        storage = service.storage_for(self.bot)
-
-        event = threading.Event()
-
-        @storage.ioloop_thread.io_loop.add_callback
+        @self.bot.io_loop.add_callback
         def _callback():
-            try:
-                self.stream.close()
-            finally:
-                event.set()
-
-        event.wait()
+            self.stream.close()
 
 
 class ResponderClient:
@@ -133,33 +123,11 @@ class ResponderClient:
         storage = service.storage_for(self.bot)
         stream = storage.stream
 
-        @storage.ioloop_thread.io_loop.add_callback
+        @self.bot.io_loop.add_callback
         def _callback():
             service.logger.info("Sent response to %s: %s", self.remote_name,
                                 msg)
             stream.send_multipart([self.remote_name.encode("utf-8")] + msg)
-
-
-class IOLoopThread(threading.Thread):
-    daemon = True
-
-    def __init__(self):
-        self.event = threading.Event()
-        super().__init__()
-
-    def run(self):
-        try:
-            self.io_loop = ioloop.IOLoop()
-        finally:
-            self.event.set()
-
-        self.io_loop.start()
-        self.io_loop.close(all_fds=True)
-
-    def stop(self):
-        @self.io_loop.add_callback
-        def _callback():
-            self.io_loop.stop()
 
 
 def on_router_recv(bot, msg):
@@ -190,51 +158,36 @@ def setup_federation(bot):
     storage = service.storage_for(bot)
 
     storage.federations = {}
-    storage.ioloop_thread = IOLoopThread()
-    storage.ioloop_thread.start()
 
     zctx = storage.zctx = zmq.Context()
 
-    storage.ioloop_thread.event.wait()
-
-    event = threading.Event()
-
-    @storage.ioloop_thread.io_loop.add_callback
+    @bot.io_loop.add_callback
     def _callback():
-        try:
-            auth = storage.auth = zmq.auth.IOLoopAuthenticator(
-                zctx,
-                io_loop=storage.ioloop_thread.io_loop
-            )
-            auth.start()
-            auth.configure_plain(domain="*",
-                                 passwords=config.get("users", {}))
+        auth = storage.auth = zmq.auth.IOLoopAuthenticator(zctx,
+                                                           io_loop=bot.io_loop)
+        auth.start()
+        auth.configure_plain(domain="*",
+                             passwords=config.get("users", {}))
 
-            socket = zctx.socket(zmq.ROUTER)
-            socket.identity = config["identity"].encode("utf-8")
-            socket.plain_server = True
-            socket.bind(config["bind_address"])
+        socket = zctx.socket(zmq.ROUTER)
+        socket.identity = config["identity"].encode("utf-8")
+        socket.plain_server = True
+        socket.bind(config["bind_address"])
 
-            storage.stream = zmqstream.ZMQStream(
-                socket,
-                io_loop=storage.ioloop_thread.io_loop
-            )
-            storage.stream.on_recv(functools.partial(on_router_recv, bot))
+        storage.stream = zmqstream.ZMQStream(socket, io_loop=bot.io_loop)
+        storage.stream.on_recv(functools.partial(on_router_recv, bot))
 
-            for name, federation in config.get("federations", {}).items():
-                if federation.get("autoconnect", False):
-                    storage.federations[name] = RequesterConnection(bot, name, federation)
-        finally:
-            event.set()
-
-    event.wait()
+        for name, federation in config.get("federations", {}).items():
+            if federation.get("autoconnect", False):
+                storage.federations[name] = RequesterConnection(bot, name,
+                                                                federation)
 
 
 @service.shutdown
 def shutdown_federation(bot):
     storage = service.storage_for(bot)
 
-    @storage.ioloop_thread.io_loop.add_callback
+    @bot.io_loop.add_callback
     def _callback():
         try:
             storage.auth.stop()
@@ -254,8 +207,6 @@ def shutdown_federation(bot):
         except Exception as e:
             service.logger.error("Error during federation shut down",
                                  exc_info=e)
-
-        storage.ioloop_thread.stop()
 
 
 @service.command(r"federate with (?P<name>\S+)$", mention=True)
