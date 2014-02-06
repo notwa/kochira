@@ -235,18 +235,6 @@ def read_quote(client, target, origin, qid: int):
     ))
 
 
-def _rand_quote(bot, network, channel):
-    q = Quote.select() \
-        .where(Quote.network == network, Quote.channel == channel) \
-        .order_by(fn.Random()) \
-        .limit(1)
-
-    if not q.exists():
-        return None
-
-    return q[0]
-
-
 @service.command(r"(?:give me a )?random quote(?: matching (?P<query>.+))?$", mention=True)
 @service.command(r"!quote rand(?: (?P<query>.+))?$")
 def rand_quote(client, target, origin, query=None):
