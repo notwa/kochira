@@ -1,3 +1,52 @@
+"""
+Record and replay shouts.
+
+This service will record all messages in all caps and select a random message
+when somebody speaks in all caps.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Loudest Users
+-------------
+
+::
+
+    $bot: who is the loudest?
+    $bot: who are the loudest?
+    $bot: who is loud?
+    $bot: who are loud?
+
+Retrieve the top 5 loudest users.
+
+Who Said That?
+--------------
+
+::
+
+    $bot: who said that?
+    $bot: what was the context of that?
+
+Get information for who originally said the last shout.
+
+Number of Shouts
+----------------
+
+::
+
+    $bot: how many shouts?
+    $bot: how many times has <who> shouted?
+    $bot: how loud is <who>?
+
+Get the number of times everyone has shouted or, if `who` is specified, how
+many times `who` has shouted.
+
+"""
+
 import string
 
 from peewee import TextField, CharField, fn, SQL

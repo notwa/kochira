@@ -1,3 +1,74 @@
+"""
+Quote database.
+
+This enables the bot to record and search quotes.
+
+Configuration Options
+=====================
+
+``index_path``
+  Path to use for the full-text index.
+
+Commands
+========
+
+Add Quote
+---------
+
+::
+
+    $bot: add quote <quote>
+    !quote add <quote>
+
+**Requires permission:** quote
+
+Add the given quote to the database.
+
+Delete Quote
+------------
+
+::
+
+    $bot: delete quote <qid>
+    !quote del <qid>
+    $bot: i am very butthurt about quote <qid>
+
+**Requires permission:** quote
+
+Remove the given quote from the database.
+
+Read Quote
+----------
+
+::
+
+    $bot: what is quote <qid>
+    $bot: read quote <qid>
+    !quote read <qid>
+
+Read a quote from the database.
+
+Random Quote
+------------
+
+::
+
+    $bot: random quote
+    !quote rand
+
+Retrieve a random quote from the database.
+
+Find Quote
+----------
+
+::
+
+    $bot: find a quote matching <query>
+    !quote find <query>
+
+Full-text search for a given quote.
+"""
+
 from datetime import datetime
 from peewee import CharField, TextField, DateTimeField, fn
 from whoosh.analysis import StemmingAnalyzer

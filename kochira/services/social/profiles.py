@@ -1,3 +1,44 @@
+"""
+Personal profiles.
+
+This service allows the bot to keep track of people's profiles.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Remember Profile
+----------------
+
+::
+
+    $bot: i am <text>
+
+Associate the given profile text with the user.
+
+Forget Profile
+--------------
+
+::
+
+    $bot: forget about me
+
+Remove the given profile text from the user.
+
+Get Profile
+-----------
+
+::
+
+    $bot: who am i
+    $bot: who is <who>
+
+Retrieve profile text for a user.
+"""
+
 from peewee import CharField, TextField
 
 from kochira.db import Model
