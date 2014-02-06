@@ -77,7 +77,7 @@ class MainHandler(RequestHandler):
 
 class IndexHandler(RequestHandler):
     def get(self):
-        config = service.config_for(self.handler.application.bot)
+        config = service.config_for(self.application.bot)
 
         self.render("index.html",
                     motd=config.get("motd", "(message of the day not set)"),
