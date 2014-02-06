@@ -55,9 +55,12 @@ Random Quote
 ::
 
     $bot: random quote
+    $bot: random quote matching <query>
     !quote rand
+    !quote rand <query>
 
-Retrieve a random quote from the database.
+Retrieve a random quote from the database. If a query is specified, then it is
+used.
 
 Find Quote
 ----------
@@ -86,7 +89,7 @@ from kochira.db import Model, database
 from kochira.service import Service
 from kochira.auth import requires_permission
 
-from tornado.web import RequestHandler, Application, HTTPError
+from tornado.web import RequestHandler, Application
 
 
 service = Service(__name__, __doc__)
@@ -244,16 +247,29 @@ def _rand_quote(bot, network, channel):
     return q[0]
 
 
-@service.command(r"(?:give me a )?random quote$", mention=True)
-@service.command(r"!quote rand$")
-def rand_quote(client, target, origin):
-    quote = _rand_quote(client.bot, client.network, target)
+@service.command(r"(?:give me a )?random quote(?: matching (?P<query>.+))?$", mention=True)
+@service.command(r"!quote rand(?: (?P<query>.+))?$")
+def rand_quote(client, target, origin, query=None):
+    if query is not None:
+        q = _find_quotes(client.bot, query)
+    else:
+        q = Quote.select()
 
-    if quote is None:
+    q = q \
+        .where(
+            Quote.network == client.network,
+            Quote.channel == target
+        ) \
+        .order_by(fn.Random()) \
+        .limit(1)
+
+    if not q.exists():
         client.message(target, "{origin}: Couldn't find any quotes.".format(
             origin=origin
         ))
         return
+
+    quote = q[0]
 
     client.message(target, "{origin}: {quote}".format(
         origin=origin,
