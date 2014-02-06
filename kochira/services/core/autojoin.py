@@ -8,7 +8,7 @@ Configuration Options
 
 ``networks``
   A dictionary of networks, with network name as key and the list of channels
-  as value, e.g. ``{"freenode": "#kochira"}``.
+  as value, e.g. ``{"freenode": ["#kochira"]}``.
 
 Commands
 ========
