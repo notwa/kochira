@@ -41,6 +41,8 @@ class RequestHandler(RequestHandler):
 class IndexHandler(RequestHandler):
     def get(self):
         services = [service for service, _ in self.application.settings["bot"].services.values()]
+        services.sort(key=lambda s: s.name)
+
         self.render("help/index.html", services=services)
 
 
