@@ -85,7 +85,7 @@ from kochira.db import Model, database
 from kochira.service import Service
 from kochira.auth import requires_permission
 
-from tornado.web import RequestHandler, Application
+from tornado.web import RequestHandler, Application, HTTPError
 
 
 service = Service(__name__, __doc__)
@@ -330,9 +330,20 @@ class IndexHandler(RequestHandler):
                     offset=offset)
 
 
+class QuoteHandler(RequestHandler):
+    def get(self, id):
+        quote = _read_quote(self.application.bot, int(id))
+
+        if quote is None:
+            raise HTTPError(404)
+
+        self.render("quotes/quote.html", quote=quote)
+
+
 def make_application(settings):
     return Application([
-        (r"/", IndexHandler)
+        (r"/", IndexHandler),
+        ("/(\d+)", QuoteHandler)
     ], **settings)
 
 
