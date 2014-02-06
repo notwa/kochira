@@ -13,6 +13,12 @@ Configuration Options
 ``address`` (optional)
   Address to bind the HTTP server to.
 
+``title`` (optional)
+  Title for the web site.
+
+``motd`` (optional)
+  Greeting message for the main page. Should be in rST.
+
 Commands
 ========
 None.
@@ -71,7 +77,10 @@ class MainHandler(RequestHandler):
 
 class IndexHandler(RequestHandler):
     def get(self):
+        config = service.config_for(self.handler.application.bot)
+
         self.render("index.html",
+                    motd=config.get("motd", "(message of the day not set)"),
                     networks=sorted(self.application.bot.networks.items()))
 
 class NotFoundHandler(RequestHandler):
@@ -80,9 +89,19 @@ class NotFoundHandler(RequestHandler):
         self.render("404.html")
 
 
+class TitleModule(UIModule):
+    def render(self):
+        config = service.config_for(self.handler.application.bot)
+
+        return self.render_string("_modules/title.html",
+                                  title=config.get("title", "Kochira"))
+
 class NavBarModule(UIModule):
     def render(self):
+        config = service.config_for(self.handler.application.bot)
+
         return self.render_string("_modules/navbar.html",
+                                  title=config.get("title", "Kochira"),
                                   name=self.handler.application.name,
                                   confs=_get_application_confs(self.handler.application.bot))
 
@@ -103,7 +122,10 @@ def setup_webserver(bot):
         static_path=os.path.join(base_path, "static"),
         autoreload=False,
         compiled_template_cache=False,
-        ui_modules={"NavBar": NavBarModule}
+        ui_modules={
+            "NavBar": NavBarModule,
+            "Title": TitleModule
+        }
     )
     storage.application.bot = bot
     storage.application.name = None
