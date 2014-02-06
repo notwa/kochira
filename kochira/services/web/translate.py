@@ -1,3 +1,42 @@
+"""
+Translation between languages.
+
+Use Google Translate to perform translations between languages.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Translate
+---------
+
+::
+
+    $bot: what is <term>
+    $bot: what is <term> in <to_lang>
+    $bot: translate <term> from <from_lang>
+    $bot: translate <term> to <to_lang>
+    $bot: translate <term> from <from_lang> to <to_lang>
+
+Translate a term between two languages. If a language to translate from is not
+specified, the language will be auto-detected. If a language to translate to is
+not specified, the language will default to English.
+
+Transliterate
+-------------
+
+::
+
+    $bot: (transliterate|romanize) <term>
+    $bot: (transliterate|romanize) <term> from <from_lang>
+
+Perform transliteration of languages with non-Roman characters, e.g. Russian,
+Japanese, Thai, etc.
+"""
+
 import requests
 import pycountry
 from urllib.parse import urlencode

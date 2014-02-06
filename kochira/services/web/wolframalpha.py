@@ -1,3 +1,28 @@
+"""
+Wolfram|Alpha query.
+
+Runs queries on Wolfram|Alpha.
+
+Configuration Options
+=====================
+
+``appid``
+  Wolfram|Alpha application ID.
+
+Commands
+========
+
+Compute
+-------
+
+::
+
+    !wa <query>
+    $bot: (compute|calculate|mathify) <query>
+
+Run a query on Wolfram|Alpha and display the result.
+"""
+
 import re
 import requests
 from lxml import etree
@@ -9,7 +34,7 @@ service = Service(__name__, __doc__)
 @service.command(r"!wa (?P<query>.+)$")
 @service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)
 @background
-def query(client, target, origin, query):
+def compute(client, target, origin, query):
     config = service.config_for(client.bot)
 
     resp = requests.get("http://api.wolframalpha.com/v2/query",

@@ -1,3 +1,63 @@
+"""
+Last.fm now playing and music comparisons.
+
+Allow users to display their now playing status and compare music tastes using
+Last.fm.
+
+Configuration Options
+=====================
+
+``api_key``
+  Last.fm API key.
+
+Commands
+========
+
+Set Username
+------------
+
+::
+
+    !lfm <username>
+    $bot: my last.fm username is <username>
+
+Associate a Last.fm username with your nickname.
+
+Get Username
+------------
+
+::
+
+    !lfm
+    $bot: what is my last.fm username
+
+Get your Last.fm username.
+
+Now Playing
+-----------
+
+::
+
+    !np
+    !np <who>
+    $bot: what am i playing
+    $bot: what is <who> playing
+
+Get the currently playing song for a user.
+
+Tasteometer
+-----------
+
+::
+
+    !tasteometer <user1> <user2>
+    !tasteometer <user2>
+    $bot: compare my last.fm with <user2>
+    $bot: compare <user1> and <user2> on last.fm
+
+Compare the music tastes of two users.
+"""
+
 import requests
 import gzip
 import humanize

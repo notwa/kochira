@@ -1,3 +1,17 @@
+"""
+URL scanner.
+
+Fetches and displays metadata for web pages, images and more.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+None.
+"""
+
 import humanize
 import re
 import requests

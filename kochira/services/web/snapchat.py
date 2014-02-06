@@ -1,3 +1,29 @@
+"""
+Snapchat snap fetcher.
+
+Allows users to send Snapchats to channels.
+
+Configuration Options
+=====================
+
+``username``
+  Snapchat username.
+
+``password``
+  Snapchat password.
+
+``imgur_clientid``
+  Client ID for use with Imgur.
+
+``announce``
+  List of announce channels, e.g.
+  ``[{"network": "#freenode", "channel": "kochira"}]``.
+
+Commands
+========
+None.
+"""
+
 import os
 import glob
 import humanize

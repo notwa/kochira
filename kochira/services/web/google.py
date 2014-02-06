@@ -1,3 +1,29 @@
+"""
+Google web search.
+
+Run queries on Google and return results.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Google
+------
+
+::
+
+    !g <term>
+    !g <term> <num>
+    $bot: google for <term>
+    $bot: google for <term> (<num>)
+
+Search for the given terms on Google. If a number is given, it will display
+that result.
+"""
+
 import requests
 from urllib.parse import unquote
 from html.parser import HTMLParser

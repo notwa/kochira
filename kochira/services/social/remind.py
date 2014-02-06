@@ -14,6 +14,8 @@ Commands
 Add Timed Reminder
 ------------------
 
+::
+
     $bot: (tell|remind) <who> (in|after) <time> about <what>
 
 Add a reminder that will play after `time` has elapsed. If the user has left
@@ -21,6 +23,8 @@ the channel, the reminder will play as soon as they return.
 
 Add Reminder
 ------------
+
+::
 
     $bot: (tell|remind) <who> about <what>
 

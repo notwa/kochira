@@ -1,3 +1,30 @@
+"""
+UrbanDictionary lookup.
+
+Retrieves definitions of terms from UrbanDictionary.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Define
+------
+
+::
+
+    !ud <term>
+    !ud <term> <num>
+    $bot: define <term>
+    $bot: define <term> (<num>)
+    $bot: what does <term> mean?
+    $bot: what does <term> (<num>) mean?
+
+Look up the given term on UrbanDictionary.
+"""
+
 import requests
 
 from kochira.service import Service, background
