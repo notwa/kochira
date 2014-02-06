@@ -27,3 +27,9 @@ body {
   padding-left: 15px;
   padding-right: 15px;
 }
+
+.service-list {
+  columns: 2;
+  -webkit-columns: 2;
+  -moz-columns: 2;
+}
