@@ -33,3 +33,10 @@ body {
   -webkit-columns: 3;
   -moz-columns: 3;
 }
+
+.service-list li {
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  -moz-column-break-inside: avoid;
+  column-break-inside: avoid;
+}
