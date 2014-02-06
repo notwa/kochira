@@ -88,9 +88,16 @@ class IOLoopThread(threading.Thread):
         self.io_loop.close(all_fds=True)
 
     def stop(self):
+        event = threading.Event()
+
         @self.io_loop.add_callback
         def _callback():
-            self.io_loop.stop()
+            try:
+                self.io_loop.stop()
+            finally:
+                event.set()
+
+        event.wait()
 
 
 @service.setup
@@ -126,10 +133,7 @@ def setup_webhelp(bot):
 @service.shutdown
 def shutdown_webhelp(bot):
     storage = service.storage_for(bot)
-
-    @storage.ioloop_thread.io_loop.add_callback
-    def _callback():
-        storage.ioloop_thread.stop()
+    storage.ioloop_thread.stop()
 
 
 @service.command(r"!commands")
