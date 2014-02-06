@@ -1,3 +1,41 @@
+"""
+Text filters and replacements.
+
+Replaces or otherwise filters strings of text. All commands can be used without
+a parameter, where they will use the last line spoken in the channel.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Benis
+-----
+
+::
+
+    $bot: benis <what>
+    $bot: benis
+    !benis <what>
+    !benis
+
+You're going to have to figure this one out for yourself.
+
+Fabulous
+--------
+
+::
+
+    $bot: fabulous <what>
+    $bot: fabulous
+    !fabulous <what>
+    !fabulous
+
+Rainbow text!
+"""
+
 import functools
 import random
 import re

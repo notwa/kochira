@@ -1,3 +1,33 @@
+"""
+Timed and join reminders.
+
+Enables the bot to record and play reminders after timed intervals or on user
+join.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Add Timed Reminder
+------------------
+
+    $bot: (tell|remind) <who> (in|after) <time> about <what>
+
+Add a reminder that will play after `time` has elapsed. If the user has left
+the channel, the reminder will play as soon as they return.
+
+Add Reminder
+------------
+
+    $bot: (tell|remind) <who> about <what>
+
+Add a reminder that will play when the user joins the channel or next speaks on
+the channel.
+"""
+
 import humanize
 import parsedatetime
 
