@@ -1,6 +1,6 @@
-{% extends "_layout.html" %}
+{% extends "../_layout.html" %}
 
-{% block title %}{{ service.name }}{% end %}
+{% block title %}{{ service.name }} | Help{% end %}
 
 {% block body %}
 <h1>{{ service.name }}</h1>
@@ -10,6 +10,5 @@
 </blockquote>
 
 {% raw rst(service.long_doc or "", settings_overrides={"initial_header_level": 2}) %}
-
 
 {% end %}

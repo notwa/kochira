@@ -4,23 +4,12 @@
 
 {% block body %}
 <h1>Welcome</h1>
-Welcome to Kochira's online documentation!
-
-<h2>Services</h2>
-<p>These services are currently loaded into this instance of Kochira:</p>
-<ul class="service-list">
-{% for s in services %}
-    <li>
-        <a href="/services/{{ s.name }}">{{ s.name }}</a>
-        {% raw rst(s.short_doc or "(no documentation)") %}
-    </li>
-{% end %}
-</ul>
+Welcome to Kochira online!
 
 <h2>Networks</h2>
 <p>This instance of Kochira is connected to the following networks:</p>
 <ul>
-{% for network, client in bot.networks.items() %}
+{% for network, client in networks %}
     <li>
         <strong>{{ network }} ({{ client.connection.hostname }}:{{ client.connection.port }})</strong> as <strong>{{ client.nickname }}</strong>
         <ul>
