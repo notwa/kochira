@@ -27,9 +27,14 @@ from tornado.httpserver import HTTPServer, HTTPRequest
 service = Service(__name__, __doc__)
 
 
+def _get_application_confs(bot):
+    for hook in bot.get_hooks("services.net.webserver"):
+        yield hook(bot)
+
+
 class MainHandler(RequestHandler):
     def _get_application_factory(self, name):
-        for conf in self.application.settings["get_application_confs"]():
+        for conf in _get_application_confs(self.application.bot):
             if conf["name"] == name:
                 return conf["application_factory"]
 
@@ -77,10 +82,9 @@ class NotFoundHandler(RequestHandler):
 
 class NavBarModule(UIModule):
     def render(self):
-        get_application_confs = self.handler.application.settings["get_application_confs"]
         return self.render_string("_modules/navbar.html",
                                   name=self.handler.application.name,
-                                  confs=get_application_confs())
+                                  confs=_get_application_confs(self.handler.application.bot))
 
 base_path = os.path.join(os.path.dirname(__file__), "webserver")
 
@@ -89,10 +93,6 @@ base_path = os.path.join(os.path.dirname(__file__), "webserver")
 def setup_webserver(bot):
     config = service.config_for(bot)
     storage = service.storage_for(bot)
-
-    def get_application_confs():
-        for hook in bot.get_hooks("services.net.webserver"):
-            yield hook(bot)
 
     storage.application = Application([
         (r"/", IndexHandler),
@@ -103,7 +103,6 @@ def setup_webserver(bot):
         static_path=os.path.join(base_path, "static"),
         autoreload=False,
         compiled_template_cache=False,
-        get_application_confs=get_application_confs,
         ui_modules={"NavBar": NavBarModule}
     )
     storage.application.bot = bot
