@@ -76,6 +76,7 @@ class IOLoopThread(threading.Thread):
 
     def __init__(self):
         self.event = threading.Event()
+        self.stop_event = threading.Event()
         super().__init__()
 
     def run(self):
@@ -86,19 +87,13 @@ class IOLoopThread(threading.Thread):
 
         self.io_loop.start()
         self.io_loop.close(all_fds=True)
+        self.stop_event.set()
 
     def stop(self):
-        event = threading.Event()
-
         @self.io_loop.add_callback
         def _callback():
-            try:
-                self.io_loop.stop()
-            finally:
-                event.set()
-
-        event.wait()
-
+            self.io_loop.stop()
+        self.stop_event.wait()
 
 @service.setup
 def setup_webhelp(bot):
