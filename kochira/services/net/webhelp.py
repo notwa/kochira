@@ -33,10 +33,8 @@ Links the user to the web help service.
 
 from kochira.service import Service
 import os
-import threading
 
 from docutils.core import publish_parts
-from tornado import ioloop
 from tornado.web import RequestHandler, Application, HTTPError
 from tornado.httpserver import HTTPServer
 
@@ -74,44 +72,11 @@ class ServiceInfoHandler(RequestHandler):
 
 base_path = os.path.join(os.path.dirname(__file__), "webhelp")
 
-class IOLoopThread(threading.Thread):
-    daemon = True
-
-    def __init__(self):
-        self.event = threading.Event()
-        self.stop_event = threading.Event()
-        super().__init__()
-
-    def run(self):
-        try:
-            self.io_loop = ioloop.IOLoop()
-        finally:
-            self.event.set()
-
-        self.io_loop.start()
-
-        try:
-            self.io_loop.close(all_fds=True)
-        finally:
-            self.stop_event.set()
-
-        service.logger.info("webhelp thread stopped")
-
-    def stop(self):
-        @self.io_loop.add_callback
-        def _callback():
-            self.io_loop.stop()
-        self.stop_event.wait()
-
 
 @service.setup
 def setup_webhelp(bot):
     config = service.config_for(bot)
     storage = service.storage_for(bot)
-
-    storage.ioloop_thread = IOLoopThread()
-    storage.ioloop_thread.start()
-    storage.ioloop_thread.event.wait()
 
     storage.application = Application([
         (r"/", IndexHandler),
@@ -124,22 +89,22 @@ def setup_webhelp(bot):
     )
     storage.application.bot = bot
 
-    @storage.ioloop_thread.io_loop.add_callback
+    @bot.io_loop.add_callback
     def _callback():
-        storage.http_server = HTTPServer(
-            storage.application,
-            io_loop=storage.ioloop_thread.io_loop
-        )
-
+        storage.http_server = HTTPServer(storage.application,
+                                         io_loop=bot.io_loop)
         storage.http_server.listen(config["port"], config.get("address"))
-
         service.logger.info("webhelp ready")
 
 
 @service.shutdown
 def shutdown_webhelp(bot):
     storage = service.storage_for(bot)
-    storage.ioloop_thread.stop()
+
+    @bot.io_loop.add_callback
+    def _callback():
+        storage.http_server.stop()
+        service.logger.info("webhelp stopped")
 
 
 @service.command(r"!commands")
