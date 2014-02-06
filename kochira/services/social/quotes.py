@@ -331,20 +331,9 @@ class IndexHandler(RequestHandler):
                     offset=offset)
 
 
-class QuoteHandler(RequestHandler):
-    def get(self, id):
-        quote = _read_quote(self.application.bot, int(id))
-
-        if quote is None:
-            raise HTTPError(404)
-
-        self.render("quotes/quote.html", quote=quote)
-
-
 def make_application(settings):
     return Application([
-        (r"/", IndexHandler),
-        ("/(\d+)", QuoteHandler)
+        (r"/", IndexHandler)
     ], **settings)
 
 

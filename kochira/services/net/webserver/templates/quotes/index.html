@@ -13,7 +13,7 @@
 </form>
 
 {% for quote in quotes %}
-<h2><a href="{{quote.id}}">Quote #{{quote.id}}</a></h2>
+<h2><a href="?q=id:{{quote.id}}">Quote #{{quote.id}}</a></h2>
 <pre>{{quote.quote_with_newlines}}</pre>
 {% end %}
 
