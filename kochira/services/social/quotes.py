@@ -73,7 +73,7 @@ Full-text search for a given quote.
 import re
 
 from datetime import datetime
-from peewee import CharField, TextField, DateTimeField, fn
+from peewee import CharField, TextField, DateTimeField, fn, SQL
 from whoosh.analysis import StemmingAnalyzer
 import whoosh.fields
 import whoosh.index
@@ -271,7 +271,7 @@ def _find_quotes(bot, query):
         qids = [r["id"] for r in results]
 
     return Quote.select() \
-        .where(Quote.id << qids)
+        .where(Quote.id << SQL("({})".format(", ".join(str(qid) for qid in qids))))
 
 
 @service.command(r"find (?:a )?quote matching (?P<query>.+)$", mention=True)
