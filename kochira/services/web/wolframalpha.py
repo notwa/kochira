@@ -4,7 +4,7 @@ from lxml import etree
 
 from kochira.service import Service, background
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 @service.command(r"!wa (?P<query>.+)$")
 @service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)

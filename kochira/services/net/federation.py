@@ -1,3 +1,11 @@
+"""
+Kochira bot federation.
+
+This service allows bots to network to each other.
+
+**WARNING:** Very unstable!
+"""
+
 import functools
 import threading
 import zmq
@@ -7,7 +15,7 @@ from zmq.eventloop import ioloop, zmqstream
 from kochira.auth import requires_permission
 from kochira.service import Service
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 
 class RequesterConnection:
@@ -146,6 +154,7 @@ class IOLoopThread(threading.Thread):
             self.event.set()
 
         self.io_loop.start()
+        self.io_loop.close(all_fds=True)
 
     def stop(self):
         @self.io_loop.add_callback

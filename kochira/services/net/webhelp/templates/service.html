@@ -1,0 +1,15 @@
+{% extends "_layout.html" %}
+
+{% block title %}{{ service.name }}{% end %}
+
+{% block body %}
+<h1>{{ service.name }}</h1>
+
+<blockquote>
+{% raw rst(service.short_doc or "(no documentation)") %}
+</blockquote>
+
+{% raw rst(service.long_doc or "", settings_overrides={"initial_header_level": 2}) %}
+
+
+{% end %}

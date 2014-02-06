@@ -5,7 +5,7 @@ import unicodedata
 
 from kochira.service import Service
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 
 def benisify(s):

@@ -2,7 +2,7 @@ import requests
 
 from kochira.service import Service, background
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 
 @service.command(r"!ud (?P<term>.+?)(?: (?P<num>\d+))?$")

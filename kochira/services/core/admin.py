@@ -1,3 +1,130 @@
+"""
+Administration services.
+
+This service allows administrators to manage various aspects of the bot.
+
+Configuration Options
+=====================
+
+None.
+
+Commands
+========
+
+Grant Permission
+----------------
+
+::
+
+    $bot: grant <permission> to <hostmask>
+    $bot: grant <permission> to <hostmask> on channel <channel>
+
+**Requires permission:** admin
+
+Grant a permission to the given hostmask. It can be done on a channel-specific
+basis. Wildcard hostmasks are permitted.
+
+
+Revoke Permission
+-----------------
+
+::
+
+    $bot: revoke <permission> from <hostmask>
+    $bot: revoke <permission> from <hostmask> on channel <channel>
+
+**Requires permission:** admin
+
+Revoke a permission from the given hostmask. It can be done on a
+channel-specific basis. Wildcard hostmasks are permitted and will revoke
+permissions for any hostmask matching it.
+
+Load Service
+------------
+
+::
+
+    $bot: load service <name>
+    $bot: reload service <name>
+
+**Requires permission:** admin
+
+Load or reload a service with the given name. Reloading will force all code to
+be reloaded.
+
+Unload Service
+--------------
+
+::
+
+    $bot: unload service <name>
+
+**Requires permission:** admin
+
+Unload a currently running service.
+
+List Services
+-------------
+
+::
+
+    $bot: services
+    $bot: list services
+
+**Requires permission:** admin
+
+List all running services.
+
+Evaluate Code
+-------------
+
+::
+
+    $bot: eval <code>
+    >>> <code>
+
+**Requires permission:** admin
+
+Evaluate code inside the bot. The local ``bot`` is provided for access to bot
+internals.
+
+Rehash Configuration
+--------------------
+
+::
+
+    $bot: rehash
+
+**Requires permission:** admin
+
+Rehash the bot's configuration settings.
+
+Restart
+-------
+
+::
+
+    $bot: restart
+    $bot: reboot
+
+**Requires permission:** admin
+
+Restart the bot. Will ``exec`` a new process into the currently running process
+space.
+
+Update
+------
+
+::
+
+    $bot: update
+    $bot: windows updates!
+
+**Requires permission:** admin
+
+Update the bot by pulling from the latest Git master.
+"""
+
 from io import StringIO
 import os
 import signal
@@ -8,7 +135,7 @@ from kochira.auth import requires_permission, ACLEntry
 from kochira.service import Service
 
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 
 @service.setup

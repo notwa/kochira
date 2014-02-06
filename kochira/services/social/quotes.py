@@ -12,7 +12,7 @@ from kochira.db import Model, database
 from kochira.service import Service
 from kochira.auth import requires_permission
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 stem_ana = StemmingAnalyzer()
 

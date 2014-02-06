@@ -1,3 +1,52 @@
+"""
+Automatic replies for keywords.
+
+This service enables the bot to respond to predefined replies specified by
+users.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Add Reply
+---------
+
+::
+
+    $bot: reply to <what> with <reply>
+
+**Requires permission:** reply
+
+Add an automatic reply for whenever someone says `what`. `what` can be a
+regular expression delimited by ``/``, e.g. ``/^foo$/``.
+
+Remove Reply
+------------
+
+::
+
+    $bot: stop replying to <what>
+    $bot: don't reply to <what>
+    $bot: remove reply (to|for) <what>
+
+**Requires permission:** reply
+
+Remove the reply for `what`.
+
+List Replies
+------------
+
+::
+
+    $bot: what do you reply to?
+    $bot: replies?
+
+List all replies the bot has registered.
+"""
+
 import random
 import re
 from peewee import CharField
@@ -7,7 +56,7 @@ from kochira.db import Model
 from kochira.service import Service
 from kochira.auth import requires_permission
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 class Reply(Model):
     what = CharField(255)

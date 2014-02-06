@@ -1,10 +1,62 @@
+"""
+Ignore lists.
+
+This allows the bot to ignore users.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+Add Ignore
+----------
+
+::
+
+    $bot: ignore <hostmask>
+    $bot: add ignore for <hostmask>
+
+**Requires permission:** ignore
+
+Add an ignore for the specified hostmask. Can contain wildcards.
+
+Remove Ignore
+-------------
+
+::
+
+    $bot: unignore <hostmask>
+    $bot: don't ignore <hostmask>
+    $bot: stop ignoring <hostmask>
+    $bot: remove ignore from <hostmask>
+
+**Requires permission:** ignore
+
+Remove an ignore for the specified hostmask. Must match hostmask in ignore list
+exactly.
+
+List Ignores
+------------
+
+::
+
+    $bot: list ignores
+    $bot: ignores
+
+**Requires permission:** ignore
+
+List all ignores for the bot on the current network.
+"""
+
 from kochira.db import Model
 from peewee import CharField, Expression, fn
 
 from kochira.auth import requires_permission
 from kochira.service import Service
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 
 class Ignore(Model):

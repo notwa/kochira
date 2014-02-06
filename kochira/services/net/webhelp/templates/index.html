@@ -1,0 +1,36 @@
+{% extends "_layout.html" %}
+
+{% block title %}Welcome!{% end %}
+
+{% block body %}
+<h1>Welcome</h1>
+Welcome to Kochira's online documentation!
+
+<h2>Services</h2>
+<p>These services are currently loaded into this instance of Kochira:</p>
+<ul>
+{% for s in services %}
+    <li>
+        <a href="/services/{{ s.name }}">{{ s.name }}</a>
+        {% raw rst(s.short_doc or "(no documentation)") %}
+    </li>
+{% end %}
+</ul>
+
+<h2>Networks</h2>
+<p>This instance of Kochira is connected to the following networks:</p>
+<ul>
+{% for network, client in bot.networks.items() %}
+    <li>
+        <strong>{{ network }} ({{ client.connection.hostname }}:{{ client.connection.port }})</strong> as <strong>{{ client.nickname }}</strong>
+        <ul>
+        {% for channel, details in client.channels.items() %}
+            {% if not details["modes"].get("s") %}
+            <li>{{ channel }}</li>
+            {% end %}
+        {% end %}
+        </ul>
+    </li>
+{% end %}
+</ul>
+{% end %}

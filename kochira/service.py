@@ -14,8 +14,9 @@ class Service:
 
     EAT = object()
 
-    def __init__(self, name):
+    def __init__(self, name, doc=None):
         self.name = name
+        self.doc = doc
         self.hooks = {}
         self.tasks = []
         self.on_setup = None
@@ -32,6 +33,27 @@ class Service:
             return f
 
         return _decorator
+
+    def _get_doc_parts(self):
+        if self.doc is None:
+            return None
+        return self.doc.strip().split("\n\n")
+
+    @property
+    def short_doc(self):
+        parts = self._get_doc_parts()
+        if parts is None:
+            return None
+
+        return parts[0]
+
+    @property
+    def long_doc(self):
+        parts = self._get_doc_parts()
+        if parts is None:
+            return None
+
+        return "\n\n".join(parts[1:])
 
     def command(self, pattern, priority=0, mention=False, strip=True,
                 re_flags=re.I, eat=True, allow_private=False):
@@ -127,7 +149,7 @@ class Service:
         """
         Get the configuration dictionary.
         """
-        return bot.config["services"][self.name]
+        return bot.config["services"].get(self.name, {})
 
     def storage_for(self, bot):
         """

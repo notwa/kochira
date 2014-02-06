@@ -6,7 +6,7 @@ from kochira.db import Model
 
 from kochira.service import Service
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 
 class Shout(Model):

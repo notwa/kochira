@@ -11,7 +11,7 @@ from PIL import Image
 from kochira.service import Service, background
 
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 HEADERS = {
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:23.0) Gecko/20130426 Firefox/23.0'

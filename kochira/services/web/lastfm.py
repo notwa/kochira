@@ -8,7 +8,7 @@ from lxml import etree
 from kochira.db import Model
 from kochira.service import Service, background
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 
 class LastFMProfile(Model):

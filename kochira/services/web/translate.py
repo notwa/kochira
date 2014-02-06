@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 
 from kochira.service import Service, background
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 LANGUAGES = {}
 

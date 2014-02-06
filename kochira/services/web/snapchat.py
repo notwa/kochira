@@ -10,7 +10,7 @@ from pysnap import Snapchat, MEDIA_VIDEO_NOAUDIO, MEDIA_VIDEO
 
 from kochira.service import Service
 
-service = Service(__name__)
+service = Service(__name__, __doc__)
 
 GIF_FRAMERATE = 7
 GIF_MAX_LENGTH = 360
