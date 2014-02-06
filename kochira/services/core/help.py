@@ -62,7 +62,7 @@ def make_application(settings):
     ], **settings)
 
 
-@service.hook("services.net.webserver")
+@service.hook("services.net.webserver", priority=-9999)
 def webserver_config(bot):
     return {
         "name": "help",
