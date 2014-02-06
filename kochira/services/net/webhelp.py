@@ -113,11 +113,14 @@ def setup_webhelp(bot):
     )
     storage.application.bot = bot
 
-    storage.http_server = HTTPServer(
-        storage.application,
-        io_loop=storage.ioloop_thread.io_loop
-    )
-    storage.http_server.listen(config["port"], config.get("address"))
+    @storage.ioloop_thread.io_loop.add_callback
+    def _callback():
+        storage.http_server = HTTPServer(
+            storage.application,
+            io_loop=storage.ioloop_thread.io_loop
+        )
+
+        storage.http_server.listen(config["port"], config.get("address"))
 
 
 @service.shutdown
