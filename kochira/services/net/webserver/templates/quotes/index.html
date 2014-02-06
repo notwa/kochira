@@ -5,18 +5,22 @@
 {% block body %}
 {% import math %}
 
+<form class="form-inline pull-right" role="search">
+  <div class="form-group">
+    <input type="text" class="form-control" placeholder="Search" value="{{query or ""}}">
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+
 {% for quote in quotes %}
 <h2>Quote #{{quote.id}}</h2>
 <pre>{{quote.quote_with_newlines}}</pre>
 {% end %}
 
-<ul class="pagination">
+<ul class="pager">
     {% set n = int(math.ceil(count / limit)) %}
     {% set j = offset // limit %}
-    <li{% if j <= 0 %} class="disabled"{% end %}><a href="?offset={{(j - 1) * limit}}&limit={{limit}}">&laquo;</a></li>
-    {% for i in range(n) %}
-    <li{% if i == j %} class="active"{% end %}><a href="?offset={{i * limit}}&limit={{limit}}">{{i + 1}}</a></li>
-    {% end %}
-    <li{% if j >= n - 1 %} class="disabled"{% end %}><a href="?offset={{(j + 1) * limit}}&limit={{limit}}">&raquo;</a></li>
+    <li class="previous{% if j <= 0 %} disabled"{% end %}><a href="?offset={{(j - 1) * limit}}&limit={{limit}}">&larr; Older</a></li>
+    <li class="next{% if j >= n - 1 %} disabled"{% end %}><a href="?offset={{(j + 1) * limit}}&limit={{limit}}">Newer &rarr;</a></li>
 </ul>
 {% end %}

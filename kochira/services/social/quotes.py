@@ -260,7 +260,7 @@ def rand_quote(client, target, origin):
     ))
 
 
-def _find_quotes(bot, network, channel, query):
+def _find_quotes(bot, query):
     storage = service.storage_for(bot)
 
     q = storage.quote_qp.parse(query)
@@ -269,18 +269,17 @@ def _find_quotes(bot, network, channel, query):
         results = searcher.search(q, limit=None)
         qids = [r["id"] for r in results]
 
-    quotes = list(Quote.select()
-        .where(Quote.network == network,
-               Quote.channel == channel,
-               Quote.id << qids))
-
-    return quotes
+    return Quote.select() \
+        .where(Quote.id << qids)
 
 
 @service.command(r"find (?:a )?quote matching (?P<query>.+)$", mention=True)
 @service.command(r"!quote find (?P<query>.+)$")
 def find_quote(client, target, origin, query):
-    quotes = list(_find_quotes(client.bot, client.network, target, query))
+    quotes = list(_find_quotes(client.bot, query).where(
+        Quote.network == client.network,
+        Quote.channel == target
+    ))
 
     if not quotes:
         client.message(target, "{origin}: Couldn't find any quotes.".format(
@@ -314,9 +313,17 @@ class IndexHandler(RequestHandler):
         except ValueError:
             offset = 0
 
-        q = Quote.select()
+        query = self.get_argument("q", None)
+
+        if query is not None:
+            q = _find_quotes(self.application.bot, query)
+        else:
+            q = Quote.select()
+
+        q = q.order_by(Quote.id.desc())
 
         self.render("quotes/index.html",
+                    query=query,
                     quotes=q.limit(limit).offset(offset),
                     count=q.count(),
                     limit=limit,
