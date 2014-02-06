@@ -135,7 +135,7 @@ def shutdown_webhelp(bot):
 def help(client, target, origin):
     config = service.config_for(client.bot)
 
-    client.message(target, "{origin}: My help is available at {url}.".format(
+    client.message(target, "{origin}: My help is available at {url}".format(
         origin=origin,
         url=config["url"]
     ))
