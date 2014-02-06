@@ -40,7 +40,7 @@ class RequestHandler(RequestHandler):
 
 class IndexHandler(RequestHandler):
     def get(self):
-        services = [service for service, _ in self.application.settings["bot"].services.values()]
+        services = [service for service, _ in self.application.bot.services.values()]
         services.sort(key=lambda s: s.name)
 
         self.render("help/index.html", services=services)
@@ -49,7 +49,7 @@ class IndexHandler(RequestHandler):
 class ServiceHelpHandler(RequestHandler):
     def get(self, service_name):
         try:
-            service, _ = self.application.settings["bot"].services[service_name]
+            service, _ = self.application.bot.services[service_name]
         except KeyError:
             raise HTTPError(404)
         self.render("help/service.html", service=service)

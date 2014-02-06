@@ -38,7 +38,11 @@ class MainHandler(RequestHandler):
     def _run_request(self, name, url):
         application = self._get_application_factory(name)(self.settings)
         application.name = name
-        application(HTTPRequest(self.request.method, "/" + url,
+        application.bot = self.application.bot
+
+        uri = self.request.uri[len(name) + 1:]
+
+        application(HTTPRequest(self.request.method, uri,
                                 self.request.version, self.request.headers,
                                 self.request.body, self.request.remote_ip,
                                 self.request.protocol, self.request.host,
@@ -63,7 +67,12 @@ class MainHandler(RequestHandler):
 class IndexHandler(RequestHandler):
     def get(self):
         self.render("index.html",
-                    networks=sorted(self.application.settings["bot"].networks.items()))
+                    networks=sorted(self.application.bot.networks.items()))
+
+class NotFoundHandler(RequestHandler):
+    def get(self):
+        self.set_status(404)
+        self.render("404.html")
 
 
 class NavBarModule(UIModule):
@@ -71,7 +80,7 @@ class NavBarModule(UIModule):
         get_application_confs = self.handler.application.settings["get_application_confs"]
         return self.render_string("_modules/navbar.html",
                                   name=self.handler.application.name,
-                                  factories=sorted(get_application_confs()))
+                                  confs=get_application_confs())
 
 base_path = os.path.join(os.path.dirname(__file__), "webserver")
 
@@ -87,16 +96,17 @@ def setup_webserver(bot):
 
     storage.application = Application([
         (r"/", IndexHandler),
-        (r"/(\S+)/(.*)", MainHandler)
+        (r"/(\S+)/(.*)", MainHandler),
+        (r".*", NotFoundHandler)
     ],
         template_path=os.path.join(base_path, "templates"),
         static_path=os.path.join(base_path, "static"),
         autoreload=False,
         compiled_template_cache=False,
-        bot=bot,
         get_application_confs=get_application_confs,
         ui_modules={"NavBar": NavBarModule}
     )
+    storage.application.bot = bot
     storage.application.name = None
 
     @bot.io_loop.add_callback
