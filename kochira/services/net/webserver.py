@@ -24,6 +24,8 @@ Commands
 None.
 """
 
+from docutils.core import publish_parts
+
 from kochira.service import Service
 import os
 
@@ -78,9 +80,10 @@ class MainHandler(RequestHandler):
 class IndexHandler(RequestHandler):
     def get(self):
         config = service.config_for(self.application.bot)
+        motd = config.get("motd", "(message of the day not set)")
 
         self.render("index.html",
-                    motd=config.get("motd", "(message of the day not set)"),
+                    motd=publish_parts(motd, writer_name="html", settings_overrides={"initial_header_level": 2})["fragment"],
                     networks=sorted(self.application.bot.networks.items()))
 
 class NotFoundHandler(RequestHandler):
