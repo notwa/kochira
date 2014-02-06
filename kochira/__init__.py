@@ -159,7 +159,7 @@ class Bot:
         self._shutdown_service(service)
         del self.services[name]
 
-    def _compute_hooks(self, hook):
+    def get_hooks(self, hook):
         """
         Create an ordering of hooks to run.
         """
@@ -174,7 +174,7 @@ class Bot:
         Attempt to dispatch a command to all command handlers.
         """
 
-        for hook in self._compute_hooks(hook):
+        for hook in self.get_hooks(hook):
             try:
                 r = hook(client, *args)
                 if r is Service.EAT:

@@ -13,7 +13,7 @@ Configuration Options
   Address to bind the HTTP server to.
 
 ``url``
-  Base URL for the web help, e.g. ``http://example.com:8000``.
+  Base URL for the web server, e.g. ``http://example.com:8000``.
 
 Commands
 ========
