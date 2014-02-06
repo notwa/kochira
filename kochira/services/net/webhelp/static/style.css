@@ -81,7 +81,7 @@ body {
     margin-left: 180px
   }
 
-  #commands > .section:first-child {
+  #commands > .section:first-of-type {
     margin-top: -20px;
   }
 }
