@@ -9,6 +9,9 @@ Configuration Options
 ``port``
   Port to run the web help on, e.g. ``8080``.
 
+``address`` (optional)
+  Address to bind the HTTP server to.
+
 ``url``
   Base URL for the web help, e.g. ``http://example.com:8000``.
 
@@ -86,14 +89,20 @@ class IOLoopThread(threading.Thread):
             self.event.set()
 
         self.io_loop.start()
-        self.io_loop.close(all_fds=True)
-        self.stop_event.set()
+
+        try:
+            self.io_loop.close(all_fds=True)
+        finally:
+            self.stop_event.set()
+
+        service.logger.info("webhelp thread stopped")
 
     def stop(self):
         @self.io_loop.add_callback
         def _callback():
             self.io_loop.stop()
         self.stop_event.wait()
+
 
 @service.setup
 def setup_webhelp(bot):
@@ -123,6 +132,8 @@ def setup_webhelp(bot):
         )
 
         storage.http_server.listen(config["port"], config.get("address"))
+
+        service.logger.info("webhelp ready")
 
 
 @service.shutdown
