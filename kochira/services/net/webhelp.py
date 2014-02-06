@@ -109,7 +109,7 @@ def setup_webhelp(bot):
         template_path=os.path.join(base_path, "templates"),
         static_path=os.path.join(base_path, "static"),
         autoreload=False,
-        debug=config.get("debug", False)
+        compiled_template_cache=False
     )
     storage.application.bot = bot
 
