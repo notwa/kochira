@@ -39,6 +39,10 @@ body {
     columns: 3;
     -webkit-columns: 3;
     -moz-columns: 3;
+
+    column-gap: 30px;
+    -webkit-column-gap: 30px;
+    -moz-column-gap: 30px;
   }
 
   dl.docutils dt {
@@ -53,5 +57,28 @@ body {
 
   dl.docutils dd {
     margin-left:180px
+  }
+
+  #commands {
+    columns: 3;
+    -webkit-columns: 3;
+    -moz-columns: 3;
+
+    column-gap: 30px;
+    -webkit-column-gap: 30px;
+    -moz-column-gap: 30px;
+  }
+
+  #commands > h2 {
+    column-span: all;
+    -webkit-column-span: all;
+    -moz-column-span: all;
+  }
+
+  #commands > .section {
+    page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+    column-break-inside: avoid;
   }
 }
