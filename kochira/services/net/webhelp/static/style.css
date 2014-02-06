@@ -80,6 +80,10 @@ body {
   dl.docutils dd {
     margin-left: 180px
   }
+
+  #commands > .section:first-child {
+    margin-top: -20px;
+  }
 }
 
 @media (min-width: 992px) {
