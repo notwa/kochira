@@ -68,7 +68,7 @@ class Bot:
 
         def handle_all_messages(fd, events):
             while client._has_message():
-                client._handle_message()
+                client.handle_single()
 
         self.io_loop.add_handler(client.connection.socket.fileno(),
                                  handle_all_messages,
