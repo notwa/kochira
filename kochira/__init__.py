@@ -191,8 +191,6 @@ class Bot:
         with open(self.config_file, "r") as f:
             self.config = yaml.load(f)
 
-        from pydle.log import Logger
-        Logger.LEVEL = logging.DEBUG if self.config["core"].get("debug", False) else logging.INFO
 
 def main():
     import sys
