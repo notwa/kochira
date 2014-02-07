@@ -56,6 +56,13 @@ def sed(client, target, origin, pattern, replacement, who=None, flags=None):
             match = expr.search(message)
 
             if match is not None:
-                msg = expr.sub(replacement, message, count=0 if "g" in flags else 1)
+                try:
+                    msg = expr.sub(replacement, message, count=0 if "g" in flags else 1)
+                except:
+                    client.message(target, "{origin}: Couldn't parse that pattern.".format(
+                        origin=origin
+                    ))
+                    return
+
                 client.message(target, "<{who}> {message}".format(who=other, message=msg))
                 break
