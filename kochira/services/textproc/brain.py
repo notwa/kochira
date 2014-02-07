@@ -45,15 +45,18 @@ def reply_and_learn(client, target, origin, message):
         reply = True
         message = rest
 
+    message = message.strip()
+
     if re.search(r"\b{}\b".format(re.escape(client.nickname)), message, re.I) is not None:
         reply = True
 
     if reply:
         reply_message = storage.brain.reply(message)
 
-    if mention:
-        client.message(target, "{origin}: {message}".format(origin=origin, message=reply_message))
-    else:
-        client.message(target, reply_message)
+        if mention:
+            client.message(target, "{origin}: {message}".format(origin=origin, message=reply_message))
+        else:
+            client.message(target, reply_message)
 
-    storage.brain.learn(message)
+    if message:
+        storage.brain.learn(message)
