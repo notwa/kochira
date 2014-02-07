@@ -1,0 +1,59 @@
+"""
+8ball simulator.
+
+It's like a real 8ball, but on the internet.
+
+Configuration Options
+=====================
+None.
+
+Commands
+========
+
+8ball
+-----
+
+::
+
+    !8ball <question>
+    $bot: ask the 8ball <question>
+
+If you don't know what an 8ball does just Google it.
+"""
+
+import binascii
+import time
+
+from kochira.service import Service
+
+OPTIONS = [
+    "It is certain",
+    "It is decidedly so",
+    "Without a doubt",
+    "Yes, definitely",
+    "You may rely on it",
+    "As I see it, yes",
+    "Most likely",
+    "Outlook good",
+    "Yes",
+    "Signs point to yes",
+    "Reply hazy, try again",
+    "Ask again later",
+    "Better not tell you now",
+    "Cannot predict now",
+    "Concentrate and ask again",
+    "Don't count on it",
+    "My reply is no",
+    "My sources say no",
+    "Outlook not so good",
+    "Very doubtful"
+]
+
+service = Service(__name__, __doc__)
+
+@service.command(r"ask the 8ball (?P<question>.+)$", mention=True)
+@service.command(r"!8ball (?P<question>.+)$")
+def ask_8ball(client, target, origin, question):
+    client.message(target, "\x02The Magic 8-Ball says:\x02 {}".format(
+        OPTIONS[(binascii.crc32(question.lower().encode("utf-8")) + int(time.time() // (60 * 60 * 24))) % len(OPTIONS)]
+    ))
