@@ -34,7 +34,7 @@ def load_brain(bot):
 def unload_brain(bot):
     storage = service.storage_for(bot)
 
-    storage.brain.close()
+    storage.brain.graph.close()
 
 
 @service.hook("channel_message", priority=-9999)
