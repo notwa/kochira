@@ -1,6 +1,6 @@
 {% extends "../_layout.html" %}
 
-{% block title %}Quotes{% end %}
+{% block title %}{{query + " | " if query else ""}}Quuotes{% end %}
 
 {% block body %}
 {% import math %}

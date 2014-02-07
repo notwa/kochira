@@ -36,7 +36,6 @@ nosetests.xml
 .pydevproject
 
 config.yml
-*.db
 
 # virtualenv and stuff
 quotes
@@ -45,3 +44,7 @@ include
 # vim
 *.swp
 .ropeproject
+
+*.log
+*.db
+*.db-journal
