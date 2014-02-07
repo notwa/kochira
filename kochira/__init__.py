@@ -5,7 +5,6 @@ import heapq
 import logging
 import multiprocessing
 from peewee import SqliteDatabase
-from pydle.connection import Connection
 import yaml
 from zmq.eventloop import ioloop
 
@@ -49,6 +48,8 @@ class Bot:
         sasl_config = config.get("sasl", {})
 
         client = Client(self, network_name, config["nickname"],
+            username=config.get("username", None),
+            realname=config.get("realname", None),
             tls_client_cert=tls_config.get("certificate_file"),
             tls_client_cert_key=tls_config.get("certificate_keyfile"),
             tls_client_cert_password=tls_config.get("certificate_password"),
@@ -190,6 +191,8 @@ class Bot:
         with open(self.config_file, "r") as f:
             self.config = yaml.load(f)
 
+        from pydle.log import Logger
+        Logger.LEVEL = logging.DEBUG if self.config["core"].get("debug", False) else logging.INFO
 
 def main():
     import sys
