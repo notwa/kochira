@@ -303,7 +303,16 @@ def eval_code(client, target, origin, code):
 @service.command(r"rehash$", mention=True, allow_private=True)
 @requires_permission("admin")
 def rehash(client, target, origin):
-    client.bot.rehash()
+    try:
+        client.bot.rehash()
+    except BaseException as e:
+        client.message(target, "Sorry, couldn't rehash.")
+        client.message(target, "↳ {name}: {info}".format(
+            name=e.__class__.__name__,
+            info=str(e)
+        ))
+        return
+
     client.message(target, "Configuration rehashed.")
 
 
