@@ -47,7 +47,7 @@ def reply_and_learn(client, target, origin, message):
     mention = False
     reply = False
 
-    if front.strip(",:").lower() == client.nickname:
+    if front.strip(",:").lower() == client.nickname.lower():
         mention = True
         reply = True
         message = rest
