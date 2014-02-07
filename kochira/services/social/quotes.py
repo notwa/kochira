@@ -318,9 +318,9 @@ class IndexHandler(RequestHandler):
         except ValueError:
             offset = 0
 
-        query = self.get_argument("q", None)
+        query = self.get_argument("q", "")
 
-        if query is not None:
+        if query:
             q = _find_quotes(self.application.bot, query)
         else:
             q = Quote.select()
