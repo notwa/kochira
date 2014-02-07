@@ -25,7 +25,7 @@ Message Format
 
 All messages on the protocol are sent in multi-part. Where "remaining IRC
 payload..." is used, it indicates the parsed result of an IRC command, starting
-with the command name (e.g. `["PRIVMSG", "#foo", "test"]`).
+with the command name (e.g. ``["PRIVMSG", "#foo", "test"]``).
 
 me
   Refers to the local bot.
@@ -66,7 +66,8 @@ Configuration Options
   Address to bind to, e.g. ``tcp://*:9999``.
 
 ``users``
-  A key-value mapping of users to their passwords, e.g. ``{"admin": "secret}``.
+  A key-value mapping of users to their passwords, e.g.
+  ``{"admin": "secret"}``.
 
 ``federations``
   A key-value mapping of bots this instance is able to federate to. The key
