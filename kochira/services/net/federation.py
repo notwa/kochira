@@ -1,9 +1,136 @@
 """
-Kochira bot federation.
+Bot request federation.
 
-This service allows bots to network to each other.
+This service allows bots to run requests on other bots via a federation
+protocol.
 
-**WARNING:** Very unstable!
+Protocol
+========
+
+The protocol is implemented over ZeroMQ.
+
+Terminology
+-----------
+
+requester
+  A ZeroMQ DEALER socket that connects to another bot's responder socket. One
+  requester socket used per bot.
+
+responder
+  A ZeroMQ ROUTER socket that accepts connections from other bot's responder
+  sockets. This socket can accept any number of connections.
+
+Message Format
+--------------
+
+All messages on the protocol are sent in multi-part. Where "remaining IRC
+payload..." is used, it indicates the parsed result of an IRC command, starting
+with the command name (e.g. `["PRIVMSG", "#foo", "test"]`).
+
+me
+  Refers to the local bot.
+
+you
+  Refers to a remote bot.
+
+this requester, other responder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I (this requester) need to make a request to you (other responder)::
+
+    [
+        my network name,
+        my requesting user's hostmask,
+        remaining IRC payload (request)...
+    ]
+
+this responder, other requester
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You (other requester) need a response from me (this responder)::
+
+    [
+        your identity,
+        my network name,
+        my bot's hostmask,
+        remaining IRC payload (response)...
+    ]
+
+Configuration Options
+=====================
+
+``identity``
+  Unique name across all federations.
+
+``bind_address``
+  Address to bind to, e.g. ``tcp://*:9999``.
+
+``users``
+  A key-value mapping of users to their passwords, e.g. ``{"admin": "secret}``.
+
+``federations``
+  A key-value mapping of bots this instance is able to federate to. The key
+  refers to the bot's unique identity as specified in the identity
+  configuration option, and the value is a dictionary consisting of:
+
+  ``autoconnect``
+    Whether the bot should attempt to auto-connect to this federation.
+
+  ``url``
+    The remote URL to connect to.
+
+  ``username``
+    The username to use when connecting.
+
+  ``password``
+    The password to use when connecting.
+
+Commands
+========
+
+Federate
+--------
+
+::
+
+    $bot: federate with <name>
+
+Connect to a bot specified in the federation configuration.
+
+Unfederate
+----------
+
+::
+
+    $bot: stop federating with <name>
+    $bot: don't federate with <name>
+
+Disconnect from a bot.
+
+List Federations
+----------------
+
+::
+
+    $bot: who are you federated with
+    $bot: federations
+    $bot: list federations
+    $bot: list all federations
+
+List all bots this bot is federating with.
+
+Federated Request
+-----------------
+
+::
+
+    $bot: ask <name> <what>
+    *<name>> <what>
+    *<name>: <what>
+
+The first two forms of the command directly send a request to the federated
+bot. The third form will append the bot's name, mentioning it, before sending
+it to the federated bot.
 """
 
 import functools
