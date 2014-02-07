@@ -13,8 +13,14 @@
 </form>
 
 {% for quote in quotes %}
-<h2><a href="?q=id:{{quote.id}}">Quote #{{quote.id}}</a></h2>
-<pre>{{quote.quote_with_newlines}}</pre>
+<blockquote>
+<p>
+{% for line in quote.quote_with_newlines.split("\n") %}
+{{line}}<br>
+{% end %}
+</p>
+<small><a href="?q=id:{{quote.id}}">Quote #{{quote.id}}</a></small>
+</blockquote>
 {% end %}
 
 <ul class="pager">
