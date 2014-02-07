@@ -124,12 +124,14 @@ class Service:
         Register a setup function.
         """
         self.on_setup = f
+        return f
 
     def shutdown(self, f):
         """
         Register a shutdown function.
         """
         self.on_shutdown = f
+        return f
 
     def run_setup(self, bot):
         """
