@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>{% block title %}{% end %} | {% module Title() %}</title>
+        <title>{% block title %}{% end %} – {% module Title() %}</title>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="/static/style.css">
     </head>
@@ -13,11 +13,7 @@
                 {% block body %}{% end %}
             </div>
         </div>
-        <div id="footer">
-            <div class="container">
-                <p class="text-muted"><a href="https://github.com/rfw/kochira">github.com/rfw/kochira</a></p>
-            </div>
-        </div>
+        {% module Footer() %}
         <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
     </body>

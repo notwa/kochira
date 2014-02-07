@@ -28,6 +28,7 @@ from docutils.core import publish_parts
 
 from kochira.service import Service
 import os
+import subprocess
 
 from tornado.web import RequestHandler, Application, UIModule, HTTPError
 from tornado.httpserver import HTTPServer, HTTPRequest
@@ -108,6 +109,27 @@ class NavBarModule(UIModule):
                                   name=self.handler.application.name,
                                   confs=_get_application_confs(self.handler.application.bot))
 
+
+class FooterModule(UIModule):
+    def render(self):
+        p = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE)
+        revision, _ = p.communicate()
+
+        if p.returncode != 0:
+            revision = None
+        else:
+            revision = revision.decode("utf-8").strip()[:8]
+
+            p = subprocess.Popen(["git", "status", "--porcelain"], stdout=subprocess.PIPE)
+            status, _ = p.communicate()
+
+            if p.returncode == 0:
+                if status.strip():
+                    revision += " (dirty)"
+
+        return self.render_string("_modules/footer.html", revision=revision)
+
+
 base_path = os.path.join(os.path.dirname(__file__), "webserver")
 
 
@@ -127,7 +149,8 @@ def setup_webserver(bot):
         compiled_template_cache=False,
         ui_modules={
             "NavBar": NavBarModule,
-            "Title": TitleModule
+            "Title": TitleModule,
+            "Footer": FooterModule
         }
     )
     storage.application.bot = bot
