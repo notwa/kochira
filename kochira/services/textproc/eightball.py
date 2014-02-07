@@ -51,9 +51,10 @@ OPTIONS = [
 
 service = Service(__name__, __doc__)
 
-@service.command(r"ask the 8ball (?P<question>.+)$", mention=True)
-@service.command(r"!8ball (?P<question>.+)$")
+@service.command(r"ask the 8-?ball (?P<question>.+)$", mention=True)
+@service.command(r"!8-?ball (?P<question>.+)$")
 def ask_8ball(client, target, origin, question):
-    client.message(target, "\x02The Magic 8-Ball says:\x02 {}".format(
-        OPTIONS[(binascii.crc32(question.lower().encode("utf-8")) + int(time.time() // (60 * 60 * 24))) % len(OPTIONS)]
+    client.message(target, "{origin}: The Magic 8-Ball says: {prediction}".format(
+        origin=origin,
+        prediction=OPTIONS[(binascii.crc32(question.lower().encode("utf-8")) + int(time.time() // (60 * 60 * 24))) % len(OPTIONS)]
     ))
