@@ -30,6 +30,13 @@ def load_brain(bot):
     storage.brain = Brain(config["brain_file"])
 
 
+@service.shutdown
+def unload_brain(bot):
+    storage = service.storage_for(bot)
+
+    storage.brain.close()
+
+
 @service.hook("channel_message", priority=-9999)
 @background
 def reply_and_learn(client, target, origin, message):
