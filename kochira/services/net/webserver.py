@@ -115,6 +115,8 @@ class FooterModule(UIModule):
         p = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE)
         revision, _ = p.communicate()
 
+        dirty = False
+
         if p.returncode != 0:
             revision = None
         else:
@@ -125,9 +127,11 @@ class FooterModule(UIModule):
 
             if p.returncode == 0:
                 if status.strip():
-                    revision += " (dirty)"
+                    dirty = True
 
-        return self.render_string("_modules/footer.html", revision=revision)
+        return self.render_string("_modules/footer.html",
+                                  revision=revision,
+                                  dirty=dirty)
 
 
 base_path = os.path.join(os.path.dirname(__file__), "webserver")
