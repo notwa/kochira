@@ -149,7 +149,7 @@ def on_router_recv(bot, msg):
 
         client = ResponderClient(bot, ident, network, target)
 
-        bot.run_hooks("message", client, target, origin, message)
+        bot.run_hooks("channel_message", client, target, origin, message)
 
 
 @service.setup
