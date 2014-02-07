@@ -112,7 +112,7 @@ def play_timed_reminder(bot, reminder):
 @service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to|that) (?P<message>.+) (?P<duration>(?:in|after) .+|tomorrow)$", mention=True)
 @service.command(r"(?:remind|tell) (?P<who>\S+) (?P<duration>(?:in|after) .+|tomorrow) (?:about|to|that) (?P<message>.+)$", mention=True)
 def add_timed_reminder(client, target, origin, who, duration, message):
-    now = datetime.now()
+    now = datetime.utcnow()
     t = parse_time(duration)
 
     if who.lower() == "me" and who not in client.channels[target]["users"]:
