@@ -27,7 +27,7 @@ def load_brain(bot):
     config = service.config_for(bot)
     storage = service.storage_for(bot)
 
-    storage.brain = Brain(config["brain_file"])
+    storage.brain = Brain(config["brain_file"], check_same_thread=False)
 
 
 @service.shutdown
