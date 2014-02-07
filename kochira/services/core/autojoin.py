@@ -8,10 +8,10 @@ Configuration Options
 
 ``networks``
   A dictionary of networks, with network name as key and the list of channels
-  as value, e.g. ``{"freenode": ["#kochira"]}``.
+  as value, e.g. ``{"freenode": [{"name": "#kochira"}]}``.
 
-  For channels which require a keyword, specify the keyword immediately after
-  the channel name, separated by a space, e.g. ``{"freenode": ["#kochira kobun"]}``.
+  If a password is required to join the channel, the key `"password"` can be
+  in the dictionary.
 
 Commands
 ========
@@ -28,6 +28,4 @@ def autojoin(client):
     config = service.config_for(client.bot)
 
     for channel in config.get("networks", {}).get(client.network, []):
-        channel = channel.split(" ")
-        channel, password = (channel[0], channel[1] if len(channel) > 1 else None)
-        client.join(channel, password=password)
+        client.join(channel["name"], password=channel.get("password"))
