@@ -5,7 +5,7 @@ Allows the update command to be issued to update, and also installs a
 post-receive web hook if the web server is loaded.
 
 If the post-receive web hook is enabled, the post-receive hook is available at
-http://kobun-host/updater/?key=post_receive_key
+http://mykochira/updater/?key=post_receive_key
 
 Configuration Options
 =====================
