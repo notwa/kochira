@@ -13,3 +13,4 @@ pyzmq
 pure-sasl
 docutils
 tornado
+pathlib
