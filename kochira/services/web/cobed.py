@@ -7,8 +7,8 @@ brain.
 Configuration Options
 =====================
 
-``brain_file``
-  Location to store the brain in.
+``url``
+  URL to the cobed server.
 
 ``username``
   Username for cobed.
