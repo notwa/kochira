@@ -189,7 +189,7 @@ def on_quit(client, origin, message=None):
 
 
 @service.hook("ctcp", priority=10000)
-def on_ctcp_action(client, origin, target, what):
+def on_ctcp(client, origin, target, what):
     command, _, message = what.partition(" ")
 
     if command.lower() == "action":

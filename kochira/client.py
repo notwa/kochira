@@ -24,6 +24,10 @@ class Client(Client):
     def _send_message(self, message):
         self.bot.defer_from_thread(super()._send_message, message)
 
+    def on_ctcp_version(self, by, target):
+        self.ctcp_reply(by, "VERSION",
+                        self.bot.config["core"].get("version", "kochira IRC bot"))
+
     def on_connect(self):
         logger.info("Connected to IRC network: %s", self.network)
         super().on_connect()
@@ -66,5 +70,4 @@ class Client(Client):
     on_quit = make_hook("quit")
 
     on_ctcp = make_hook("ctcp")
-    on_ctcp_action = make_hook("ctcp_action")
     on_ctcp_reply = make_hook("ctcp_reply")

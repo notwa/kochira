@@ -91,9 +91,9 @@ class Bot:
             del self.networks[network_name]
 
     def _connect_to_db(self):
-        database.initialize(SqliteDatabase(self.config["core"].get("database", "kochira.db"),
-                                           threadlocals=True))
-        logger.info("Opened database connection: %s", self.config["core"]["database"])
+        db_name = self.config["core"].get("database", "kochira.db")
+        database.initialize(SqliteDatabase(db_name, threadlocals=True))
+        logger.info("Opened database connection: %s", db_name)
 
         ACLEntry.create_table(True)
 
