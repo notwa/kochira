@@ -71,7 +71,8 @@ def get_log(from_rev, to_rev):
     if p.returncode != 0:
         raise UpdateError("git log failed")
 
-    return out.decode("utf-8").rstrip("\n").split("\n")
+    return (line for line in out.decode("utf-8").rstrip("\n").split("\n")
+            if line)
 
 
 def do_update(remote, branch):
