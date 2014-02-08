@@ -70,6 +70,11 @@ class Shout(Model):
         )
 
 
+def is_shout(text):
+    return text.upper() == text and \
+       len(text) >= 4 and \
+       any(c for c in text if c in string.ascii_uppercase)
+
 @service.setup
 def initialize_model(bot):
     storage = service.storage_for(bot)
@@ -145,12 +150,10 @@ def how_many_shouts(client, target, origin, who=None):
 def record_or_play_shout(client, target, origin, message):
     storage = service.storage_for(client.bot)
 
-    if message.upper() != message or \
-       len(message) < 4 or \
-       not any(c for c in message if c in string.ascii_uppercase):
-        return
-
     message = message.strip()
+
+    if not is_shout(message):
+        return
 
     if not Shout.select().where(Shout.message == message).exists():
         Shout.create(who=origin, network=client.network,
