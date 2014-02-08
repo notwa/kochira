@@ -212,6 +212,7 @@ def setup_user(client, target, origin, lfm_username):
         user=lfm_username
     ))
 
+
 @service.command(r"!lfm$")
 @service.command(r"what is my last\.fm username\??$", mention=True)
 def check_user(client, target, origin):
@@ -240,11 +241,10 @@ def compare_users(client, target, origin, user2, user1=None):
     if user1 is None:
         user1 = origin
 
-    comparison = get_compare_users(
-        config["api_key"],
-        get_lfm_username(client, user1),
-        get_lfm_username(client, user2)
-    )
+    lfm1 = get_lfm_username(client, user1)
+    lfm2 = get_lfm_username(client, user2)
+
+    comparison = get_compare_users(config["api_key"], lfm1, lfm2)
 
     if comparison is None:
         client.message(target, "{origin}: Couldn't compare.".format(
@@ -252,10 +252,12 @@ def compare_users(client, target, origin, user2, user1=None):
         ))
         return
 
-    client.message(target, "{origin}: {user1} and {user2} are {score:.2%} similar: {artists}".format(
+    client.message(target, "{origin}: {user1} ({lfm1}) and {user2} ({lfm2}) are {score:.2%} similar: {artists}".format(
         origin=origin,
         user1=user1,
+        lfm1=lfm1,
         user2=user2,
+        lfm2=lfm2,
         score=comparison["score"],
         artists=", ".join(comparison["artists"])
     ))
@@ -272,7 +274,9 @@ def now_playing(client, target, origin, who=None):
     if who is None:
         who = origin
 
-    track = get_user_now_playing(config["api_key"], get_lfm_username(client, who))
+    lfm = get_lfm_username(client, who)
+
+    track = get_user_now_playing(config["api_key"], lfm)
 
     if track is None:
         client.message(target, "{origin}: {who} has never scrobbled anything.".format(
@@ -289,15 +293,17 @@ def now_playing(client, target, origin, who=None):
     )
 
     if not track["now_playing"]:
-        client.message(target, "{origin}: {who} was playing{dt}: {descr}".format(
+        client.message(target, "{origin}: {who} ({lfm}) was playing{dt}: {descr}".format(
             origin=origin,
             who=who,
+            lfm=lfm,
             dt=" about " + humanize.naturaltime(datetime.fromtimestamp(track["ts"])) if track["ts"] is not None else "",
             descr=track_descr
         ))
     else:
-        client.message(target, "{origin}: {who} is playing: {descr}".format(
+        client.message(target, "{origin}: {who} ({lfm}) is playing: {descr}".format(
             origin=origin,
             who=who,
+            lfm=lfm,
             descr=track_descr
         ))
