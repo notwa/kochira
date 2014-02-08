@@ -21,6 +21,9 @@ class Client(Client):
         # set network name to whatever we have in our config
         self.network = network
 
+    def _send_message(self, message):
+        self.bot.defer_from_thread(super()._send_message, message)
+
     def on_connect(self):
         logger.info("Connected to IRC network: %s", self.network)
         super().on_connect()
