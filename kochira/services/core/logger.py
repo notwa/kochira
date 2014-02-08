@@ -14,6 +14,7 @@ Commands
 None.
 """
 
+import threading
 from datetime import datetime
 
 from kochira.service import Service
@@ -35,7 +36,7 @@ def _get_file_handle(storage, network, channel):
         if not network_path.exists():
             network_path.mkdir(parents=True)
 
-        f = (network_path / (channel + ".log")).open("ab", buffering=0)
+        f = (network_path / (channel + ".log")).open("ab")
 
         storage.handles[k] = f
 
@@ -50,10 +51,14 @@ def log(client, channel, what):
     now = datetime.utcnow()
 
     storage = service.storage_for(client.bot)
-    _get_file_handle(storage, client.network, channel).write(("{now} {what}\n".format(
-        now=now.isoformat(),
-        what=what
-    )).encode("utf-8"))
+    f = _get_file_handle(storage, client.network, channel)
+
+    with storage.write_lock:
+        f.write(("{now} {what}\n".format(
+            now=now.isoformat(),
+            what=what
+        )).encode("utf-8"))
+        f.flush()
 
 
 def log_message(client, target, origin, message, format):
@@ -85,6 +90,7 @@ def setup_logger(bot):
 
     storage.handles = {}
     storage.path = Path(config["log_dir"])
+    storage.write_lock = threading.RLock()
 
 
 @service.shutdown
@@ -193,4 +199,7 @@ def on_ctcp(client, origin, target, what):
     command, _, message = what.partition(" ")
 
     if command.lower() == "action":
-        log_message(client, target, origin, message, " * {sigil}{origin} {message}")
+        if target != client.nickname:
+            log_message(client, target, origin, message, " * {sigil}{origin} {message}")
+        else:
+            log_message(client, origin, origin, message, " * {sigil}{origin} {message}")
