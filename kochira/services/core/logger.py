@@ -141,7 +141,7 @@ def on_kick(client, channel, target, by, message=None):
 def on_mode_change(client, channel, modes, by):
     log(client, channel, "-!- {by} set modes: {modes}".format(
         by=by,
-        modes=modes))
+        modes=" ".join(modes)))
 
 
 @service.hook("channel_message", priority=10000)
