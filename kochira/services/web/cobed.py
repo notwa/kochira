@@ -39,7 +39,7 @@ def reply_and_learn(url, username, password, what):
 
 def learn(url, username, password, what):
     requests.post(url,
-                  params={"q": what, "n": False},
+                  params={"q": what, "n": 1},
                   headers={"X-Cobed-Auth": username + ":" + password}) \
         .raise_for_status()
 
