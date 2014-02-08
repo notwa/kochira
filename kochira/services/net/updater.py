@@ -99,6 +99,7 @@ def update(client, target, origin):
 class PostReceiveHandler(RequestHandler):
     def _callback(self, future):
         if future.exception() is not None:
+            self.send_error(500)
             raise future.exception()
         self.finish()
 
@@ -109,7 +110,9 @@ class PostReceiveHandler(RequestHandler):
         if self.get_query_argument("key") != config["post_receive_key"]:
             raise HTTPError(403)
 
-        self.application.bot.executor.submit(do_update) \
+        self.application.bot.executor.submit(do_update,
+                                             config.get("remote", "origin"),
+                                             config.get("branch", "master")) \
             .add_done_callback(self._callback)
 
 
