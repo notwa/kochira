@@ -28,7 +28,8 @@ class Client(Client):
 
     def message(self, target, message):
         super().message(target, message)
-        self.bot.run_hooks("own_message", self, target, message)
+        self.bot.defer_from_thread(self.bot.run_hooks,
+                                   "own_message", self, target, message)
 
     def on_channel_message(self, target, origin, message):
         backlog = self.backlogs.setdefault(target, deque([]))

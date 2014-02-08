@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+import functools
 import imp
 import importlib
 import heapq
@@ -113,6 +114,9 @@ class Bot:
     def _shutdown_service(self, service):
         service.run_shutdown(self)
         self.scheduler.unschedule_service(service)
+
+    def defer_from_thread(self, fn, *args, **kwargs):
+        self.io_loop.add_callback(functools.partial(fn, *args, **kwargs))
 
     def load_service(self, name, reload=False):
         """
