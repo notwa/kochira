@@ -46,13 +46,17 @@ from tornado.web import Application, RequestHandler, asynchronous, HTTPError
 service = Service(__name__, __doc__)
 
 
+class UpdateError(Exception):
+    pass
+
+
 def rev_parse(rev):
     p = subprocess.Popen(["git", "rev-parse", rev], stdout=subprocess.PIPE)
     commit_hash, _ = p.communicate()
     commit_hash = commit_hash.decode("utf-8").strip()
 
     if p.returncode != 0:
-        raise RuntimeError("git rev-parse failed")
+        raise UpdateError("git rev-parse failed")
 
     return commit_hash
 
@@ -65,7 +69,7 @@ def get_log(from_rev, to_rev):
     out, _ = p.communicate()
 
     if p.returncode != 0:
-        raise RuntimeError("git log failed")
+        raise UpdateError("git log failed")
 
     return out.decode("utf-8").rstrip("\n").split("\n")
 
@@ -76,7 +80,7 @@ def do_update(remote, branch):
     out, _ = p.communicate()
 
     if p.returncode != 0:
-        raise RuntimeError("git pull failed")
+        raise UpdateError("git pull failed")
 
     return out.decode("utf-8").strip() != "Already up-to-date."
 
@@ -98,7 +102,7 @@ def update(client, target, origin):
 
         for line in get_log(head, "HEAD"):
             client.message(target, line)
-    except RuntimeError as e:
+    except UpdateError as e:
         client.message(target, "Update failed! " + str(e))
     else:
         client.message(target, "Update finished!")
