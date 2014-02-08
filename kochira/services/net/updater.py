@@ -110,7 +110,7 @@ class PostReceiveHandler(RequestHandler):
             raise HTTPError(403)
 
         self.application.bot.executor.submit(do_update) \
-            .add_callback()
+            .add_done_callback(self._callback)
 
 
 def make_application(settings):
