@@ -36,7 +36,10 @@ def _get_file_handle(storage, network, channel):
         if not network_path.exists():
             network_path.mkdir(parents=True)
 
-        f = (network_path / (channel + ".log")).open("ab")
+        path = network_path / (channel + ".log")
+        f = path.open("ab")
+
+        service.logger.debug("Opened handle for: %s", path)
 
         storage.handles[k] = f
 
@@ -53,7 +56,7 @@ def log(client, channel, what):
     storage = service.storage_for(client.bot)
     f = _get_file_handle(storage, client.network, channel)
 
-    with storage.write_lock:
+    with storage.lock:
         f.write(("{now} {what}\n".format(
             now=now.isoformat(),
             what=what
@@ -83,6 +86,14 @@ def log_global(client, origin, what):
         log(client, origin, what)
 
 
+def close_all_handles(storage):
+    with storage.lock:
+        for f in storage.handles.values():
+            f.close()
+        storage.handles = {}
+    service.logger.debug("Log handles closed")
+
+
 @service.setup
 def setup_logger(bot):
     config = service.config_for(bot)
@@ -90,15 +101,19 @@ def setup_logger(bot):
 
     storage.handles = {}
     storage.path = Path(config["log_dir"])
-    storage.write_lock = threading.RLock()
+    storage.lock = threading.Lock()
 
 
 @service.shutdown
 def shutdown_logger(bot):
     storage = service.storage_for(bot)
+    close_all_handles(storage)
 
-    for f in storage.handles.values():
-        f.close()
+
+@service.hook("sighup")
+def flush_log_handles(bot):
+    storage = service.storage_for(bot)
+    close_all_handles(storage)
 
 
 @service.hook("own_message", priority=10000)

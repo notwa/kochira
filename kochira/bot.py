@@ -6,6 +6,7 @@ import heapq
 import logging
 import multiprocessing
 from peewee import SqliteDatabase
+import signal
 import yaml
 from zmq.eventloop import ioloop
 
@@ -38,6 +39,8 @@ class Bot:
         self.executor = ThreadPoolExecutor(multiprocessing.cpu_count())
         self.scheduler = Scheduler(self)
         self.scheduler.start()
+
+        signal.signal(signal.SIGHUP, self._handle_sighup)
 
         self._load_services()
         self._connect_to_irc()
@@ -176,14 +179,14 @@ class Bot:
             for service, storage in list(self.services.values())
         ]))
 
-    def run_hooks(self, hook, client, *args):
+    def run_hooks(self, hook, *args):
         """
         Attempt to dispatch a command to all command handlers.
         """
 
         for hook in self.get_hooks(hook):
             try:
-                r = hook(client, *args)
+                r = hook(*args)
                 if r is Service.EAT:
                     return Service.EAT
             except BaseException:
@@ -196,3 +199,13 @@ class Bot:
 
         with open(self.config_file, "r") as f:
             self.config = yaml.load(f)
+
+    def _handle_sighup(self, signum, frame):
+        logger.info("Received SIGHUP; running SIGHUP hooks and rehashing")
+
+        try:
+            self.rehash()
+        except Exception as e:
+            logger.error("Could not rehash configuration", exc_info=e)
+
+        self.run_hooks("sighup", self)
