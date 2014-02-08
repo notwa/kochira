@@ -16,6 +16,9 @@ Configuration Options
 ``password``
   Password for cobed.
 
+``reply`` (optional)
+  Whether or not replies should be constructed. Defaults to true.
+
 Commands
 ========
 None.
@@ -64,7 +67,7 @@ def do_reply(client, target, origin, message):
     if re.search(r"\b{}\b".format(re.escape(client.nickname)), message, re.I) is not None:
         reply = True
 
-    if reply:
+    if reply and config.get("reply", True):
         reply_message = reply_and_learn(config["url"],
                                         config["username"],
                                         config["password"],
@@ -75,8 +78,5 @@ def do_reply(client, target, origin, message):
         else:
             client.message(target, reply_message)
     elif message:
-        learn(config["url"],
-              config["username"],
-              config["password"],
-              message)
+        learn(config["url"], config["username"], config["password"], message)
 
