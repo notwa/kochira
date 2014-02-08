@@ -130,7 +130,7 @@ class PostReceiveHandler(RequestHandler):
         self.application.bot.executor.submit(do_update,
                                              config.get("remote", "origin"),
                                              config.get("branch", "master")) \
-            .add_done_callback(self._callback)
+            .add_done_callback(_callback)
 
 
 def make_application(settings):
