@@ -116,7 +116,7 @@ class PostReceiveHandler(RequestHandler):
         if self.get_query_argument("key") != config["post_receive_key"]:
             raise HTTPError(403)
 
-        def _callback(self, future):
+        def _callback(future):
             if future.exception() is not None:
                 self.send_error(500)
                 raise future.exception()
