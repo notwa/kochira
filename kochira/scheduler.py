@@ -57,7 +57,7 @@ class Scheduler(threading.Thread):
 
                             if work.deadline <= 0:
                                 # task needs to run now
-                                logger.info("Submitting task %s.%s to executor (late by %.2fs)",
+                                logger.debug("Submitting task %s.%s to executor (late by %.2fs)",
                                     service.name,
                                     task.__name__,
                                     -work.deadline

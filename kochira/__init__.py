@@ -199,8 +199,11 @@ class Bot:
 
 
 def main():
-    import sys
+    from tornado.options import define, options, parse_command_line
 
-    logging.basicConfig(level=logging.INFO)
-    bot = Bot(sys.argv[1] if len(sys.argv) > 1 else "config.yml")
+    define("config", default="config.yml", help="Configuration file")
+
+    parse_command_line()
+
+    bot = Bot(options.config)
     bot.run()
