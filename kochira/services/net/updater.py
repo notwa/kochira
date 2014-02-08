@@ -118,11 +118,9 @@ class PostReceiveHandler(RequestHandler):
                 raise future.exception()
             self.finish()
 
-            bot = self.application.bot
-
             for announce in config.get("announce", []):
                 for line in get_log(head, "HEAD"):
-                    bot.networks[announce["network"]].message(
+                    self.application.bot.networks[announce["network"]].message(
                         announce["channel"],
                         "Update! {}".format(line)
                     )
