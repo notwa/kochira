@@ -38,7 +38,10 @@ service = Service(__name__, __doc__)
 
 def _get_application_confs(bot):
     for hook in bot.get_hooks("services.net.webserver"):
-        yield hook(bot)
+        conf = hook(bot)
+
+        if conf:
+            yield conf
 
 
 class MainHandler(RequestHandler):

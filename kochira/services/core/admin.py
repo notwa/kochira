@@ -111,18 +111,6 @@ Restart
 
 Restart the bot. Will ``exec`` a new process into the currently running process
 space.
-
-Update
-------
-
-::
-
-    $bot: update
-    $bot: windows updates!
-
-**Requires permission:** admin
-
-Update the bot by pulling from the latest Git master.
 """
 
 from io import StringIO
@@ -363,42 +351,3 @@ def restart(client, target, origin):
             os.spawnv(os.P_NOWAIT, sys.executable,
                       [sys.executable] + sys.argv)
             sys.exit(0)
-
-@service.command(r"(?:windows )?update(?:s)?!?$", mention=True, allow_private=True)
-@requires_permission("admin")
-def update(client, target, origin):
-    client.message(target, "Checking for updates...")
-
-    p = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE)
-    head, _ = p.communicate()
-    head = head.decode("utf-8").strip()
-
-    if p.returncode != 0:
-        client.message(target, "Update failed!")
-        return
-
-    p = subprocess.Popen(["git", "pull"], stdout=subprocess.PIPE)
-    out, _ = p.communicate()
-
-    if p.returncode != 0:
-        client.message(target, "Update failed!")
-        return
-
-    if out.decode("utf-8").strip() == "Already up-to-date.":
-        client.message(target, "No updates.")
-        return
-
-    p = subprocess.Popen(["git", "log", "--graph", "--abbrev-commit",
-                          "--date=relative", "--format=%h - (%ar) %s - %an",
-                          head + "..HEAD"], stdout=subprocess.PIPE)
-
-    out, _ = p.communicate()
-
-    if p.returncode != 0:
-        client.message(target, "Update failed!")
-        return
-
-    for line in out.decode("utf-8").rstrip("\n").split("\n"):
-        client.message(target, line)
-
-    client.message(target, "Update finished!")

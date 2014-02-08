@@ -12,9 +12,11 @@
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="nav navbar-nav">
                 {% for conf in confs %}
+                {% if conf.get("title") is not None %}
                 <li{% if name == conf["name"] %} class="active"{% end %}>
                     <a href="/{{ conf["name"] }}/">{{ conf["title"] }}</a>
                 </li>
+                {% end %}
                 {% end %}
             </ul>
         </div>
