@@ -30,15 +30,18 @@ service = Service(__name__, __doc__)
 
 
 def reply_and_learn(url, username, password, what):
-    return requests.post(url,
-                        params={"q": what},
-                        headers={"X-Cobed-Auth": username + ":" + password}) \
-        .text
+    r = requests.post(url,
+                      params={"q": what},
+                      headers={"X-Cobed-Auth": username + ":" + password})
+    r.raise_for_status()
+    return r.text
+
 
 def learn(url, username, password, what):
     requests.post(url,
                   params={"q": what, "n": False},
-                  headers={"X-Cobed-Auth": username + ":" + password})
+                  headers={"X-Cobed-Auth": username + ":" + password}) \
+        .raise_for_status()
 
 
 @service.hook("channel_message", priority=-9999)
