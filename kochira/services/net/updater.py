@@ -155,4 +155,3 @@ def webserver_config(bot):
         "title": None,
         "application_factory": make_application
     }
-
