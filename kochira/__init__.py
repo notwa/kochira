@@ -61,7 +61,7 @@ class Bot:
         client.connect(
             hostname=config["hostname"],
             password=config.get("password"),
-            source_address=config.get("source_address"),
+            source_address=(config.get("source_address"), 0),
             port=config.get("port"),
             tls=tls_config.get("enabled", False),
             tls_verify=tls_config.get("verify", True)
