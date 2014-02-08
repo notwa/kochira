@@ -17,6 +17,9 @@ Configuration Options
   Enable the post-receive hook if set. This is the ``key=<key>`` query
   argument.
 
+``announce`` (optional)
+  Channels to announce updates on.
+
 Commands
 ========
 
@@ -43,15 +46,39 @@ from tornado.web import Application, RequestHandler, asynchronous, HTTPError
 service = Service(__name__, __doc__)
 
 
+def rev_parse(rev):
+    p = subprocess.Popen(["git", "rev-parse", rev], stdout=subprocess.PIPE)
+    commit_hash, _ = p.communicate()
+    commit_hash = commit_hash.decode("utf-8").strip()
+
+    if p.returncode != 0:
+        raise RuntimeError("git rev-parse failed")
+
+    return commit_hash
+
+
+def get_log(from_rev, to_rev):
+    p = subprocess.Popen(["git", "log", "--graph", "--abbrev-commit",
+                          "--date=relative", "--format=%h - (%ar) %s - %an",
+                          from_rev + ".." + to_rev], stdout=subprocess.PIPE)
+
+    out, _ = p.communicate()
+
+    if p.returncode != 0:
+        raise RuntimeError("git log failed")
+
+    return out.decode("utf-8").rstrip("\n").split("\n")
+
+
 def do_update(remote, branch):
     p = subprocess.Popen(["git", "pull", remote, branch],
                          stdout=subprocess.PIPE)
     out, _ = p.communicate()
 
     if p.returncode != 0:
-        return None
+        raise RuntimeError("git pull failed")
 
-    return out.decode("utf-8").strip()
+    return out.decode("utf-8").strip() != "Already up-to-date."
 
 
 @service.command(r"(?:windows )?update(?:s)?!?$", mention=True, allow_private=True)
@@ -61,54 +88,46 @@ def update(client, target, origin):
 
     client.message(target, "Checking for updates...")
 
-    p = subprocess.Popen(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE)
-    head, _ = p.communicate()
-    head = head.decode("utf-8").strip()
+    try:
+        head = rev_parse("HEAD")
 
-    if p.returncode != 0:
-        client.message(target, "Update failed!")
-        return
+        if not do_update(config.get("remote", "origin"),
+                         config.get("branch", "master")):
+            client.message(target, "No updates.")
+            return
 
-    out = do_update(config.get("remote", "origin"),
-                    config.get("branch", "master"))
-
-    if out is None:
-        client.message(target, "Update failed!")
-        return
-
-    if out == "Already up-to-date.":
-        client.message(target, "No updates.")
-        return
-
-    p = subprocess.Popen(["git", "log", "--graph", "--abbrev-commit",
-                          "--date=relative", "--format=%h - (%ar) %s - %an",
-                          head + "..HEAD"], stdout=subprocess.PIPE)
-
-    out, _ = p.communicate()
-
-    if p.returncode != 0:
-        client.message(target, "Update failed!")
-        return
-
-    for line in out.decode("utf-8").rstrip("\n").split("\n"):
-        client.message(target, line)
-
-    client.message(target, "Update finished!")
+        for line in get_log(head, "HEAD"):
+            client.message(target, line)
+    except RuntimeError as e:
+        client.message(target, "Update failed! " + str(e))
+    else:
+        client.message(target, "Update finished!")
 
 
 class PostReceiveHandler(RequestHandler):
-    def _callback(self, future):
-        if future.exception() is not None:
-            self.send_error(500)
-            raise future.exception()
-        self.finish()
-
     @asynchronous
     def post(self):
         config = service.config_for(self.application.bot)
 
         if self.get_query_argument("key") != config["post_receive_key"]:
             raise HTTPError(403)
+
+        def _callback(self, future):
+            if future.exception() is not None:
+                self.send_error(500)
+                raise future.exception()
+            self.finish()
+
+            bot = self.application.bot
+
+            for announce in config.get("announce", []):
+                for line in get_log(head, "HEAD"):
+                    bot.networks[announce["network"]].message(
+                        announce["channel"],
+                        "Update! {}".format(line)
+                    )
+
+        head = rev_parse("HEAD")
 
         self.application.bot.executor.submit(do_update,
                                              config.get("remote", "origin"),
