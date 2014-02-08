@@ -3,12 +3,16 @@ core:
 
 networks:
     freenode:
+        autoconnect: true
         nickname: Kochira
         hostname: irc.freenode.net
         port: 6667
-        channels:
-            - "#kochira"
 
 services:
-    kochira.services.admin:
+    kochira.services.core.admin:
         autoload: true
+
+    kochira.services.core.autojoin:
+        autoload: true
+        channels:
+            - name: "#kochira"
