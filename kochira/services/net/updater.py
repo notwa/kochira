@@ -109,7 +109,7 @@ class PostReceiveHandler(RequestHandler):
         if self.get_query_argument("key") != config["post_receive_key"]:
             raise HTTPError(403)
 
-        self.application.bot.executor.submit_task(do_update) \
+        self.application.bot.executor.submit(do_update) \
             .add_callback()
 
 
