@@ -1,8 +1,12 @@
+def _id(x):
+    return x
+
+
 class Field:
     _sentinel = object()
     _total_creation_order = 0
 
-    def __init__(self, type=str, doc="(undocumented)", default=_sentinel):
+    def __init__(self, type=_id, doc="(undocumented)", default=_sentinel):
         self.type = type
         self.doc = doc
         self.default = default
