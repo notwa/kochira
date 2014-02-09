@@ -47,7 +47,16 @@ def _get_file_handle(storage, network, channel):
 
 
 def _hostmask_for(client, nickname):
-    return "{username}@{hostname}".format(**client.users[nickname])
+    user = client.users.get(nickname, {})
+
+    username = user.get("username") or ""
+    hostname = user.get("hostname") or ""
+
+    if not username and not hostname:
+        return ""
+
+    return "{username}@{hostname}".format(username=username,
+                                          hostname=hostname)
 
 
 def log(client, channel, what):
