@@ -45,7 +45,10 @@ def do_reply(client, target, origin, message):
     mention = False
     reply = False
 
-    if front.strip(",:").lower() == client.nickname.lower():
+    if front.startswith('?'):
+        reply = True
+        message = front.lstrip('?') + ' ' + rest
+    elif front.strip(",:").lower() == client.nickname.lower():
         mention = True
         reply = True
         message = rest
