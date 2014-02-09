@@ -209,12 +209,9 @@ def on_quit(client, origin, message=None):
                message=message or ""))
 
 
-@service.hook("ctcp", priority=10000)
-def on_ctcp(client, origin, target, what):
-    command, _, message = what.partition(" ")
+@service.hook("ctcp_action", priority=10000)
+def on_ctcp(client, origin, target, message):
+    if target == client.nickname:
+        target = origin
 
-    if command.lower() == "action":
-        if target != client.nickname:
-            log_message(client, target, origin, message, " * {sigil}{origin} {message}")
-        else:
-            log_message(client, origin, origin, message, " * {sigil}{origin} {message}")
+    log_message(client, target, origin, message, " * {sigil}{origin} {message}")
