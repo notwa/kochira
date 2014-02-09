@@ -194,9 +194,7 @@ def read_quote(client, target, origin, qid: int):
     """
 
     q = Quote.select() \
-        .where(Quote.id == qid,
-               Quote.network == client.network,
-               Quote.channel == target)
+        .where(Quote.id == qid)
 
     if not q.exists():
         client.message(target, "{origin}: That's not a quote.".format(
@@ -212,16 +210,20 @@ def read_quote(client, target, origin, qid: int):
     ))
 
 
-@service.command(r"(?:give me a )?random quote(?: matching (?P<query>.+))?$", mention=True)
+@service.command(r"(?:give me a )?random quote(?: from (?P<channel>\S+)(?: on (?P<network>.+))?)?(?: matching (?P<query>.+))?$", mention=True)
 @service.command(r"!quote rand(?: (?P<query>.+))?$")
-def rand_quote(client, target, origin, query=None):
+def rand_quote(client, target, origin, query=None, channel=None, network=None):
     """
     Random quote.
 
     ::
 
         $bot: random quote
+        $bot: random quote from <channel>
+        $bot: random quote from <channel> on <network>
         $bot: random quote matching <query>
+        $bot: random quote from <channel> matching <query>
+        $bot: random quote from <channel> on <network> matching <query>
         !quote rand
         !quote rand <query>
 
@@ -234,10 +236,16 @@ def rand_quote(client, target, origin, query=None):
     else:
         q = Quote.select()
 
+    if channel is None:
+        channel = target
+
+    if network is None:
+        network = client.network
+
     q = q \
         .where(
-            Quote.network == client.network,
-            Quote.channel == target
+            Quote.network == network,
+            Quote.channel == channel
         ) \
         .order_by(fn.Random()) \
         .limit(1)
@@ -269,23 +277,30 @@ def _find_quotes(bot, query):
         .where(Quote.id << SQL("({})".format(", ".join(str(qid) for qid in qids))))
 
 
-@service.command(r"find (?:a )?quote matching (?P<query>.+)$", mention=True)
+@service.command(r"find (?:a )?quote (?: from (?P<channel>\S+)(?: on (?P<network>.+))?)? matching (?P<query>.+)$", mention=True)
 @service.command(r"!quote find (?P<query>.+)$")
-def find_quote(client, target, origin, query):
+def find_quote(client, target, origin, query, channel=None, network=None):
     """
     Find quote.
 
     ::
 
         $bot: find a quote matching <query>
+        $bot: find a quote from <channel> matching <query>
         !quote find <query>
 
     Full-text search for a given quote.
     """
 
+    if channel is None:
+        channel = target
+
+    if network is None:
+        network = client.network
+
     quotes = list(_find_quotes(client.bot, query).where(
-        Quote.network == client.network,
-        Quote.channel == target
+        Quote.network == network,
+        Quote.channel == channel
     ))
 
     if not quotes:
