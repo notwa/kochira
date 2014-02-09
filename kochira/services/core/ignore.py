@@ -2,48 +2,6 @@
 Ignore lists.
 
 This allows the bot to ignore users.
-
-Commands
-========
-
-Add Ignore
-----------
-
-::
-
-    $bot: ignore <hostmask>
-    $bot: add ignore for <hostmask>
-
-**Requires permission:** ignore
-
-Add an ignore for the specified hostmask. Can contain wildcards.
-
-Remove Ignore
--------------
-
-::
-
-    $bot: unignore <hostmask>
-    $bot: don't ignore <hostmask>
-    $bot: stop ignoring <hostmask>
-    $bot: remove ignore from <hostmask>
-
-**Requires permission:** ignore
-
-Remove an ignore for the specified hostmask. Must match hostmask in ignore list
-exactly.
-
-List Ignores
-------------
-
-::
-
-    $bot: list ignores
-    $bot: ignores
-
-**Requires permission:** ignore
-
-List all ignores for the bot on the current network.
 """
 
 from kochira.db import Model
@@ -73,6 +31,19 @@ def initialize_model(bot):
 @service.command(r"(?:ignore|add ignore for) (?P<hostmask>\S+)$", mention=True)
 @requires_permission("ignore")
 def add_ignore(client, target, origin, hostmask):
+    """
+    Add ignore.
+
+    ::
+
+        $bot: ignore <hostmask>
+        $bot: add ignore for <hostmask>
+
+    **Requires permission:** ignore
+
+    Add an ignore for the specified hostmask. Can contain wildcards.
+    """
+
     if Ignore.select().where(Ignore.hostmask == hostmask,
                              Ignore.network == client.network).exists():
         client.message(target, "{origin}: I'm already ignoring {hostmask}.".format(
@@ -92,6 +63,19 @@ def add_ignore(client, target, origin, hostmask):
 @service.command(r"(?:list )?ignores$", mention=True)
 @requires_permission("ignore")
 def list_ignores(client, target, origin):
+    """
+    List ignores.
+
+    ::
+
+        $bot: list ignores
+        $bot: ignores
+
+    **Requires permission:** ignore
+
+    List all ignores for the bot on the current network.
+    """
+
     client.message(target, "{origin}: Ignores for {network}: {ignores}".format(
         origin=origin,
         network=client.network,
@@ -103,6 +87,22 @@ def list_ignores(client, target, origin):
 @service.command(r"(?:unignore|don't ignore|stop ignoring|remove ignore from) (?P<hostmask>\S+)$", mention=True)
 @requires_permission("ignore")
 def remove_ignore(client, target, origin, hostmask):
+    """
+    Remove ignore.
+
+    ::
+
+        $bot: unignore <hostmask>
+        $bot: don't ignore <hostmask>
+        $bot: stop ignoring <hostmask>
+        $bot: remove ignore from <hostmask>
+
+    **Requires permission:** ignore
+
+    Remove an ignore for the specified hostmask. Must match hostmask in ignore list
+    exactly.
+    """
+
     if Ignore.delete().where(Ignore.hostmask == hostmask,
                              Ignore.network == client.network).execute() == 0:
         client.message(target, "{origin}: I'm not ignoring {hostmask}.".format(

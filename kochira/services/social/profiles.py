@@ -2,37 +2,6 @@
 Personal profiles.
 
 This service allows the bot to keep track of people's profiles.
-
-Commands
-========
-
-Remember Profile
-----------------
-
-::
-
-    $bot: i am <text>
-
-Associate the given profile text with the user.
-
-Forget Profile
---------------
-
-::
-
-    $bot: forget about me
-
-Remove the given profile text from the user.
-
-Get Profile
------------
-
-::
-
-    $bot: who am i
-    $bot: who is <who>
-
-Retrieve profile text for a user.
 """
 
 from peewee import CharField, TextField
@@ -62,6 +31,16 @@ def initialize_model(bot):
 
 @service.command(r"forget(?: about)? me$", mention=True)
 def forget_profile(client, target, origin):
+    """
+    Forget profile.
+
+    ::
+
+        $bot: forget about me
+
+    Remove the given profile text from the user.
+    """
+
     if Profile.delete().where(Profile.network == client.network,
                               Profile.who == origin).execute():
         client.message(target, "{origin}: Okay, I won't remember you anymore.".format(
@@ -75,6 +54,16 @@ def forget_profile(client, target, origin):
 
 @service.command(r"[Ii](?: a|')m (?P<text>.+)$", mention=True)
 def remember_profile(client, target, origin, text):
+    """
+    Remember profile.
+
+    ::
+
+        $bot: i am <text>
+
+    Associate the given profile text with the user.
+    """
+
     try:
         profile = Profile.get(Profile.network == client.network,
                               Profile.who == origin)
@@ -93,6 +82,17 @@ def remember_profile(client, target, origin, text):
 @service.command(r"who am [Ii]\??$", mention=True)
 @service.command(r"who(?: is|'s| the .* is) (?P<who>\S+)\??$", mention=True)
 def get_profile(client, target, origin, who=None):
+    """
+    Get profile.
+
+    ::
+
+        $bot: who am i
+        $bot: who is <who>
+
+    Retrieve profile text for a user.
+    """
+
     if who is None:
         who = origin
 

@@ -3,10 +3,6 @@ Remote Cobe service.
 
 Allows the bot to reply whenever its nickname is mentioned using a remote Cobe
 brain.
-
-Commands
-========
-None.
 """
 
 import re

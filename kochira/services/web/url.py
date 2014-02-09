@@ -2,10 +2,6 @@
 URL scanner.
 
 Fetches and displays metadata for web pages, images and more.
-
-Commands
-========
-None.
 """
 
 import humanize

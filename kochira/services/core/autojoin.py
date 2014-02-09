@@ -2,10 +2,6 @@
 Autojoin channels on connect.
 
 This allows the bot to automatically join channels when it connects.
-
-Commands
-========
-None.
 """
 
 from kochira import config

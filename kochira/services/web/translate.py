@@ -2,35 +2,6 @@
 Translation between languages.
 
 Use Google Translate to perform translations between languages.
-
-Commands
-========
-
-Translate
----------
-
-::
-
-    $bot: what is <term>
-    $bot: what is <term> in <to_lang>
-    $bot: translate <term> from <from_lang>
-    $bot: translate <term> to <to_lang>
-    $bot: translate <term> from <from_lang> to <to_lang>
-
-Translate a term between two languages. If a language to translate from is not
-specified, the language will be auto-detected. If a language to translate to is
-not specified, the language will default to English.
-
-Transliterate
--------------
-
-::
-
-    $bot: (transliterate|romanize) <term>
-    $bot: (transliterate|romanize) <term> from <from_lang>
-
-Perform transliteration of languages with non-Roman characters, e.g. Russian,
-Japanese, Thai, etc.
 """
 
 import requests
@@ -65,6 +36,18 @@ def perform_translation(term, sl, tl):
 @service.command(r"(?:transliterate|romanize) (?P<term>.+?)(?: from (?P<from_lang>.+?))?$", mention=True)
 @background
 def transliterate(client, target, origin, term, from_lang=None):
+    """
+    Transliterate.
+
+    ::
+
+        $bot: (transliterate|romanize) <term>
+        $bot: (transliterate|romanize) <term> from <from_lang>
+
+    Perform transliteration of languages with non-Roman characters, e.g. Russian,
+    Japanese, Thai, etc.
+    """
+
     if from_lang is None:
         sl = None
     else:
@@ -97,6 +80,22 @@ def transliterate(client, target, origin, term, from_lang=None):
 @service.command(r"(?:translate) (?P<term>.+?)(?: from (?P<from_lang>.+?))?(?: to (?P<to_lang>.+))?$", mention=True)
 @background
 def translate(client, target, origin, term, to_lang=None, from_lang=None):
+    """
+    Translate.
+
+    ::
+
+        $bot: what is <term>
+        $bot: what is <term> in <to_lang>
+        $bot: translate <term> from <from_lang>
+        $bot: translate <term> to <to_lang>
+        $bot: translate <term> from <from_lang> to <to_lang>
+
+    Translate a term between two languages. If a language to translate from is
+    not specified, the language will be auto-detected. If a language to
+    translate to is not specified, the language will default to English.
+    """
+
     if from_lang is None:
         sl = "auto"
     else:

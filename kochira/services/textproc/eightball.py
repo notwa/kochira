@@ -2,19 +2,6 @@
 8ball simulator.
 
 It's like a real 8ball, but on the internet.
-
-Commands
-========
-
-8ball
------
-
-::
-
-    !8ball <question>
-    $bot: ask the 8ball <question>
-
-If you don't know what an 8ball does just Google it.
 """
 
 import binascii
@@ -50,6 +37,17 @@ service = Service(__name__, __doc__)
 @service.command(r"ask the 8-?ball (?P<question>.+)$", mention=True)
 @service.command(r"!8-?ball (?P<question>.+)$")
 def ask_8ball(client, target, origin, question):
+    """
+    8ball.
+
+    ::
+
+        !8ball <question>
+        $bot: ask the 8ball <question>
+
+    If you don't know what an 8ball does just Google it.
+    """
+
     client.message(target, "{origin}: The Magic 8-Ball says: {prediction}".format(
         origin=origin,
         prediction=OPTIONS[(binascii.crc32(question.lower().encode("utf-8")) + int(time.time() // (60 * 60 * 24))) % len(OPTIONS)]

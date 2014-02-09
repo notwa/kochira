@@ -20,6 +20,7 @@ class Service:
         self.name = name
         self.doc = doc
         self.hooks = {}
+        self.commands = set([])
         self.tasks = []
         self.config_factory = config.Config
         self.on_setup = None
@@ -36,27 +37,6 @@ class Service:
             return f
 
         return _decorator
-
-    def _get_doc_parts(self):
-        if self.doc is None:
-            return None
-        return self.doc.strip().split("\n\n")
-
-    @property
-    def short_doc(self):
-        parts = self._get_doc_parts()
-        if parts is None:
-            return None
-
-        return parts[0]
-
-    @property
-    def long_doc(self):
-        parts = self._get_doc_parts()
-        if parts is None:
-            return None
-
-        return "\n\n".join(parts[1:])
 
     def command(self, pattern, priority=0, mention=False, strip=True,
                 re_flags=re.I, eat=True, allow_private=True):
@@ -108,6 +88,8 @@ class Service:
                 self.hook("private_message", priority=priority)(
                     lambda client, origin, message: _command_handler(client, origin, origin, message)
                 )
+
+            self.commands.add(f)
             return f
 
         return _decorator

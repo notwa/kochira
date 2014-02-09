@@ -2,21 +2,6 @@
 Help and documentation.
 
 This service displays help information on the web server.
-
-Commands
-========
-
-Help
-----
-
-::
-
-    $bot: help
-    $bot: help me!
-    !help
-    !commands
-
-Links the user to the web help service, if available.
 """
 
 from kochira import config
@@ -31,11 +16,68 @@ class Config(config.Config):
     url = config.Field(doc="Base URL for the help documentation, e.g. ``http://example.com:8000/help``.")
 
 
+def rst(s, **kw):
+    return publish_parts(s, writer_name="html", **kw)["fragment"]
+
+
+def trim_docstring(docstring):
+    inf = float("inf")
+
+    if not docstring:
+        return ''
+    # Convert tabs to spaces (following the normal Python rules)
+    # and split into a list of lines:
+    lines = docstring.expandtabs().splitlines()
+    # Determine minimum indentation (first line doesn't count):
+    indent = inf
+    for line in lines[1:]:
+        stripped = line.lstrip()
+        if stripped:
+            indent = min(indent, len(line) - len(stripped))
+    # Remove indentation (first line is special):
+    trimmed = [lines[0].strip()]
+    if indent < inf:
+        for line in lines[1:]:
+            trimmed.append(line[indent:].rstrip())
+    # Strip off trailing and leading blank lines:
+    while trimmed and not trimmed[-1]:
+        trimmed.pop()
+    while trimmed and not trimmed[0]:
+        trimmed.pop(0)
+    # Return a single string:
+    return '\n'.join(trimmed)
+
+
+def _get_doc_parts(doc):
+    if doc is None:
+        return None
+    return trim_docstring(doc).strip().split("\n\n")
+
+
+def get_short_doc(doc):
+    parts = _get_doc_parts(doc)
+    if parts is None:
+        return None
+
+    return parts[0]
+
+
+def get_long_doc(doc):
+    parts = _get_doc_parts(doc)
+    if parts is None:
+        return None
+
+    return "\n\n".join(parts[1:])
+
+
 class RequestHandler(RequestHandler):
     def render(self, name, **kwargs):
         return super().render(name,
-                              rst=lambda s, **kw: publish_parts(s, writer_name="html", **kw)["fragment"],
+                              rst=rst,
+                              get_long_doc=get_long_doc,
+                              get_short_doc=get_short_doc,
                               **kwargs)
+
 
 class IndexHandler(RequestHandler):
     def get(self):
@@ -83,6 +125,19 @@ def webserver_config(bot):
 @service.command(r"!help")
 @service.command(r"help(?: me)?!?$", mention=True)
 def help(client, target, origin):
+    """
+    Help.
+
+    ::
+
+        $bot: help
+        $bot: help me!
+        !help
+        !commands
+
+    Links the user to the web help service, if available.
+    """
+
     config = service.config_for(client.bot)
 
     if "kochira.services.net.webserver" not in client.bot.services:

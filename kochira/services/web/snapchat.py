@@ -2,10 +2,6 @@
 Snapchat snap fetcher.
 
 Allows users to send Snapchats to channels.
-
-Commands
-========
-None.
 """
 
 import os

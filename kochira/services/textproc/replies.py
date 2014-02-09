@@ -3,44 +3,6 @@ Automatic replies for keywords.
 
 This service enables the bot to respond to predefined replies specified by
 users.
-
-Commands
-========
-
-Add Reply
----------
-
-::
-
-    $bot: reply to <what> with <reply>
-
-**Requires permission:** reply
-
-Add an automatic reply for whenever someone says `what`. `what` can be a
-regular expression delimited by ``/``, e.g. ``/^foo$/``.
-
-Remove Reply
-------------
-
-::
-
-    $bot: stop replying to <what>
-    $bot: don't reply to <what>
-    $bot: remove reply (to|for) <what>
-
-**Requires permission:** reply
-
-Remove the reply for `what`.
-
-List Replies
-------------
-
-::
-
-    $bot: what do you reply to?
-    $bot: replies?
-
-List all replies the bot has registered.
 """
 
 import random
@@ -78,6 +40,20 @@ def initialize_model(bot):
 @service.command(r"remove reply (?:to|for) (?P<what>.+)$", mention=True)
 @requires_permission("reply")
 def remove_reply(client, target, origin, what):
+    """
+    Remove reply.
+
+    ::
+
+        $bot: stop replying to <what>
+        $bot: don't reply to <what>
+        $bot: remove reply (to|for) <what>
+
+    **Requires permission:** reply
+
+    Remove the reply for `what`.
+    """
+
     if not Reply.select().where(Reply.what == what).exists():
         client.message(target, "{origin}: I'm not replying to \"{what}\".".format(
             origin=origin,
@@ -114,6 +90,19 @@ def do_reply(client, target, origin, message):
 @service.command(r"reply to (?P<what>.+?) with (?P<reply>.+)$", mention=True)
 @requires_permission("reply")
 def add_reply(client, target, origin, what, reply):
+    """
+    Add reply.
+
+    ::
+
+        $bot: reply to <what> with <reply>
+
+    **Requires permission:** reply
+
+    Add an automatic reply for whenever someone says `what`. `what` can be a
+    regular expression delimited by ``/``, e.g. ``/^foo$/``.
+    """
+
     if Reply.select().where(Reply.what == what).exists():
         client.message(target, "{origin}: I'm already replying to {what}.".format(
             origin=origin,
@@ -132,6 +121,17 @@ def add_reply(client, target, origin, what, reply):
 @service.command(r"what do you reply to\??$", mention=True)
 @service.command(r"replies\??$", mention=True)
 def list_replies(client, target, origin):
+    """
+    List replies.
+
+    ::
+
+        $bot: what do you reply to?
+        $bot: replies?
+
+    List all replies the bot has registered.
+    """
+
     client.message(target, "{origin}: I reply to the following: {replies}".format(
         origin=origin,
         replies=", ".join(reply.what if is_regex(reply.what) else "\"" + reply.what + "\""

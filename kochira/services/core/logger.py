@@ -2,10 +2,6 @@
 IRC message logger.
 
 Enables logging of messages to flat files.
-
-Commands
-========
-None.
 """
 
 import threading

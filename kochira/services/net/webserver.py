@@ -3,10 +3,6 @@ Web server.
 
 This service starts a web server to allow services to run things on a web
 server.
-
-Commands
-========
-None.
 """
 
 from docutils.core import publish_parts

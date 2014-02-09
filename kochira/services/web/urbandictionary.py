@@ -2,23 +2,6 @@
 UrbanDictionary lookup.
 
 Retrieves definitions of terms from UrbanDictionary.
-
-Commands
-========
-
-Define
-------
-
-::
-
-    !ud <term>
-    !ud <term> <num>
-    $bot: define <term>
-    $bot: define <term> (<num>)
-    $bot: what does <term> mean?
-    $bot: what does <term> (<num>) mean?
-
-Look up the given term on UrbanDictionary.
 """
 
 import requests
@@ -33,6 +16,21 @@ service = Service(__name__, __doc__)
 @service.command(r"what does (?P<term>.+) mean(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
 def define(client, target, origin, term, num: int=None):
+    """
+    Define.
+
+    ::
+
+        !ud <term>
+        !ud <term> <num>
+        $bot: define <term>
+        $bot: define <term> (<num>)
+        $bot: what does <term> mean?
+        $bot: what does <term> (<num>) mean?
+
+    Look up the given term on UrbanDictionary.
+    """
+
     r = requests.get("http://api.urbandictionary.com/v0/define", params={
         "term": term
     }).json()

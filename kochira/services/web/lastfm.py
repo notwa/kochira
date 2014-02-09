@@ -3,53 +3,6 @@ Last.fm now playing and music comparisons.
 
 Allow users to display their now playing status and compare music tastes using
 Last.fm.
-
-Commands
-========
-
-Set Username
-------------
-
-::
-
-    !lfm <username>
-    $bot: my last.fm username is <username>
-
-Associate a Last.fm username with your nickname.
-
-Get Username
-------------
-
-::
-
-    !lfm
-    $bot: what is my last.fm username
-
-Get your Last.fm username.
-
-Now Playing
------------
-
-::
-
-    !np
-    !np <who>
-    $bot: what am i playing
-    $bot: what is <who> playing
-
-Get the currently playing song for a user.
-
-Tasteometer
------------
-
-::
-
-    !tasteometer <user1> <user2>
-    !tasteometer <user2>
-    $bot: compare my last.fm with <user2>
-    $bot: compare <user1> and <user2> on last.fm
-
-Compare the music tastes of two users.
 """
 
 import requests
@@ -196,6 +149,17 @@ def get_lfm_username(client, who):
 @service.command(r"!lfm (?P<lfm_username>\S+)$")
 @service.command(r"my last\.fm username is (?P<lfm_username>\S+)$", mention=True)
 def setup_user(client, target, origin, lfm_username):
+    """
+    Set username.
+
+    ::
+
+        !lfm <username>
+        $bot: my last.fm username is <username>
+
+    Associate a Last.fm username with your nickname.
+    """
+
     try:
         profile = LastFMProfile.get(LastFMProfile.network == client.network,
                                     LastFMProfile.who == origin)
@@ -215,6 +179,19 @@ def setup_user(client, target, origin, lfm_username):
 @service.command(r"!lfm$")
 @service.command(r"what is my last\.fm username\??$", mention=True)
 def check_user(client, target, origin):
+    """
+    Now playing.
+
+    ::
+
+        !np
+        !np <who>
+        $bot: what am i playing
+        $bot: what is <who> playing
+
+    Get the currently playing song for a user.
+    """
+
     try:
         profile = LastFMProfile.get(LastFMProfile.network == client.network,
                                     LastFMProfile.who == origin)
@@ -235,6 +212,19 @@ def check_user(client, target, origin):
 @service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$", mention=True)
 @background
 def compare_users(client, target, origin, user2, user1=None):
+    """
+    Tasteometer.
+
+    ::
+
+        !tasteometer <user1> <user2>
+        !tasteometer <user2>
+        $bot: compare my last.fm with <user2>
+        $bot: compare <user1> and <user2> on last.fm
+
+    Compare the music tastes of two users.
+    """
+
     config = service.config_for(client.bot)
 
     if user1 is None:
@@ -268,6 +258,17 @@ def compare_users(client, target, origin, user2, user1=None):
 @service.command(r"what is (?P<who>\S+) playing\??$", mention=True)
 @background
 def now_playing(client, target, origin, who=None):
+    """
+    Get username.
+
+    ::
+
+        !lfm
+        $bot: what is my last.fm username
+
+    Get your Last.fm username.
+    """
+
     config = service.config_for(client.bot)
 
     if who is None:

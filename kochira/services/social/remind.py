@@ -3,29 +3,6 @@ Timed and join reminders.
 
 Enables the bot to record and play reminders after timed intervals or on user
 join.
-
-Commands
-========
-
-Add Timed Reminder
-------------------
-
-::
-
-    $bot: (tell|remind) <who> (in|after) <time> about <what>
-
-Add a reminder that will play after `time` has elapsed. If the user has left
-the channel, the reminder will play as soon as they return.
-
-Add Reminder
-------------
-
-::
-
-    $bot: (tell|remind) <who> about <what>
-
-Add a reminder that will play when the user joins the channel or next speaks on
-the channel.
 """
 
 import humanize
@@ -108,6 +85,17 @@ def play_timed_reminder(bot, reminder):
 @service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to|that) (?P<message>.+) (?P<duration>(?:in|after) .+|tomorrow)$", mention=True)
 @service.command(r"(?:remind|tell) (?P<who>\S+) (?P<duration>(?:in|after) .+|tomorrow) (?:about|to|that) (?P<message>.+)$", mention=True)
 def add_timed_reminder(client, target, origin, who, duration, message):
+    """
+    Add timed reminder.
+
+    ::
+
+        $bot: (tell|remind) <who> (in|after) <time> about <what>
+
+    Add a reminder that will play after `time` has elapsed. If the user has left
+    the channel, the reminder will play as soon as they return.
+    """
+
     now = datetime.utcnow()
     t = parse_time(duration)
 
@@ -147,6 +135,17 @@ def add_timed_reminder(client, target, origin, who, duration, message):
 
 @service.command(r"(?:remind|tell) (?P<who>\S+)(?: about| to| that)? (?P<message>.+)$", mention=True)
 def add_reminder(client, target, origin, who, message):
+    """
+    Add reminder.
+
+    ::
+
+        $bot: (tell|remind) <who> about <what>
+
+    Add a reminder that will play when the user joins the channel or next speaks on
+    the channel.
+    """
+
     if who.lower() == "me" and who not in client.channels[target]["users"]:
         who = origin
 

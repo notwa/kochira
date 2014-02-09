@@ -55,53 +55,6 @@ You (other requester) need a response from me (this responder)::
         my bot's hostmask,
         remaining IRC payload (response)...
     ]
-
-Commands
-========
-
-Federate
---------
-
-::
-
-    $bot: federate with <name>
-
-Connect to a bot specified in the federation configuration.
-
-Unfederate
-----------
-
-::
-
-    $bot: stop federating with <name>
-    $bot: don't federate with <name>
-
-Disconnect from a bot.
-
-List Federations
-----------------
-
-::
-
-    $bot: who are you federated with
-    $bot: federations
-    $bot: list federations
-    $bot: list all federations
-
-List all bots this bot is federating with.
-
-Federated Request
------------------
-
-::
-
-    $bot: ask <name> <what>
-    *<name>> <what>
-    *<name>: <what>
-
-The first two forms of the command directly send a request to the federated
-bot. The third form will append the bot's name, mentioning it, before sending
-it to the federated bot.
 """
 
 import functools
@@ -331,6 +284,16 @@ def shutdown_federation(bot):
 @service.command(r"federate with (?P<name>\S+)$", mention=True)
 @requires_permission("federation")
 def add_federation(client, target, origin, name):
+    """
+    Federate.
+
+    ::
+
+        $bot: federate with <name>
+
+    Connect to a bot specified in the federation configuration.
+    """
+
     config = service.config_for(client.bot)
     storage = service.storage_for(client.bot)
 
@@ -367,6 +330,17 @@ def add_federation(client, target, origin, name):
 @service.command(r"don't federate with (?P<name>\S+)$", mention=True)
 @requires_permission("federation")
 def remove_federation(client, target, origin, name):
+    """
+    Unfederate.
+
+    ::
+
+        $bot: stop federating with <name>
+        $bot: don't federate with <name>
+
+    Disconnect from a bot.
+    """
+
     storage = service.storage_for(client.bot)
 
     try:
@@ -388,6 +362,20 @@ def remove_federation(client, target, origin, name):
 @service.command(r"ask (?P<name>\S+) (?P<what>.+)$", mention=True)
 @service.command(r"\*(?P<name>\S+)(?P<mode>:|>) (?P<what>.+)$")
 def federated_request(client, target, origin, name, what, mode=None):
+    """
+    Federated request.
+
+    ::
+
+        $bot: ask <name> <what>
+        *<name>> <what>
+        *<name>: <what>
+
+    The first two forms of the command directly send a request to the federated
+    bot. The third form will append the bot's name, mentioning it, before sending
+    it to the federated bot.
+    """
+
     storage = service.storage_for(client.bot)
 
     try:
@@ -406,6 +394,19 @@ def federated_request(client, target, origin, name, what, mode=None):
 @service.command(r"who are you federated with\??$", mention=True)
 @service.command(r"(?:list (?:all )?)?federations$", mention=True)
 def list_federations(client, target, origin):
+    """
+    List federations.
+
+    ::
+
+        $bot: who are you federated with
+        $bot: federations
+        $bot: list federations
+        $bot: list all federations
+
+    List all bots this bot is federating with.
+    """
+
     storage = service.storage_for(client.bot)
 
     client.message(target, "I am federated with: {federation}".format(

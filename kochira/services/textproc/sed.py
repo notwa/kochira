@@ -2,21 +2,6 @@
 Sed-style find and replacement.
 
 Finds patterns in text and replaces it with other terms.
-
-Commands
-========
-
-Find and Replace
-----------------
-
-::
-
-    s/<pattern>/<replacement>/<flags>
-    <who>: s/<pattern>/<replacement>/<flags>
-
-Find a regular expression pattern and replace it. Flags supported are `i` for
-case insensitive, `g` for global and `s` for dot-all.
-
 """
 
 import re
@@ -29,6 +14,18 @@ service = Service(__name__, __doc__)
 @service.command(r"s(\W{1,2})(?P<pattern>(?:[^\1]|\\1)+)\1(?P<replacement>(?:[^\1]|\\1)+)\1(?P<flags>[gis]*)")
 @service.command(r"(?P<who>.+)[,;:] s(\W{1,2})(?P<pattern>(?:[^\2]|\\2)+)\2(?P<replacement>(?:[^\1]|\\2)+)\2(?P<flags>[gis]*)")
 def sed(client, target, origin, pattern, replacement, who=None, flags=None):
+    """
+    Find and replace.
+
+    ::
+
+        s/<pattern>/<replacement>/<flags>
+        <who>: s/<pattern>/<replacement>/<flags>
+
+    Find a regular expression pattern and replace it. Flags supported are `i` for
+    case insensitive, `g` for global and `s` for dot-all.
+    """
+
     if flags is None:
         flags = ""
 

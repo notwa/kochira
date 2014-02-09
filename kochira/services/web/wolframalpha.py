@@ -2,19 +2,6 @@
 Wolfram|Alpha query.
 
 Runs queries on Wolfram|Alpha.
-
-Commands
-========
-
-Compute
--------
-
-::
-
-    !wa <query>
-    $bot: (compute|calculate|mathify) <query>
-
-Run a query on Wolfram|Alpha and display the result.
 """
 
 import re
@@ -35,6 +22,17 @@ class Config(config.Config):
 @service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)
 @background
 def compute(client, target, origin, query):
+    """
+    Compute.
+
+    ::
+
+        !wa <query>
+        $bot: (compute|calculate|mathify) <query>
+
+    Run a query on Wolfram|Alpha and display the result.
+    """
+
     config = service.config_for(client.bot)
 
     resp = requests.get("http://api.wolframalpha.com/v2/query",

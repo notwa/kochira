@@ -12,7 +12,7 @@ Welcome to Kochira's online documentation!
 {% for s in services %}
     <li>
         <a href="{{ s.name }}">{{ s.name }}</a>
-        {% raw rst(s.short_doc or "(no documentation)") %}
+        {% raw rst(get_short_doc(s.doc) or "(no documentation)") %}
     </li>
 {% end %}
 </ul>

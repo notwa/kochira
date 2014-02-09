@@ -6,14 +6,33 @@
 <h1>{{ service.name }}</h1>
 
 <blockquote>
-{% raw rst(service.short_doc or "(no documentation)") %}
+{% raw rst(get_short_doc(service.doc) or "(no documentation)") %}
 </blockquote>
 
-{% raw rst(service.long_doc or "", settings_overrides={"initial_header_level": 2}) %}
+{% raw rst(get_long_doc(service.doc) or "",
+           settings_overrides={"initial_header_level": 2}) %}
 
 <div class="section" id="configuration-options">
 <h2>Configuration Options</h2>
 {% module Config(service.config_factory) %}
 </div>
+
+<div class="section" id="commands">
+<h2>Commands</h2>
+{% set commands = sorted((command for command in service.commands if command.__doc__),
+                         key=lambda x: x.__doc__.lstrip()) %}
+{% if commands %}
+{% for command in commands %}
+<div class="section" id="{{command.__name__}}">
+<h3>{{get_short_doc(command.__doc__)}}</h3>
+{% raw rst(get_long_doc(command.__doc__),
+           settings_overrides={"initial_header_level": 4}) %}
+</div>
+{% end %}
+{% else %}
+<p>None.</p>
+{% end %}
+</div>
+
 
 {% end %}

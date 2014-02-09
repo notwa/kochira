@@ -3,33 +3,6 @@ Text filters and replacements.
 
 Replaces or otherwise filters strings of text. All commands can be used without
 a parameter, where they will use the last line spoken in the channel.
-
-Commands
-========
-
-Benis
------
-
-::
-
-    $bot: benis <what>
-    $bot: benis
-    !benis <what>
-    !benis
-
-You're going to have to figure this one out for yourself.
-
-Fabulous
---------
-
-::
-
-    $bot: fabulous <what>
-    $bot: fabulous
-    !fabulous <what>
-    !fabulous
-
-Rainbow text!
 """
 
 import functools
@@ -93,12 +66,38 @@ def run_filter(f, client, target, origin, text=None):
     ))
 
 
-def bind_filter(name, f):
+def bind_filter(name, f, doc):
     @service.command(r"!{}(?: (?P<text>.+))?$".format(name))
     @service.command(r"{}(?: (?P<text>.+))?$".format(name), mention=True)
     def benis(client, target, origin, text=None):
         run_filter(f, client, target, origin, text)
+    benis.__doc__ = doc
 
 
-bind_filter("benis", benisify)
-bind_filter("fabulous", fabulousify)
+bind_filter("benis", benisify,
+"""
+Benis.
+
+::
+
+    $bot: benis <what>
+    $bot: benis
+    !benis <what>
+    !benis
+
+You're going to have to figure this one out for yourself.
+""")
+
+bind_filter("fabulous", fabulousify,
+"""
+Fabulous.
+
+::
+
+    $bot: fabulous <what>
+    $bot: fabulous
+    !fabulous <what>
+    !fabulous
+
+Rainbow text!
+""")

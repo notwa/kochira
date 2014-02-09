@@ -2,22 +2,6 @@
 Google web search.
 
 Run queries on Google and return results.
-
-Commands
-========
-
-Google
-------
-
-::
-
-    !g <term>
-    !g <term> <num>
-    $bot: google for <term>
-    $bot: google for <term> (<num>)
-
-Search for the given terms on Google. If a number is given, it will display
-that result.
 """
 
 import requests
@@ -35,6 +19,20 @@ html_parser = HTMLParser()
 @service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
 def search(client, target, origin, term, num: int=None):
+    """
+    Google.
+
+    ::
+
+        !g <term>
+        !g <term> <num>
+        $bot: google for <term>
+        $bot: google for <term> (<num>)
+
+    Search for the given terms on Google. If a number is given, it will display
+    that result.
+    """
+
     r = requests.get(
         "https://ajax.googleapis.com/ajax/services/search/web",
         params={

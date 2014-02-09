@@ -2,10 +2,6 @@
 Artificial (un)intelligence.
 
 Allows the bot to reply whenever its nickname is mentioned.
-
-Commands
-========
-None.
 """
 
 import re

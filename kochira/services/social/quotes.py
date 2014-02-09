@@ -3,68 +3,6 @@ Quote database.
 
 This enables the bot to record and search quotes. If the web server service is
 running, a web interface to quotes will be made available at ``/quotes/``.
-
-Commands
-========
-
-Add Quote
----------
-
-::
-
-    $bot: add quote <quote>
-    !quote add <quote>
-
-**Requires permission:** quote
-
-Add the given quote to the database.
-
-Delete Quote
-------------
-
-::
-
-    $bot: delete quote <qid>
-    !quote del <qid>
-    $bot: i am very butthurt about quote <qid>
-
-**Requires permission:** quote
-
-Remove the given quote from the database.
-
-Read Quote
-----------
-
-::
-
-    $bot: what is quote <qid>
-    $bot: read quote <qid>
-    !quote read <qid>
-
-Read a quote from the database.
-
-Random Quote
-------------
-
-::
-
-    $bot: random quote
-    $bot: random quote matching <query>
-    !quote rand
-    !quote rand <query>
-
-Retrieve a random quote from the database. If a query is specified, then it is
-used.
-
-Find Quote
-----------
-
-::
-
-    $bot: find a quote matching <query>
-    !quote find <query>
-
-Full-text search for a given quote.
 """
 
 import re
@@ -167,6 +105,19 @@ def _add_quote(bot, network, channel, origin, quote):
 @service.command(r"!quote add (?P<quote>.+)$")
 @requires_permission("quote")
 def add_quote(client, target, origin, quote):
+    """
+    Add quote.
+
+    ::
+
+        $bot: add quote <quote>
+        !quote add <quote>
+
+    **Requires permission:** quote
+
+    Add the given quote to the database.
+    """
+
     quote = _add_quote(client.bot, client.network, target, origin, quote)
 
     client.message(target, "{origin}: Added quote {qid}.".format(
@@ -188,6 +139,20 @@ def _delete_quote(bot, qid):
 @service.command(r"!quote del (?P<qid>\d+)$")
 @requires_permission("quote")
 def delete_quote(client, target, origin, qid: int):
+    """
+    Delete quote.
+
+    ::
+
+        $bot: delete quote <qid>
+        !quote del <qid>
+        $bot: i am very butthurt about quote <qid>
+
+    **Requires permission:** quote
+
+    Remove the given quote from the database.
+    """
+
     if not Quote.select() \
         .where(Quote.id == qid,
                Quote.network == client.network,
@@ -216,6 +181,18 @@ def _read_quote(bot, qid):
 @service.command(r"read quote (?P<qid>\d+)$", mention=True)
 @service.command(r"!quote read (?P<qid>\d+)$")
 def read_quote(client, target, origin, qid: int):
+    """
+    Read quote.
+
+    ::
+
+        $bot: what is quote <qid>
+        $bot: read quote <qid>
+        !quote read <qid>
+
+    Read a quote from the database.
+    """
+
     q = Quote.select() \
         .where(Quote.id == qid,
                Quote.network == client.network,
@@ -238,6 +215,20 @@ def read_quote(client, target, origin, qid: int):
 @service.command(r"(?:give me a )?random quote(?: matching (?P<query>.+))?$", mention=True)
 @service.command(r"!quote rand(?: (?P<query>.+))?$")
 def rand_quote(client, target, origin, query=None):
+    """
+    Random quote.
+
+    ::
+
+        $bot: random quote
+        $bot: random quote matching <query>
+        !quote rand
+        !quote rand <query>
+
+    Retrieve a random quote from the database. If a query is specified, then it is
+    used.
+    """
+
     if query is not None:
         q = _find_quotes(client.bot, query)
     else:
@@ -281,6 +272,17 @@ def _find_quotes(bot, query):
 @service.command(r"find (?:a )?quote matching (?P<query>.+)$", mention=True)
 @service.command(r"!quote find (?P<query>.+)$")
 def find_quote(client, target, origin, query):
+    """
+    Find quote.
+
+    ::
+
+        $bot: find a quote matching <query>
+        !quote find <query>
+
+    Full-text search for a given quote.
+    """
+
     quotes = list(_find_quotes(client.bot, query).where(
         Quote.network == client.network,
         Quote.channel == target

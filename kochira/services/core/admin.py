@@ -2,110 +2,6 @@
 Administration services.
 
 This service allows administrators to manage various aspects of the bot.
-
-Commands
-========
-
-Grant Permission
-----------------
-
-::
-
-    $bot: grant <permission> to <hostmask>
-    $bot: grant <permission> to <hostmask> on channel <channel>
-
-**Requires permission:** admin
-
-Grant a permission to the given hostmask. It can be done on a channel-specific
-basis. Wildcard hostmasks are permitted.
-
-
-Revoke Permission
------------------
-
-::
-
-    $bot: revoke <permission> from <hostmask>
-    $bot: revoke <permission> from <hostmask> on channel <channel>
-
-**Requires permission:** admin
-
-Revoke a permission from the given hostmask. It can be done on a
-channel-specific basis. Wildcard hostmasks are permitted and will revoke
-permissions for any hostmask matching it.
-
-Load Service
-------------
-
-::
-
-    $bot: load service <name>
-    $bot: reload service <name>
-
-**Requires permission:** admin
-
-Load or reload a service with the given name. Reloading will force all code to
-be reloaded.
-
-Unload Service
---------------
-
-::
-
-    $bot: unload service <name>
-
-**Requires permission:** admin
-
-Unload a currently running service.
-
-List Services
--------------
-
-::
-
-    $bot: services
-    $bot: list services
-
-**Requires permission:** admin
-
-List all running services.
-
-Evaluate Code
--------------
-
-::
-
-    $bot: eval <code>
-    >>> <code>
-
-**Requires permission:** admin
-
-Evaluate code inside the bot. The local ``bot`` is provided for access to bot
-internals.
-
-Rehash Configuration
---------------------
-
-::
-
-    $bot: rehash
-
-**Requires permission:** admin
-
-Rehash the bot's configuration settings.
-
-Restart
--------
-
-::
-
-    $bot: restart
-    $bot: reboot
-
-**Requires permission:** admin
-
-Restart the bot. Will ``exec`` a new process into the currently running process
-space.
 """
 
 from io import StringIO
@@ -116,7 +12,6 @@ import sys
 
 from kochira.auth import requires_permission, ACLEntry
 from kochira.service import Service
-
 
 service = Service(__name__, __doc__)
 
@@ -130,6 +25,20 @@ def setup_eval_locals(bot):
 @service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
 @requires_permission("admin")
 def grant(client, target, origin, permission, hostmask, channel=None):
+    """
+    Grant permission.
+
+    ::
+
+        $bot: grant <permission> to <hostmask>
+        $bot: grant <permission> to <hostmask> on channel <channel>
+
+    **Requires permission:** admin
+
+    Grant a permission to the given hostmask. It can be done on a channel-specific
+    basis. Wildcard hostmasks are permitted.
+    """
+
     ACLEntry.grant(client.network, hostmask, permission, channel)
 
     if channel is not None:
@@ -152,6 +61,21 @@ def grant(client, target, origin, permission, hostmask, channel=None):
 @service.command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
 @requires_permission("admin")
 def revoke(client, target, origin, permission, hostmask, channel=None):
+    """
+    Revoke permission.
+
+    ::
+
+        $bot: revoke <permission> from <hostmask>
+        $bot: revoke <permission> from <hostmask> on channel <channel>
+
+    **Requires permission:** admin
+
+    Revoke a permission from the given hostmask. It can be done on a
+    channel-specific basis. Wildcard hostmasks are permitted and will revoke
+    permissions for any hostmask matching it.
+    """
+
     if permission == "everything":
         permission = None
 
@@ -182,6 +106,20 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
 @service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True)
 @requires_permission("admin")
 def load_service(client, target, origin, r, service_name):
+    """
+    Load service.
+
+    ::
+
+        $bot: load service <name>
+        $bot: reload service <name>
+
+    **Requires permission:** admin
+
+    Load or reload a service with the given name. Reloading will force all code to
+    be reloaded.
+    """
+
     try:
         try:
             client.bot.load_service(service_name, r is not None)
@@ -209,6 +147,18 @@ def load_service(client, target, origin, r, service_name):
 @service.command(r"unload service (?P<service_name>\S+)$", mention=True)
 @requires_permission("admin")
 def unload_service(client, target, origin, service_name):
+    """
+    Unload service.
+
+    ::
+
+        $bot: unload service <name>
+
+    **Requires permission:** admin
+
+    Unload a currently running service.
+    """
+
     if service_name not in client.bot.services:
         service_name = service.SERVICES_PACKAGE + '.' + service_name
     try:
@@ -230,6 +180,19 @@ def unload_service(client, target, origin, service_name):
 @service.command(r"(?:list )?services$", mention=True)
 @requires_permission("admin")
 def list_services(client, target, origin):
+    """
+    List services.
+
+    ::
+
+        $bot: services
+        $bot: list services
+
+    **Requires permission:** admin
+
+    List all running services.
+    """
+
     client.message(target, "I am running: {services}".format(
         services=", ".join(client.bot.services))
     )
@@ -258,6 +221,20 @@ def reload_services(client, target, origin):
 @service.command(r"eval (?P<code>.+)$", mention=True)
 @requires_permission("admin")
 def eval_code(client, target, origin, code):
+    """
+    Evaluate code.
+
+    ::
+
+        $bot: eval <code>
+        >>> <code>
+
+    **Requires permission:** admin
+
+    Evaluate code inside the bot. The local ``bot`` is provided for access to
+    bot internals.
+    """
+
     storage = service.storage_for(client.bot)
 
     buf = StringIO()
@@ -287,6 +264,18 @@ def eval_code(client, target, origin, code):
 @service.command(r"rehash$", mention=True)
 @requires_permission("admin")
 def rehash(client, target, origin):
+    """
+    Rehash configuration.
+
+    ::
+
+        $bot: rehash
+
+    **Requires permission:** admin
+
+    Rehash the bot's configuration settings.
+    """
+
     try:
         client.bot.rehash()
     except BaseException as e:
@@ -303,6 +292,20 @@ def rehash(client, target, origin):
 @service.command(r"re(?:start|boot)$", mention=True)
 @requires_permission("admin")
 def restart(client, target, origin):
+    """
+    Restart.
+
+    ::
+
+        $bot: restart
+        $bot: reboot
+
+    **Requires permission:** admin
+
+    Restart the bot. Will ``exec`` a new process into the currently running process
+    space.
+    """
+
     for client in list(client.bot.networks.values()):
         client.quit("Restarting...")
 

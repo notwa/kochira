@@ -6,21 +6,6 @@ post-receive web hook if the web server is loaded.
 
 If the post-receive web hook is enabled, the post-receive hook is available at
 http://mykochira/updater/?key=post_receive_key
-
-Commands
-========
-
-Update
-------
-
-::
-
-    $bot: update
-    $bot: windows updates!
-
-**Requires permission:** update
-
-Update the bot by pulling from the latest Git master.
 """
 
 import subprocess
@@ -93,6 +78,19 @@ def do_update(remote, branch):
 @service.command(r"(?:windows )?update(?:s)?!?$", mention=True, allow_private=True)
 @requires_permission("admin")
 def update(client, target, origin):
+    """
+    Update.
+
+    ::
+
+        $bot: update
+        $bot: windows updates!
+
+    **Requires permission:** update
+
+    Update the bot by pulling from the latest Git master.
+    """
+
     config = service.config_for(client.bot)
 
     client.message(target, "Checking for updates...")

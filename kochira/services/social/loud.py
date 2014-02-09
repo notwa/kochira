@@ -3,44 +3,6 @@ Record and replay shouts.
 
 This service will record all messages in all caps and select a random message
 when somebody speaks in all caps.
-
-Commands
-========
-
-Loudest Users
--------------
-
-::
-
-    $bot: who is the loudest?
-    $bot: who are the loudest?
-    $bot: who is loud?
-    $bot: who are loud?
-
-Retrieve the top 5 loudest users.
-
-Who Said That?
---------------
-
-::
-
-    $bot: who said that?
-    $bot: what was the context of that?
-
-Get information for who originally said the last shout.
-
-Number of Shouts
-----------------
-
-::
-
-    $bot: how many shouts?
-    $bot: how many times has <who> shouted?
-    $bot: how loud is <who>?
-
-Get the number of times everyone has shouted or, if `who` is specified, how
-many times `who` has shouted.
-
 """
 
 import string
@@ -81,6 +43,19 @@ def initialize_model(bot):
 
 @service.command(r"who(?:'s| is| are|'re)(?: the loudest|loud)(?: .+)?\??$", mention=True)
 def loudest(client, target, origin):
+    """
+    Loudest users.
+
+    ::
+
+        $bot: who is the loudest?
+        $bot: who are the loudest?
+        $bot: who is loud?
+        $bot: who are loud?
+
+    Retrieve the top 5 loudest users.
+    """
+
     loudest = [(shout.who, shout.network, shout.count) for shout in
         Shout.select(Shout.who, Shout.network, fn.sum(1).alias("count"))
             .group_by(Shout.who, Shout.network)
@@ -107,6 +82,17 @@ def loudest(client, target, origin):
 @service.command(r"who said that\??$", mention=True)
 @service.command(r"what was the context of that\??$", mention=True)
 def who_said_that(client, target, origin):
+    """
+    Who said that?
+
+    ::
+
+        $bot: who said that?
+        $bot: what was the context of that?
+
+    Get information for who originally said the last shout.
+    """
+
     storage = service.storage_for(client.bot)
 
     if storage.last_shout is not None:
@@ -125,6 +111,19 @@ def who_said_that(client, target, origin):
 @service.command(r"how many times has (?P<who>\S+) shouted\??", mention=True)
 @service.command(r"how loud is (?P<who>\S+)\??", mention=True)
 def how_many_shouts(client, target, origin, who=None):
+    """
+    Number of shouts.
+
+    ::
+
+        $bot: how many shouts?
+        $bot: how many times has <who> shouted?
+        $bot: how loud is <who>?
+
+    Get the number of times everyone has shouted or, if `who` is specified, how
+    many times `who` has shouted.
+    """
+
     if who is None:
         num = Shout.select().count()
         client.message(target, "{origin}: People have shouted {num} time{s}.".format(
