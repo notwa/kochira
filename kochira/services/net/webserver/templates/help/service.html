@@ -26,6 +26,11 @@
 {% for command in commands %}
 <div class="section" id="{{command.__name__}}">
 <h3>{{get_short_doc(command.__doc__)}}</h3>
+<pre class="literal-block">{{"\n".join(sorted((pattern if not mention else "$bot: " + pattern).rstrip("$")
+                                              for pattern, mention in command.patterns))}}</pre>
+<dl class="dl-horizontal">
+{% if hasattr(command, "permissions") %}<dt>Requires permission</dt><dd>{{", ".join(command.permissions)}}</dd>{% end %}
+</dl>
 {% raw rst(get_long_doc(command.__doc__),
            settings_overrides={"initial_header_level": 4}) %}
 </div>

@@ -25,7 +25,7 @@ def run_generator(*args):
     return "".join(str(x) for x in args)
 
 def bind_generator(name, fn, doc):
-    @service.command(re.escape(name), eat=False)
+    @service.command(re.escape(name) + ".*", eat=False)
     def command(client, target, origin):
         client.message(target, fn())
     command.__doc__ = doc
@@ -102,20 +102,12 @@ bind_generator(":java:", java,
 """
 Java programmer simulator.
 
-::
-
-    :java:
-
 Generates a valid Java class name.
 """)
 
 bind_generator(":c++:", sepples,
 """
 C++ programmer simulator.
-
-::
-
-    :c++:
 
 Generates valid C++ code.
 """)

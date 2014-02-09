@@ -46,13 +46,6 @@ def loudest(client, target, origin):
     """
     Loudest users.
 
-    ::
-
-        $bot: who is the loudest?
-        $bot: who are the loudest?
-        $bot: who is loud?
-        $bot: who are loud?
-
     Retrieve the top 5 loudest users.
     """
 
@@ -85,11 +78,6 @@ def who_said_that(client, target, origin):
     """
     Who said that?
 
-    ::
-
-        $bot: who said that?
-        $bot: what was the context of that?
-
     Get information for who originally said the last shout.
     """
 
@@ -113,12 +101,6 @@ def who_said_that(client, target, origin):
 def how_many_shouts(client, target, origin, who=None):
     """
     Number of shouts.
-
-    ::
-
-        $bot: how many shouts?
-        $bot: how many times has <who> shouted?
-        $bot: how loud is <who>?
 
     Get the number of times everyone has shouted or, if `who` is specified, how
     many times `who` has shouted.

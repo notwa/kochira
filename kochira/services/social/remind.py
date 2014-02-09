@@ -88,10 +88,6 @@ def add_timed_reminder(client, target, origin, who, duration, message):
     """
     Add timed reminder.
 
-    ::
-
-        $bot: (tell|remind) <who> (in|after) <time> about <what>
-
     Add a reminder that will play after `time` has elapsed. If the user has left
     the channel, the reminder will play as soon as they return.
     """
@@ -137,10 +133,6 @@ def add_timed_reminder(client, target, origin, who, duration, message):
 def add_reminder(client, target, origin, who, message):
     """
     Add reminder.
-
-    ::
-
-        $bot: (tell|remind) <who> about <what>
 
     Add a reminder that will play when the user joins the channel or next speaks on
     the channel.

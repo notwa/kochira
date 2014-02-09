@@ -40,11 +40,6 @@ def ask_8ball(client, target, origin, question):
     """
     8ball.
 
-    ::
-
-        !8ball <question>
-        $bot: ask the 8ball <question>
-
     If you don't know what an 8ball does just Google it.
     """
 

@@ -22,13 +22,6 @@ def search(client, target, origin, term, num: int=None):
     """
     Google.
 
-    ::
-
-        !g <term>
-        !g <term> <num>
-        $bot: google for <term>
-        $bot: google for <term> (<num>)
-
     Search for the given terms on Google. If a number is given, it will display
     that result.
     """

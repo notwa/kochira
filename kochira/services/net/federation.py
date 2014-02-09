@@ -287,10 +287,6 @@ def add_federation(client, target, origin, name):
     """
     Federate.
 
-    ::
-
-        $bot: federate with <name>
-
     Connect to a bot specified in the federation configuration.
     """
 
@@ -333,11 +329,6 @@ def remove_federation(client, target, origin, name):
     """
     Unfederate.
 
-    ::
-
-        $bot: stop federating with <name>
-        $bot: don't federate with <name>
-
     Disconnect from a bot.
     """
 
@@ -365,12 +356,6 @@ def federated_request(client, target, origin, name, what, mode=None):
     """
     Federated request.
 
-    ::
-
-        $bot: ask <name> <what>
-        *<name>> <what>
-        *<name>: <what>
-
     The first two forms of the command directly send a request to the federated
     bot. The third form will append the bot's name, mentioning it, before sending
     it to the federated bot.
@@ -396,13 +381,6 @@ def federated_request(client, target, origin, name, what, mode=None):
 def list_federations(client, target, origin):
     """
     List federations.
-
-    ::
-
-        $bot: who are you federated with
-        $bot: federations
-        $bot: list federations
-        $bot: list all federations
 
     List all bots this bot is federating with.
     """

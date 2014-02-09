@@ -108,13 +108,6 @@ def add_quote(client, target, origin, quote):
     """
     Add quote.
 
-    ::
-
-        $bot: add quote <quote>
-        !quote add <quote>
-
-    **Requires permission:** quote
-
     Add the given quote to the database.
     """
 
@@ -141,14 +134,6 @@ def _delete_quote(bot, qid):
 def delete_quote(client, target, origin, qid: int):
     """
     Delete quote.
-
-    ::
-
-        $bot: delete quote <qid>
-        !quote del <qid>
-        $bot: i am very butthurt about quote <qid>
-
-    **Requires permission:** quote
 
     Remove the given quote from the database.
     """
@@ -184,12 +169,6 @@ def read_quote(client, target, origin, qid: int):
     """
     Read quote.
 
-    ::
-
-        $bot: what is quote <qid>
-        $bot: read quote <qid>
-        !quote read <qid>
-
     Read a quote from the database.
     """
 
@@ -215,17 +194,6 @@ def read_quote(client, target, origin, qid: int):
 def rand_quote(client, target, origin, query=None, channel=None, network=None):
     """
     Random quote.
-
-    ::
-
-        $bot: random quote
-        $bot: random quote from <channel>
-        $bot: random quote from <channel> on <network>
-        $bot: random quote matching <query>
-        $bot: random quote from <channel> matching <query>
-        $bot: random quote from <channel> on <network> matching <query>
-        !quote rand
-        !quote rand <query>
 
     Retrieve a random quote from the database. If a query is specified, then it is
     used.
@@ -282,13 +250,6 @@ def _find_quotes(bot, query):
 def find_quote(client, target, origin, query, channel=None, network=None):
     """
     Find quote.
-
-    ::
-
-        $bot: find a quote matching <query>
-        $bot: find a quote from <channel> matching <query>
-        $bot: find a quote from <channel> on <network> matching <query>
-        !quote find <query>
 
     Full-text search for a given quote.
     """

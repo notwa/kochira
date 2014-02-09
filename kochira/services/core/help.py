@@ -130,13 +130,6 @@ def help(client, target, origin):
     """
     Help.
 
-    ::
-
-        $bot: help
-        $bot: help me!
-        !help
-        !commands
-
     Links the user to the web help service, if available.
     """
 

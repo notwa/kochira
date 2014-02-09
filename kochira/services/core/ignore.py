@@ -34,13 +34,6 @@ def add_ignore(client, target, origin, hostmask):
     """
     Add ignore.
 
-    ::
-
-        $bot: ignore <hostmask>
-        $bot: add ignore for <hostmask>
-
-    **Requires permission:** ignore
-
     Add an ignore for the specified hostmask. Can contain wildcards.
     """
 
@@ -66,13 +59,6 @@ def list_ignores(client, target, origin):
     """
     List ignores.
 
-    ::
-
-        $bot: list ignores
-        $bot: ignores
-
-    **Requires permission:** ignore
-
     List all ignores for the bot on the current network.
     """
 
@@ -89,15 +75,6 @@ def list_ignores(client, target, origin):
 def remove_ignore(client, target, origin, hostmask):
     """
     Remove ignore.
-
-    ::
-
-        $bot: unignore <hostmask>
-        $bot: don't ignore <hostmask>
-        $bot: stop ignoring <hostmask>
-        $bot: remove ignore from <hostmask>
-
-    **Requires permission:** ignore
 
     Remove an ignore for the specified hostmask. Must match hostmask in ignore list
     exactly.

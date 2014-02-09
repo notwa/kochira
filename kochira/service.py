@@ -46,9 +46,16 @@ class Service:
         ``mention`` specifies that the bot's nickname must be mentioned.
         """
 
+        if pattern[-1] != "$":
+            pattern += "$"
         pat = re.compile(pattern, re_flags)
 
         def _decorator(f):
+            if not hasattr(f, "patterns"):
+                f.patterns = set([])
+
+            f.patterns.add((pattern, mention))
+
             @functools.wraps(f)
             def _command_handler(client, origin, target, message):
                 if strip:
@@ -157,6 +164,8 @@ def background(f):
     """
     Defer a command to run in the background.
     """
+
+    f.background = True
 
     @functools.wraps(f)
     def _inner(client, *args, **kwargs):

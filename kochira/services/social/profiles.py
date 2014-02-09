@@ -34,10 +34,6 @@ def forget_profile(client, target, origin):
     """
     Forget profile.
 
-    ::
-
-        $bot: forget about me
-
     Remove the given profile text from the user.
     """
 
@@ -56,10 +52,6 @@ def forget_profile(client, target, origin):
 def remember_profile(client, target, origin, text):
     """
     Remember profile.
-
-    ::
-
-        $bot: i am <text>
 
     Associate the given profile text with the user.
     """
@@ -84,11 +76,6 @@ def remember_profile(client, target, origin, text):
 def get_profile(client, target, origin, who=None):
     """
     Get profile.
-
-    ::
-
-        $bot: who am i
-        $bot: who is <who>
 
     Retrieve profile text for a user.
     """

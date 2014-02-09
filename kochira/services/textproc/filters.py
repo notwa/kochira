@@ -78,26 +78,12 @@ bind_filter("benis", benisify,
 """
 Benis.
 
-::
-
-    $bot: benis <what>
-    $bot: benis
-    !benis <what>
-    !benis
-
 You're going to have to figure this one out for yourself.
 """)
 
 bind_filter("fabulous", fabulousify,
 """
 Fabulous.
-
-::
-
-    $bot: fabulous <what>
-    $bot: fabulous
-    !fabulous <what>
-    !fabulous
 
 Rainbow text!
 """)

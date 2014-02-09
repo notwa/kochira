@@ -6,6 +6,10 @@ from .db import Model
 
 def requires_permission(permission):
     def _decorator(f):
+        if not hasattr(f, "permissions"):
+            f.permissions = set([])
+        f.permissions.add(permission)
+
         @functools.wraps(f)
         def _inner(client, target, origin, *args, **kwargs):
             hostmask = "{nickname}!{username}@{hostname}".format(

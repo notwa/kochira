@@ -17,11 +17,6 @@ def sed(client, target, origin, pattern, replacement, who=None, flags=None):
     """
     Find and replace.
 
-    ::
-
-        s/<pattern>/<replacement>/<flags>
-        <who>: s/<pattern>/<replacement>/<flags>
-
     Find a regular expression pattern and replace it. Flags supported are `i` for
     case insensitive, `g` for global and `s` for dot-all.
     """

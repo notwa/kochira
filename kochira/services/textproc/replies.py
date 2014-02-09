@@ -43,14 +43,6 @@ def remove_reply(client, target, origin, what):
     """
     Remove reply.
 
-    ::
-
-        $bot: stop replying to <what>
-        $bot: don't reply to <what>
-        $bot: remove reply (to|for) <what>
-
-    **Requires permission:** reply
-
     Remove the reply for `what`.
     """
 
@@ -93,12 +85,6 @@ def add_reply(client, target, origin, what, reply):
     """
     Add reply.
 
-    ::
-
-        $bot: reply to <what> with <reply>
-
-    **Requires permission:** reply
-
     Add an automatic reply for whenever someone says `what`. `what` can be a
     regular expression delimited by ``/``, e.g. ``/^foo$/``.
     """
@@ -123,11 +109,6 @@ def add_reply(client, target, origin, what, reply):
 def list_replies(client, target, origin):
     """
     List replies.
-
-    ::
-
-        $bot: what do you reply to?
-        $bot: replies?
 
     List all replies the bot has registered.
     """

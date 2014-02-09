@@ -25,11 +25,6 @@ def compute(client, target, origin, query):
     """
     Compute.
 
-    ::
-
-        !wa <query>
-        $bot: (compute|calculate|mathify) <query>
-
     Run a query on Wolfram|Alpha and display the result.
     """
 

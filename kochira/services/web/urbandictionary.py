@@ -19,15 +19,6 @@ def define(client, target, origin, term, num: int=None):
     """
     Define.
 
-    ::
-
-        !ud <term>
-        !ud <term> <num>
-        $bot: define <term>
-        $bot: define <term> (<num>)
-        $bot: what does <term> mean?
-        $bot: what does <term> (<num>) mean?
-
     Look up the given term on UrbanDictionary.
     """
 

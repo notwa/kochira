@@ -39,11 +39,6 @@ def transliterate(client, target, origin, term, from_lang=None):
     """
     Transliterate.
 
-    ::
-
-        $bot: (transliterate|romanize) <term>
-        $bot: (transliterate|romanize) <term> from <from_lang>
-
     Perform transliteration of languages with non-Roman characters, e.g. Russian,
     Japanese, Thai, etc.
     """
@@ -82,14 +77,6 @@ def transliterate(client, target, origin, term, from_lang=None):
 def translate(client, target, origin, term, to_lang=None, from_lang=None):
     """
     Translate.
-
-    ::
-
-        $bot: what is <term>
-        $bot: what is <term> in <to_lang>
-        $bot: translate <term> from <from_lang>
-        $bot: translate <term> to <to_lang>
-        $bot: translate <term> from <from_lang> to <to_lang>
 
     Translate a term between two languages. If a language to translate from is
     not specified, the language will be auto-detected. If a language to

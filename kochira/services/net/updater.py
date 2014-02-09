@@ -81,13 +81,6 @@ def update(client, target, origin):
     """
     Update.
 
-    ::
-
-        $bot: update
-        $bot: windows updates!
-
-    **Requires permission:** update
-
     Update the bot by pulling from the latest Git master.
     """
 

@@ -28,13 +28,6 @@ def grant(client, target, origin, permission, hostmask, channel=None):
     """
     Grant permission.
 
-    ::
-
-        $bot: grant <permission> to <hostmask>
-        $bot: grant <permission> to <hostmask> on channel <channel>
-
-    **Requires permission:** admin
-
     Grant a permission to the given hostmask. It can be done on a channel-specific
     basis. Wildcard hostmasks are permitted.
     """
@@ -63,13 +56,6 @@ def grant(client, target, origin, permission, hostmask, channel=None):
 def revoke(client, target, origin, permission, hostmask, channel=None):
     """
     Revoke permission.
-
-    ::
-
-        $bot: revoke <permission> from <hostmask>
-        $bot: revoke <permission> from <hostmask> on channel <channel>
-
-    **Requires permission:** admin
 
     Revoke a permission from the given hostmask. It can be done on a
     channel-specific basis. Wildcard hostmasks are permitted and will revoke
@@ -109,13 +95,6 @@ def load_service(client, target, origin, r, service_name):
     """
     Load service.
 
-    ::
-
-        $bot: load service <name>
-        $bot: reload service <name>
-
-    **Requires permission:** admin
-
     Load or reload a service with the given name. Reloading will force all code to
     be reloaded.
     """
@@ -150,12 +129,6 @@ def unload_service(client, target, origin, service_name):
     """
     Unload service.
 
-    ::
-
-        $bot: unload service <name>
-
-    **Requires permission:** admin
-
     Unload a currently running service.
     """
 
@@ -182,13 +155,6 @@ def unload_service(client, target, origin, service_name):
 def list_services(client, target, origin):
     """
     List services.
-
-    ::
-
-        $bot: services
-        $bot: list services
-
-    **Requires permission:** admin
 
     List all running services.
     """
@@ -223,13 +189,6 @@ def reload_services(client, target, origin):
 def eval_code(client, target, origin, code):
     """
     Evaluate code.
-
-    ::
-
-        $bot: eval <code>
-        >>> <code>
-
-    **Requires permission:** admin
 
     Evaluate code inside the bot. The local ``bot`` is provided for access to
     bot internals.
@@ -267,12 +226,6 @@ def rehash(client, target, origin):
     """
     Rehash configuration.
 
-    ::
-
-        $bot: rehash
-
-    **Requires permission:** admin
-
     Rehash the bot's configuration settings.
     """
 
@@ -294,13 +247,6 @@ def rehash(client, target, origin):
 def restart(client, target, origin):
     """
     Restart.
-
-    ::
-
-        $bot: restart
-        $bot: reboot
-
-    **Requires permission:** admin
 
     Restart the bot. Will ``exec`` a new process into the currently running process
     space.

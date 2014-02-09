@@ -152,11 +152,6 @@ def setup_user(client, target, origin, lfm_username):
     """
     Set username.
 
-    ::
-
-        !lfm <username>
-        $bot: my last.fm username is <username>
-
     Associate a Last.fm username with your nickname.
     """
 
@@ -181,13 +176,6 @@ def setup_user(client, target, origin, lfm_username):
 def check_user(client, target, origin):
     """
     Now playing.
-
-    ::
-
-        !np
-        !np <who>
-        $bot: what am i playing
-        $bot: what is <who> playing
 
     Get the currently playing song for a user.
     """
@@ -214,13 +202,6 @@ def check_user(client, target, origin):
 def compare_users(client, target, origin, user2, user1=None):
     """
     Tasteometer.
-
-    ::
-
-        !tasteometer <user1> <user2>
-        !tasteometer <user2>
-        $bot: compare my last.fm with <user2>
-        $bot: compare <user1> and <user2> on last.fm
 
     Compare the music tastes of two users.
     """
@@ -260,11 +241,6 @@ def compare_users(client, target, origin, user2, user1=None):
 def now_playing(client, target, origin, who=None):
     """
     Get username.
-
-    ::
-
-        !lfm
-        $bot: what is my last.fm username
 
     Get your Last.fm username.
     """
