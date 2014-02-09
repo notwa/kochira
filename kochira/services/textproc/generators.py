@@ -34,9 +34,11 @@ from kochira.service import Service
 service = Service(__name__, __doc__)
 
 PickFrom = namedtuple("PickFrom", ["num", "list"])
-PickFrom.__str__ = lambda self: "".join(random.choice(self.list) for _ in range(self.num))
+PickFrom.__str__ = lambda self: "".join(random.choice(self.list) for _ in range(int(self.num)))
 WrapWith = namedtuple("WrapWith", ["times", "wrapper", "body"])
-WrapWith.__str__ = lambda self: str(self.wrapper).format(self.body) if self.times <= 1 else str(WrapWith(self.times - 1, self.wrapper, str(self.wrapper).format(self.body)))
+WrapWith.__str__ = lambda self: str(self.wrapper).format(self.body) if int(self.times) <= 1 else str(WrapWith(int(self.times) - 1, self.wrapper, str(self.wrapper).format(self.body)))
+RandomInt = namedtuple("RandomInt", ["min", "max"])
+RandomInt.__int__ = lambda self: random.randint(self.min, self.max)
 
 def run_generator(*args):
     return "".join(str(x) for x in args)
@@ -56,7 +58,7 @@ java = partial(run_generator,
                     "Advanced",
                     "Composite"
                ]),
-               PickFrom(random.randint(3, 5), [
+               PickFrom(RandomInt(3, 5), [
                     "Request",
                     "Delegate",
                     "Filter",
@@ -97,7 +99,7 @@ java = partial(run_generator,
                )
 
 sepples = partial(run_generator,
-                  WrapWith(random.randint(5, 10),
+                  WrapWith(RandomInt(5, 10),
                            PickFrom(1, [
                                "namespace detail {{ {} }}",
                                 "template<typename T> class allocator {{ {} }}",
