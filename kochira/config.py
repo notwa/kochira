@@ -71,7 +71,8 @@ class Config(metaclass=_ConfigMeta):
             self._fields[k] = self._field_mappings[k].unpack(v)
 
     def __repr__(self):
-        return "Config({})".format(
+        return "{}({})".format(
+            self.__class__.__name__,
             ", ".join("{}={!r}".format(k, v) for k, v in self._fields.items())
         )
 
