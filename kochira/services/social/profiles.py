@@ -3,10 +3,6 @@ Personal profiles.
 
 This service allows the bot to keep track of people's profiles.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

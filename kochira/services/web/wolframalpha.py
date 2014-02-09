@@ -3,12 +3,6 @@ Wolfram|Alpha query.
 
 Runs queries on Wolfram|Alpha.
 
-Configuration Options
-=====================
-
-``appid``
-  Wolfram|Alpha application ID.
-
 Commands
 ========
 
@@ -27,9 +21,15 @@ import re
 import requests
 from lxml import etree
 
+from kochira import config
 from kochira.service import Service, background
 
 service = Service(__name__, __doc__)
+
+@service.config
+class Config(config.Config):
+    appid = config.Field(doc="Wolfram|Alpha application ID.")
+
 
 @service.command(r"!wa (?P<query>.+)$")
 @service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)
@@ -40,7 +40,7 @@ def compute(client, target, origin, query):
     resp = requests.get("http://api.wolframalpha.com/v2/query",
         params={
             "input": query,
-            "appid": config["appid"],
+            "appid": config.appid,
             "format": "plaintext",
             "reinterpret": "true"
         },

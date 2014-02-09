@@ -3,12 +3,6 @@ IRC message logger.
 
 Enables logging of messages to flat files.
 
-Configuration Options
-=====================
-
-``log_dir``
-  Directory to log to.
-
 Commands
 ========
 None.
@@ -17,10 +11,16 @@ None.
 import threading
 from datetime import datetime
 
+from kochira import config
 from kochira.service import Service
 from pathlib import Path
 
 service = Service(__name__, __doc__)
+
+
+@service.config
+class Config(config.Config):
+    log_dir = config.Field(doc="Path to the log directory.", default="logs")
 
 
 def _is_log_open(storage, network, channel):
@@ -109,7 +109,7 @@ def setup_logger(bot):
     storage = service.storage_for(bot)
 
     storage.handles = {}
-    storage.path = Path(config["log_dir"])
+    storage.path = Path(config.log_dir)
     storage.lock = threading.Lock()
 
 

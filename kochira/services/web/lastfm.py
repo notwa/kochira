@@ -4,12 +4,6 @@ Last.fm now playing and music comparisons.
 Allow users to display their now playing status and compare music tastes using
 Last.fm.
 
-Configuration Options
-=====================
-
-``api_key``
-  Last.fm API key.
-
 Commands
 ========
 
@@ -65,10 +59,15 @@ from datetime import datetime
 from peewee import CharField
 from lxml import etree
 
+from kochira import config
 from kochira.db import Model
 from kochira.service import Service, background
 
 service = Service(__name__, __doc__)
+
+@service.config
+class Config(config.Config):
+    api_key = config.Field(doc="Last.fm API key.")
 
 
 class LastFMProfile(Model):
@@ -244,7 +243,7 @@ def compare_users(client, target, origin, user2, user1=None):
     lfm1 = get_lfm_username(client, user1)
     lfm2 = get_lfm_username(client, user2)
 
-    comparison = get_compare_users(config["api_key"], lfm1, lfm2)
+    comparison = get_compare_users(config.api_key, lfm1, lfm2)
 
     if comparison is None:
         client.message(target, "{origin}: Couldn't compare.".format(
@@ -276,7 +275,7 @@ def now_playing(client, target, origin, who=None):
 
     lfm = get_lfm_username(client, who)
 
-    track = get_user_now_playing(config["api_key"], lfm)
+    track = get_user_now_playing(config.api_key, lfm)
 
     if track is None:
         client.message(target, "{origin}: {who} has never scrobbled anything.".format(

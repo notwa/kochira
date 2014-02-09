@@ -1,4 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
+
+import collections
 import functools
 import imp
 import importlib
@@ -10,6 +12,7 @@ import signal
 import yaml
 from zmq.eventloop import ioloop
 
+from . import config
 from .auth import ACLEntry
 from .client import Client
 from .db import database
@@ -18,6 +21,73 @@ from .util import Expando
 from .service import Service
 
 logger = logging.getLogger(__name__)
+
+
+class BaseServiceConfig(config.Config):
+    autoload = config.Field(doc="Autoload this service?", default=False)
+
+
+class ServiceConfigLoader(collections.Mapping):
+    def __init__(self, bot, values):
+        self.bot = bot
+        self.configs = values
+
+    def _config_factory_for(self, name):
+        if name not in self.bot.services:
+            config_factory = BaseServiceConfig
+        else:
+            service, _ = self.bot.services[name]
+            config_factory = service.config_factory
+        return config_factory
+
+    def __getitem__(self, name):
+        return self._config_factory_for(name)(self.configs[name])
+
+    def __iter__(self):
+        return iter(self.configs)
+
+    def __len__(self):
+        return len(self.configs)
+
+
+def _config_class_factory(bot):
+    class Config(config.Config):
+        class Network(config.Config):
+            autoconnect = config.Field(doc="Whether or not to autoconnect to this network.", default=True)
+
+            nickname = config.Field(doc="Nickname to use.")
+            username = config.Field(doc="Username to use.", default=None)
+            realname = config.Field(doc="Real name to use.", default=None)
+
+            hostname = config.Field(doc="IRC server hostname.")
+            port = config.Field(doc="IRC serveer port.", default=None)
+            password = config.Field(doc="IRC server password.", default=None)
+            source_address = config.Field(doc="Source address to connect from.", default="")
+
+            class TLS(config.Config):
+                enabled = config.Field(doc="Enable TLS?", default=False)
+                verify = config.Field(doc="Verify TLS connection?", default=True)
+                certificate_file = config.Field(doc="TLS certificate file.", default=None)
+                certificate_keyfile = config.Field(doc="TLS certificate key file.", default=None)
+                certificate_password = config.Field(doc="TLS certificate password.", default=None)
+
+            class SASL(config.Config):
+                username = config.Field(doc="SASL username.", default=None)
+                password = config.Field(doc="SASL password.", default=None)
+
+            tls = config.Field(doc="TLS settings.", default=TLS())
+            sasl = config.Field(doc="SASL settings.", default=SASL())
+
+        class Core(config.Config):
+            database = config.Field(doc="Database file to use", default="kochira.db")
+            max_backlog = config.Field(doc="Maximum backlog lines to store.", default=10)
+            version = config.Field(doc="CTCP VERSION reply.", default="kochira IRC bot")
+
+        core = config.Field(doc="Core configuration settings.", type=Core)
+        networks = config.Field(doc="Networks to connect to.", type=config.Mapping(Network))
+        services = config.Field(doc="Services to load.", type=functools.partial(ServiceConfigLoader, bot))
+
+    return Config
 
 
 class Bot:
@@ -30,6 +100,7 @@ class Bot:
         self.networks = {}
         self.io_loop = ioloop.IOLoop()
 
+        self.config_class = _config_class_factory(self)
         self.config_file = config_file
 
         self.rehash()
@@ -46,28 +117,25 @@ class Bot:
         self._connect_to_irc()
 
     def connect(self, network_name):
-        config = self.config["networks"][network_name]
+        config = self.config.networks[network_name]
 
-        tls_config = config.get("tls", {})
-        sasl_config = config.get("sasl", {})
-
-        client = Client(self, network_name, config["nickname"],
-            username=config.get("username", None),
-            realname=config.get("realname", None),
-            tls_client_cert=tls_config.get("certificate_file"),
-            tls_client_cert_key=tls_config.get("certificate_keyfile"),
-            tls_client_cert_password=tls_config.get("certificate_password"),
-            sasl_username=sasl_config.get("username"),
-            sasl_password=sasl_config.get("password")
+        client = Client(self, network_name, config.nickname,
+            username=config.username,
+            realname=config.realname,
+            tls_client_cert=config.tls.certificate_file,
+            tls_client_cert_key=config.tls.certificate_keyfile,
+            tls_client_cert_password=config.tls.certificate_password,
+            sasl_username=config.sasl.username,
+            sasl_password=config.sasl.password
         )
 
         client.connect(
-            hostname=config["hostname"],
-            password=config.get("password"),
-            source_address=(config["source_address"], 0) if "source_address" in config else None,
-            port=config.get("port"),
-            tls=tls_config.get("enabled", False),
-            tls_verify=tls_config.get("verify", True)
+            hostname=config.hostname,
+            password=config.password,
+            source_address=(config.source_address, 0),
+            port=config.port,
+            tls=config.tls.enabled,
+            tls_verify=config.tls.verify
         )
 
         self.networks[network_name] = client
@@ -94,22 +162,22 @@ class Bot:
             del self.networks[network_name]
 
     def _connect_to_db(self):
-        db_name = self.config["core"].get("database", "kochira.db")
+        db_name = self.config.core.database
         database.initialize(SqliteDatabase(db_name, threadlocals=True))
         logger.info("Opened database connection: %s", db_name)
 
         ACLEntry.create_table(True)
 
     def _connect_to_irc(self):
-        for network_name, config in self.config["networks"].items():
-            if config.get("autoconnect", False):
+        for network_name, config in self.config.networks.items():
+            if config.autoconnect:
                 self.connect(network_name)
 
         self.io_loop.start()
 
     def _load_services(self):
-        for service, config in self.config["services"].items():
-            if config.get("autoload"):
+        for service, config in self.config.services.items():
+            if config.autoload:
                 try:
                     self.load_service(service)
                 except:
@@ -198,7 +266,7 @@ class Bot:
         """
 
         with open(self.config_file, "r") as f:
-            self.config = yaml.load(f)
+            self.config = self.config_class(yaml.load(f))
 
     def _handle_sighup(self, signum, frame):
         logger.info("Received SIGHUP; running SIGHUP hooks and rehashing")

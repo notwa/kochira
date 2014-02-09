@@ -2,7 +2,9 @@ Kochira
 =======
 
 Kochira is an extensible IRC bot, supporting dynamically loadable service
-modules and IRCv3 protocol support.
+modules and IRCv3 protocol support. It is the spiritual successor of
+`Kobun <https://github.com/nol888/kobun>`_ and
+`Michiru <https://github.com/Shizmob/michiru>`_.
 
 Getting Started
 ---------------

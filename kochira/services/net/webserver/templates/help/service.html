@@ -11,4 +11,9 @@
 
 {% raw rst(service.long_doc or "", settings_overrides={"initial_header_level": 2}) %}
 
+<div class="section" id="configuration-options">
+<h2>Configuration Options</h2>
+{% module Config(service.config_factory) %}
+</div>
+
 {% end %}

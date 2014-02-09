@@ -4,18 +4,20 @@ Procedural string generation from predefined formulae.
 Creates text by picking n strings from a list of x strings
 and concatenating them.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
+
+Java Programmer Simulator
+-------------------------
 
 ::
 
     :java:
 
 Generates a valid Java class name.
+
+C++ Programmer Simulator
+------------------------
 
 ::
 

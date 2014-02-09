@@ -4,21 +4,6 @@ Remote Cobe service.
 Allows the bot to reply whenever its nickname is mentioned using a remote Cobe
 brain.
 
-Configuration Options
-=====================
-
-``url``
-  URL to the cobed server.
-
-``username``
-  Username for cobed.
-
-``password``
-  Password for cobed.
-
-``reply`` (optional)
-  Whether or not replies should be constructed. Defaults to true.
-
 Commands
 ========
 None.
@@ -26,11 +11,18 @@ None.
 
 import re
 
+from kochira import config
 from kochira.service import Service, background
 import requests
 
 service = Service(__name__, __doc__)
 
+@service.config
+class Config(config.Config):
+    url = config.Field(doc="The remote cobed to connect to.")
+    username = config.Field(doc="The username to use when connecting.")
+    password = config.Field(doc="The password to use when connecting.")
+    reply = config.Field(doc="Whether or not to reply on nickname mention.", default=True)
 
 def reply_and_learn(url, username, password, what):
     r = requests.post(url,
@@ -67,10 +59,10 @@ def do_reply(client, target, origin, message):
     if re.search(r"\b{}\b".format(re.escape(client.nickname)), message, re.I) is not None:
         reply = True
 
-    if reply and config.get("reply", True):
-        reply_message = reply_and_learn(config["url"],
-                                        config["username"],
-                                        config["password"],
+    if reply and config.reply:
+        reply_message = reply_and_learn(config.url,
+                                        config.username,
+                                        config.password,
                                         message)
 
         if mention:
@@ -78,5 +70,5 @@ def do_reply(client, target, origin, message):
         else:
             client.message(target, reply_message)
     elif message:
-        learn(config["url"], config["username"], config["password"], message)
+        learn(config.url, config.username, config.password, message)
 

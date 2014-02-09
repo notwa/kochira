@@ -4,10 +4,6 @@ Timed and join reminders.
 Enables the bot to record and play reminders after timed intervals or on user
 join.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

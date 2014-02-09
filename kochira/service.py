@@ -3,6 +3,8 @@ import re
 import logging
 import bisect
 
+from . import config
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,6 +21,7 @@ class Service:
         self.doc = doc
         self.hooks = {}
         self.tasks = []
+        self.config_factory = config.Config
         self.on_setup = None
         self.on_shutdown = None
         self.logger = logging.getLogger(self.name)
@@ -119,6 +122,13 @@ class Service:
         self.tasks.append(f)
         return f
 
+    def config(self, factory):
+        """
+        Register a configuration factory.
+        """
+        self.config_factory = factory
+        return factory
+
     def setup(self, f):
         """
         Register a setup function.
@@ -149,9 +159,9 @@ class Service:
 
     def config_for(self, bot):
         """
-        Get the configuration dictionary.
+        Get the configuration settings.
         """
-        return bot.config["services"].get(self.name, {})
+        return bot.config.services.get(self.name, self.config_factory())
 
     def storage_for(self, bot):
         """

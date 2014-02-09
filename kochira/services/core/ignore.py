@@ -3,10 +3,6 @@ Ignore lists.
 
 This allows the bot to ignore users.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

@@ -3,10 +3,6 @@ UrbanDictionary lookup.
 
 Retrieves definitions of terms from UrbanDictionary.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

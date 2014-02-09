@@ -4,10 +4,6 @@ Automatic replies for keywords.
 This service enables the bot to respond to predefined replies specified by
 users.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

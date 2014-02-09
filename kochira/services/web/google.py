@@ -3,10 +3,6 @@ Google web search.
 
 Run queries on Google and return results.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

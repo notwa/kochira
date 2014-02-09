@@ -3,10 +3,6 @@ Sed-style find and replacement.
 
 Finds patterns in text and replaces it with other terms.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

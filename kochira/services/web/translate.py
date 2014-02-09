@@ -3,10 +3,6 @@ Translation between languages.
 
 Use Google Translate to perform translations between languages.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

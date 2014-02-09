@@ -4,21 +4,6 @@ Web server.
 This service starts a web server to allow services to run things on a web
 server.
 
-Configuration Options
-=====================
-
-``port``
-  Port to run the web help on, e.g. ``8080``.
-
-``address`` (optional)
-  Address to bind the HTTP server to.
-
-``title`` (optional)
-  Title for the web site.
-
-``motd`` (optional)
-  Greeting message for the main page. Should be in rST.
-
 Commands
 ========
 None.
@@ -26,6 +11,7 @@ None.
 
 from docutils.core import publish_parts
 
+from kochira import config
 from kochira.service import Service
 import os
 import subprocess
@@ -34,6 +20,14 @@ from tornado.web import RequestHandler, Application, UIModule, HTTPError
 from tornado.httpserver import HTTPServer, HTTPRequest
 
 service = Service(__name__, __doc__)
+
+
+@service.config
+class Config(config.Config):
+    port = config.Field(doc="Port to run the web server on.", default=8080)
+    address = config.Field(doc="Address to bind the HTTP server to.", default="0.0.0.0")
+    title = config.Field(doc="Title for the web site.", default="Kobun")
+    motd = config.Field(doc="MOTD for the web site, formatted in reStructuredText.", default="(no message of the day)")
 
 
 def _get_application_confs(bot):
@@ -84,10 +78,9 @@ class MainHandler(RequestHandler):
 class IndexHandler(RequestHandler):
     def get(self):
         config = service.config_for(self.application.bot)
-        motd = config.get("motd", "(message of the day not set)")
 
         self.render("index.html",
-                    motd=publish_parts(motd, writer_name="html", settings_overrides={"initial_header_level": 2})["fragment"],
+                    motd=publish_parts(config.motd, writer_name="html", settings_overrides={"initial_header_level": 2})["fragment"],
                     networks=sorted(self.application.bot.networks.items()))
 
 class NotFoundHandler(RequestHandler):
@@ -101,14 +94,14 @@ class TitleModule(UIModule):
         config = service.config_for(self.handler.application.bot)
 
         return self.render_string("_modules/title.html",
-                                  title=config.get("title", "Kochira"))
+                                  title=config.title)
 
 class NavBarModule(UIModule):
     def render(self):
         config = service.config_for(self.handler.application.bot)
 
         return self.render_string("_modules/navbar.html",
-                                  title=config.get("title", "Kochira"),
+                                  title=config.title,
                                   name=self.handler.application.name,
                                   confs=_get_application_confs(self.handler.application.bot))
 
@@ -167,7 +160,7 @@ def setup_webserver(bot):
     def _callback():
         storage.http_server = HTTPServer(storage.application,
                                          io_loop=bot.io_loop)
-        storage.http_server.listen(config["port"], config.get("address"))
+        storage.http_server.listen(config.port, config.address)
         service.logger.info("web server ready")
 
 

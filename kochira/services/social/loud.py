@@ -4,10 +4,6 @@ Record and replay shouts.
 This service will record all messages in all caps and select a random message
 when somebody speaks in all caps.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

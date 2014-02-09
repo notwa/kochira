@@ -3,22 +3,6 @@ Snapchat snap fetcher.
 
 Allows users to send Snapchats to channels.
 
-Configuration Options
-=====================
-
-``username``
-  Snapchat username.
-
-``password``
-  Snapchat password.
-
-``imgur_clientid``
-  Client ID for use with Imgur.
-
-``announce``
-  List of announce channels, e.g.
-  ``[{"network": "#freenode", "channel": "kochira"}]``.
-
 Commands
 ========
 None.
@@ -34,9 +18,23 @@ import subprocess
 from datetime import datetime, timedelta
 from pysnap import Snapchat, MEDIA_VIDEO_NOAUDIO, MEDIA_VIDEO
 
+from kochira import config
 from kochira.service import Service
 
 service = Service(__name__, __doc__)
+
+@service.config
+class Config(config.Config):
+    class Channel(config.Config):
+        channel = config.Field(doc="Channel name.")
+        network = config.Field(doc="Channel network.")
+
+    username = config.Field(doc="The username to use when connecting.")
+    password = config.Field(doc="The password to use when connecting.")
+    imgur_clientid = config.Field(doc="Client ID for use with Imgur.")
+    announce = config.Field(doc="Channels to announce updates on.",
+                            type=config.Many(Channel))
+
 
 GIF_FRAMERATE = 7
 GIF_MAX_LENGTH = 360
@@ -72,8 +70,8 @@ def make_snapchat(bot):
     storage = service.storage_for(bot)
 
     storage.snapchat = Snapchat()
-    if not storage.snapchat.login(config["username"],
-                                  config["password"]).get("logged"):
+    if not storage.snapchat.login(config.username, config.password) \
+        .get("logged"):
         raise Exception("could not log into Snapchat")
 
     bot.scheduler.schedule_every(timedelta(seconds=30), poll_for_updates)
@@ -99,7 +97,7 @@ def poll_for_updates(bot):
 
         if blob is not None:
             ulim = requests.post("https://api.imgur.com/3/upload.json",
-                                 headers={"Authorization": "Client-ID " + config["imgur_clientid"]},
+                                 headers={"Authorization": "Client-ID " + config.imgur_clientid},
                                  data={"image": blob}).json()
             if ulim["status"] != 200:
                 link = "(unavailable)"
@@ -108,9 +106,9 @@ def poll_for_updates(bot):
         else:
             link = "(could not convert video)"
 
-        for announce in config["announce"]:
-            bot.networks[announce["network"]].message(
-                announce["channel"],
+        for announce in config.announce:
+            bot.networks[announce.network].message(
+                announce.channel,
                 "New snap from {sender}! {link} ({dt})".format(
                     sender=sender,
                     link=link,

@@ -3,11 +3,6 @@ Administration services.
 
 This service allows administrators to manage various aspects of the bot.
 
-Configuration Options
-=====================
-
-None.
-
 Commands
 ========
 

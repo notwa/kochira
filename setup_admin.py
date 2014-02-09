@@ -7,7 +7,7 @@ print("Enter a network and hostmask to grant full administrator permissions to."
 
 network = None
 while not network:
-    network = input("Network (one of {}): ".format(", ".join(bot.config["networks"])))
+    network = input("Network (one of {}): ".format(", ".join(bot.config.networks)))
 
 hostmask = None
 while not hostmask:

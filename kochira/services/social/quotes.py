@@ -4,12 +4,6 @@ Quote database.
 This enables the bot to record and search quotes. If the web server service is
 running, a web interface to quotes will be made available at ``/quotes/``.
 
-Configuration Options
-=====================
-
-``index_path``
-  Path to use for the full-text index.
-
 Commands
 ========
 
@@ -84,6 +78,7 @@ import whoosh.query
 import whoosh.writing
 from whoosh.qparser import QueryParser
 
+from kochira import config
 from kochira.db import Model, database
 
 from kochira.service import Service
@@ -93,6 +88,11 @@ from tornado.web import RequestHandler, Application
 
 
 service = Service(__name__, __doc__)
+
+@service.config
+class Config(config.Config):
+    index_path = config.Field(doc="Path to the full-text index.", default="quotes")
+
 
 stem_ana = StemmingAnalyzer()
 
@@ -138,10 +138,10 @@ def initialize_model(bot):
     config = service.config_for(bot)
     storage = service.storage_for(bot)
 
-    if not whoosh.index.exists_in(config["index_path"]):
-        storage.index = whoosh.index.create_in(config["index_path"], WHOOSH_SCHEMA)
+    if not whoosh.index.exists_in(config.index_path):
+        storage.index = whoosh.index.create_in(config.index_path, WHOOSH_SCHEMA)
     else:
-        storage.index = whoosh.index.open_dir(config["index_path"])
+        storage.index = whoosh.index.open_dir(config.index_path)
 
     storage.quote_qp = QueryParser("quote", schema=WHOOSH_SCHEMA)
     Quote.create_table(True)

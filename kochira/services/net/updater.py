@@ -7,22 +7,6 @@ post-receive web hook if the web server is loaded.
 If the post-receive web hook is enabled, the post-receive hook is available at
 http://mykochira/updater/?key=post_receive_key
 
-Configuration Options
-=====================
-
-``remote`` (optional)
-  Remote to pull updates from. Defaults to ``origin``.
-
-``branch`` (optional)
-  Branch to pull updates from. Defaults to ``master``.
-
-``post_receive_key`` (optional)
-  Enable the post-receive hook if set. This is the ``key=<key>`` query
-  argument.
-
-``announce`` (optional)
-  Channels to announce updates on.
-
 Commands
 ========
 
@@ -41,12 +25,29 @@ Update the bot by pulling from the latest Git master.
 
 import subprocess
 
+from kochira import config
 from kochira.auth import requires_permission
 from kochira.service import Service
 
 from tornado.web import Application, RequestHandler, asynchronous, HTTPError
 
 service = Service(__name__, __doc__)
+
+
+@service.config
+class Config(config.Config):
+    class Channel(config.Config):
+        channel = config.Field(doc="Channel name.")
+        network = config.Field(doc="Channel network.")
+
+    remote = config.Field(doc="Remote to pull updates from.",
+                          default="origin")
+    branch = config.Field(doc="Branch to pull updates from.",
+                          default="master")
+    post_receive_key = config.Field(doc="Enable the post-receive hook if set. This is the ``key=<key>`` query argument.",
+                                    default=None)
+    announce = config.Field(doc="Channels to announce updates on.",
+                            type=config.Many(Channel))
 
 
 class UpdateError(Exception):
@@ -99,8 +100,7 @@ def update(client, target, origin):
     try:
         head = rev_parse("HEAD")
 
-        if not do_update(config.get("remote", "origin"),
-                         config.get("branch", "master")):
+        if not do_update(config.remote, config.branch):
             client.message(target, "No updates.")
             return
 
@@ -117,7 +117,7 @@ class PostReceiveHandler(RequestHandler):
     def post(self):
         config = service.config_for(self.application.bot)
 
-        if self.get_query_argument("key") != config["post_receive_key"]:
+        if self.get_query_argument("key") != config.post_receive_key:
             raise HTTPError(403)
 
         def _callback(future):
@@ -126,10 +126,10 @@ class PostReceiveHandler(RequestHandler):
                 raise future.exception()
             self.finish()
 
-            for announce in config.get("announce", []):
+            for announce in config.announce:
                 for line in get_log(head, "HEAD"):
-                    self.application.bot.networks[announce["network"]].message(
-                        announce["channel"],
+                    self.application.bot.networks[announce.network].message(
+                        announce.channel,
                         "Update! {}".format(line)
                     )
 
@@ -151,7 +151,7 @@ def make_application(settings):
 def webserver_config(bot):
     config = service.config_for(bot)
 
-    if not config.get("post_receive_key"):
+    if config.post_receive_key is None:
         return None
 
     return {

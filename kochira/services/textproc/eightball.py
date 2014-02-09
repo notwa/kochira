@@ -3,10 +3,6 @@
 
 It's like a real 8ball, but on the internet.
 
-Configuration Options
-=====================
-None.
-
 Commands
 ========
 

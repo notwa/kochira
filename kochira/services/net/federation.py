@@ -56,36 +56,6 @@ You (other requester) need a response from me (this responder)::
         remaining IRC payload (response)...
     ]
 
-Configuration Options
-=====================
-
-``identity``
-  Unique name across all federations.
-
-``bind_address``
-  Address to bind to, e.g. ``tcp://*:9999``.
-
-``users``
-  A key-value mapping of users to their passwords, e.g.
-  ``{"admin": "secret"}``.
-
-``federations``
-  A key-value mapping of bots this instance is able to federate to. The key
-  refers to the bot's unique identity as specified in the identity
-  configuration option, and the value is a dictionary consisting of:
-
-  ``autoconnect``
-    Whether the bot should attempt to auto-connect to this federation.
-
-  ``url``
-    The remote URL to connect to.
-
-  ``username``
-    The username to use when connecting.
-
-  ``password``
-    The password to use when connecting.
-
 Commands
 ========
 
@@ -139,10 +109,31 @@ import zmq
 import zmq.auth
 from zmq.eventloop import zmqstream
 
+from kochira import config
 from kochira.auth import requires_permission
 from kochira.service import Service
 
 service = Service(__name__, __doc__)
+
+
+@service.config
+class Config(config.Config):
+    class Federation(config.Config):
+        autoconnect = config.Field(doc="Whether the bot should attempt to " \
+                                       "autoconnect to the federation.")
+        url = config.Field(doc="The remote URL to connect to.")
+        username = config.Field(doc="The username to use when connecting.")
+        password = config.Field(doc="The password to use when connecting.")
+
+    identity = config.Field(doc="Unique name across all federations.")
+    bind_address = config.Field(doc="Address to bind to, e.g. ``tcp://*:9999``.")
+    users = config.Field(doc="A key-value mapping of users to their passwords.",
+                         type=config.Mapping(str))
+    federations = config.Field(doc="A key-value mapping of bots this " \
+                                   "instance is able to federate to. The key " \
+                                   "refers to the bot's unique identity " \
+                                   "specified in the configuration.",
+                               type=config.Mapping(Federation))
 
 
 class RequesterConnection:
@@ -164,15 +155,15 @@ class RequesterConnection:
         @self.bot.io_loop.add_callback
         def _callback():
             socket = storage.zctx.socket(zmq.DEALER)
-            socket.identity = config["identity"].encode("utf-8")
+            socket.identity = config.identity.encode("utf-8")
 
             if "username" in self.config:
-                socket.plain_username = self.config["username"].encode("utf-8")
+                socket.plain_username = self.config.username.encode("utf-8")
 
             if "password" in self.config:
-                socket.plain_password = self.config["password"].encode("utf-8")
+                socket.plain_password = self.config.password.encode("utf-8")
 
-            socket.connect(self.config["url"])
+            socket.connect(self.config.url)
 
             self.stream = zmqstream.ZMQStream(socket,
                                               io_loop=self.bot.io_loop)
@@ -295,17 +286,17 @@ def setup_federation(bot):
                                                            io_loop=bot.io_loop)
         auth.start()
         auth.configure_plain(domain="*",
-                             passwords=config.get("users", {}))
+                             passwords=config.users)
 
         socket = zctx.socket(zmq.ROUTER)
-        socket.identity = config["identity"].encode("utf-8")
+        socket.identity = config.identity.encode("utf-8")
         socket.plain_server = True
-        socket.bind(config["bind_address"])
+        socket.bind(config.bind_address)
 
         storage.stream = zmqstream.ZMQStream(socket, io_loop=bot.io_loop)
         storage.stream.on_recv(functools.partial(on_router_recv, bot))
 
-        for name, federation in config.get("federations", {}).items():
+        for name, federation in config.federations.items():
             if federation.get("autoconnect", False):
                 storage.federations[name] = RequesterConnection(bot, name,
                                                                 federation)
@@ -348,14 +339,14 @@ def add_federation(client, target, origin, name):
             origin=origin,
             name=name
         ))
-    elif name not in config.get("federations", {}):
+    elif name not in config.federations:
         client.message(target, "{origin}: Federation with \"{name}\" is not configured.".format(
             origin=origin,
             name=name
         ))
     else:
         try:
-            storage.federations[name] = RequesterConnection(client.bot, name, config["federations"][name])
+            storage.federations[name] = RequesterConnection(client.bot, name, config.federations[name])
         except Exception as e:
             client.message(target, "{origin}: Sorry, I couldn't federate with \"{name}\".".format(
                 origin=origin,

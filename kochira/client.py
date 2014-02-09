@@ -20,7 +20,7 @@ class Client(_Client):
 
     def on_ctcp_version(self, by, target, message):
         self.ctcp_reply(by, "VERSION",
-                        self.bot.config["core"].get("version", "kochira IRC bot"))
+                        self.bot.config.core.version)
 
     def on_connect(self):
         logger.info("Connected to IRC network: %s", self.network)
@@ -35,14 +35,14 @@ class Client(_Client):
         backlog = self.backlogs.setdefault(target, deque([]))
         backlog.appendleft((origin, message))
 
-        while len(backlog) > self.bot.config["core"].get("max_backlog", 10):
+        while len(backlog) > self.bot.config.core.max_backlog:
             backlog.pop()
 
     def on_private_message(self, origin, message):
         backlog = self.backlogs.setdefault(origin, deque([]))
         backlog.appendleft((origin, message))
 
-        while len(backlog) > self.bot.config["core"].get("max_backlog", 10):
+        while len(backlog) > self.bot.config.core.max_backlog:
             backlog.pop()
 
     def __getattribute__(self, name):
