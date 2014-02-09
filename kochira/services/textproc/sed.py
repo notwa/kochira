@@ -50,7 +50,7 @@ def sed(client, target, origin, pattern, replacement, who=None, flags=None):
 
             if match is not None:
                 try:
-                    msg = expr.sub("\x02" + replacement + "\x02", message, count=0 if "g" in flags else 1)
+                    msg = expr.sub("\x1f" + replacement + "\x1f", message, count=0 if "g" in flags else 1)
                 except:
                     client.message(target, "{origin}: Couldn't parse that pattern.".format(
                         origin=origin
