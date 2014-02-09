@@ -22,6 +22,7 @@
 {% set commands = sorted((command for command in service.commands if command.__doc__),
                          key=lambda x: x.__doc__.lstrip()) %}
 {% if commands %}
+<div class="commands">
 {% for command in commands %}
 <div class="section" id="{{command.__name__}}">
 <h3>{{get_short_doc(command.__doc__)}}</h3>
@@ -29,6 +30,7 @@
            settings_overrides={"initial_header_level": 4}) %}
 </div>
 {% end %}
+</div>
 {% else %}
 <p>None.</p>
 {% end %}

@@ -28,43 +28,29 @@ body {
   padding-right: 15px;
 }
 
-.service-list {
+.service-list, .commands {
   column-gap: 30px;
   -webkit-column-gap: 30px;
   -moz-column-gap: 30px;
 }
 
-.service-list li {
+.service-list li,
+.commands > .section {
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid;
   -moz-column-break-inside: avoid;
   column-break-inside: avoid;
-}
-
-#commands {
-  column-gap: 30px;
-  -webkit-column-gap: 30px;
-  -moz-column-gap: 30px;
-}
-
-#commands > .section {
-  page-break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  -moz-column-break-inside: avoid;
-  column-break-inside: avoid;
-}
-
-#commands > h2 {
-  column-span: all;
-  -webkit-column-span: all;
-  -moz-column-span: all;
 }
 
 @media (min-width: 768px) {
-  .service-list, #commands {
+  .service-list, .commands {
     columns: 2;
     -webkit-columns: 2;
     -moz-columns: 2;
+  }
+
+  .commands > .section:first-child {
+    margin-top: -20px;
   }
 
   dl.docutils dt {
@@ -80,18 +66,10 @@ body {
   dl.docutils dd {
     margin-left: 180px
   }
-
-  #commands > .section:first-of-type {
-    margin-top: -20px;
-  }
-
-  #commands > h2 {
-    padding-bottom: 20px;
-  }
 }
 
 @media (min-width: 992px) {
-  .service-list, #commands {
+  .service-list, .commands {
     columns: 3;
     -webkit-columns: 3;
     -moz-columns: 3;
