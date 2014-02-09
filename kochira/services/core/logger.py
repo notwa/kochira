@@ -210,7 +210,7 @@ def on_quit(client, origin, message=None):
 
 
 @service.hook("ctcp_action", priority=10000)
-def on_ctcp(client, origin, target, message):
+def on_ctcp_action(client, origin, target, message):
     if target == client.nickname:
         target = origin
 
