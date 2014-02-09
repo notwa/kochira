@@ -46,7 +46,7 @@ def get_num_image_frames(im):
     except EOFError:
         pass
 
-    return im.tell() + 1
+    return im.tell()
 
 
 def handle_image(resp):
