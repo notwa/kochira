@@ -244,8 +244,8 @@ def rand_quote(client, target, origin, query=None, channel=None, network=None):
 
     q = q \
         .where(
-            Quote.network == network,
-            Quote.channel == channel
+            fn.lower(Quote.network) == fn.lower(network),
+            fn.lower(Quote.channel) == fn.lower(channel)
         ) \
         .order_by(fn.Random()) \
         .limit(1)
@@ -287,6 +287,7 @@ def find_quote(client, target, origin, query, channel=None, network=None):
 
         $bot: find a quote matching <query>
         $bot: find a quote from <channel> matching <query>
+        $bot: find a quote from <channel> on <network> matching <query>
         !quote find <query>
 
     Full-text search for a given quote.
@@ -299,8 +300,8 @@ def find_quote(client, target, origin, query, channel=None, network=None):
         network = client.network
 
     quotes = list(_find_quotes(client.bot, query).where(
-        Quote.network == network,
-        Quote.channel == channel
+        fn.lower(Quote.network) == fn.lower(network),
+        fn.lower(Quote.channel) == fn.lower(channel)
     ))
 
     if not quotes:
