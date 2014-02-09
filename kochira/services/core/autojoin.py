@@ -21,7 +21,7 @@ class Config(config.Config):
                             type=config.Mapping(config.Many(Channel)))
 
 
-@service.hook("connect")
+@service.hook("connect", priority=-10)
 def autojoin(client):
     config = service.config_for(client.bot)
 
