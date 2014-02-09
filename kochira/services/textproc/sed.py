@@ -57,6 +57,5 @@ def sed(client, target, origin, pattern, replacement, who=None, flags=None):
                     ))
                     return
 
-                if msg != message:
-                    client.message(target, "<{who}> {message}".format(who=other, message=msg))
-                    break
+                client.message(target, "<{who}> {message}".format(who=other, message=msg))
+                break
