@@ -1,7 +1,7 @@
 """
 Artificial (un)intelligence.
 
-Allows the bot to reply whenever its nickname is mentioned.
+Allows the bot to reply whenever its nickname is mentioned or a message starts with a question mark.
 """
 
 import re
@@ -42,7 +42,10 @@ def reply_and_learn(client, target, origin, message):
     mention = False
     reply = False
 
-    if front.strip(",:").lower() == client.nickname.lower():
+    if front.startswith('?'):
+        reply = True
+        message = front.lstrip('?') + ' ' + rest
+    elif front.strip(",:").lower() == client.nickname.lower():
         mention = True
         reply = True
         message = rest
