@@ -75,8 +75,8 @@ def _config_class_factory(bot):
                 username = config.Field(doc="SASL username.", default=None)
                 password = config.Field(doc="SASL password.", default=None)
 
-            tls = config.Field(doc="TLS settings.", default=TLS())
-            sasl = config.Field(doc="SASL settings.", default=SASL())
+            tls = config.Field(doc="TLS settings.", type=TLS, default=TLS())
+            sasl = config.Field(doc="SASL settings.", type=SASL, default=SASL())
 
         class Core(config.Config):
             database = config.Field(doc="Database file to use", default="kochira.db")
