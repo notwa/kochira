@@ -42,6 +42,14 @@ body {
   column-break-inside: avoid;
 }
 
+.config-options p, .config-options dl {
+  margin-bottom: 0;
+}
+
+.config-options p {
+  display: inline;
+}
+
 @media (min-width: 768px) {
   .service-list, .commands {
     columns: 2;

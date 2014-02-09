@@ -84,7 +84,8 @@ class IndexHandler(RequestHandler):
         services = [service for service, _ in self.application.bot.services.values()]
         services.sort(key=lambda s: s.name)
 
-        self.render("help/index.html", services=services)
+        self.render("help/index.html", services=services,
+                    bot_config=self.application.bot.config_class)
 
 
 class ServiceHelpHandler(RequestHandler):

@@ -85,7 +85,7 @@ def _config_class_factory(bot):
 
         core = config.Field(doc="Core configuration settings.", type=Core)
         networks = config.Field(doc="Networks to connect to.", type=config.Mapping(Network))
-        services = config.Field(doc="Services to load.", type=functools.partial(ServiceConfigLoader, bot))
+        services = config.Field(doc="Services to load. Please refer to service documentation for setting this.", type=functools.partial(ServiceConfigLoader, bot))
 
     return Config
 
