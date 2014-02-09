@@ -3,27 +3,6 @@ Procedural string generation from predefined formulae.
 
 Creates text by picking n strings from a list of x strings
 and concatenating them.
-
-Commands
-========
-
-Java Programmer Simulator
--------------------------
-
-::
-
-    :java:
-
-Generates a valid Java class name.
-
-C++ Programmer Simulator
-------------------------
-
-::
-
-    :c++:
-
-Generates valid C++ code.
 """
 
 import random
@@ -45,10 +24,11 @@ RandomInt.__int__ = lambda self: random.randint(self.min, self.max)
 def run_generator(*args):
     return "".join(str(x) for x in args)
 
-def bind_generator(name, fn):
-    @service.command(re.escape(name))
+def bind_generator(name, fn, doc):
+    @service.command(re.escape(name), eat=False)
     def command(client, target, origin):
         client.message(target, fn())
+    command.__doc__ = doc
 
 java = partial(run_generator,
                PickFrom(1, [
@@ -118,5 +98,24 @@ sepples = partial(run_generator,
                            )
                   )
 
-bind_generator(":java:", java)
-bind_generator(":c++:", sepples)
+bind_generator(":java:", java,
+"""
+Java programmer simulator.
+
+::
+
+    :java:
+
+Generates a valid Java class name.
+""")
+
+bind_generator(":c++:", sepples,
+"""
+C++ programmer simulator.
+
+::
+
+    :c++:
+
+Generates valid C++ code.
+""")
