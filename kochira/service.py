@@ -56,7 +56,7 @@ class Service:
         return "\n\n".join(parts[1:])
 
     def command(self, pattern, priority=0, mention=False, strip=True,
-                re_flags=re.I, eat=True, allow_private=False):
+                re_flags=re.I, eat=True, allow_private=True):
         """
         Register a command for use with the bot.
 
