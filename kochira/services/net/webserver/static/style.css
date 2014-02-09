@@ -28,14 +28,13 @@ body {
   padding-right: 15px;
 }
 
-.service-list, .commands {
+.service-list {
   column-gap: 30px;
   -webkit-column-gap: 30px;
   -moz-column-gap: 30px;
 }
 
-.service-list li,
-.commands > .section {
+.service-list li {
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid;
   -moz-column-break-inside: avoid;
@@ -51,14 +50,10 @@ body {
 }
 
 @media (min-width: 768px) {
-  .service-list, .commands {
+  .service-list {
     columns: 2;
     -webkit-columns: 2;
     -moz-columns: 2;
-  }
-
-  .commands > .section:first-child {
-    margin-top: -20px;
   }
 
   dl.docutils dt {
@@ -77,7 +72,7 @@ body {
 }
 
 @media (min-width: 992px) {
-  .service-list, .commands {
+  .service-list {
     columns: 3;
     -webkit-columns: 3;
     -moz-columns: 3;
