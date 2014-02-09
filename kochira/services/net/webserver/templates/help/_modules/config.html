@@ -3,7 +3,7 @@
 {% for field in config._field_defs %}
     <dt>{{field.name}}</dt>
     <dd>
-        {{field.doc}}
+        {% raw rst(field.doc) %}
         {% if field.default is not field._sentinel %}(default: {{field.default}}){% end %}
         {% if hasattr(field.type, "interior_type") and issubclass(field.type.interior_type(), ConfigType) %}
         {% module Config(field.type.interior_type()) %}

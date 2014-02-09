@@ -99,7 +99,8 @@ class ServiceHelpHandler(RequestHandler):
 class ConfigModule(UIModule):
     def render(self, cfg):
         return self.render_string("help/_modules/config.html",
-                                  config=cfg, ConfigType=config.Config)
+                                  config=cfg, ConfigType=config.Config,
+                                  rst=rst)
 
 
 def make_application(settings):
