@@ -4,7 +4,7 @@
     <dt>{{field.name}}</dt>
     <dd>
         {% raw rst(field.doc) %}
-        {% if field.default is not field._sentinel %}<p>Default: {{field.default}}</p>{% end %}
+        {% if field.default is not field._sentinel %}<p>Default: {{repr(field.default)}}</p>{% end %}
         {% if hasattr(field.type, "interior_type") and issubclass(field.type.interior_type(), ConfigType) %}
         {% module Config(field.type.interior_type()) %}
         {% end %}
