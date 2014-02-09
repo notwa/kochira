@@ -134,8 +134,8 @@ class PostReceiveHandler(RequestHandler):
         head = rev_parse("HEAD")
 
         self.application.bot.executor.submit(do_update,
-                                             config.get("remote", "origin"),
-                                             config.get("branch", "master")) \
+                                             config.remote,
+                                             config.branch) \
             .add_done_callback(_callback)
 
 
