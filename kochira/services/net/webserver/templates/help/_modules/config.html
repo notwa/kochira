@@ -1,0 +1,16 @@
+{% if config._field_defs %}
+<dl class="dl-horizontal">
+{% for field in config._field_defs %}
+    <dt>{{field.name}}</dt>
+    <dd>
+        {{field.doc}}
+        {% if field.default is not field._sentinel %}(default: {{field.default}}){% end %}
+        {% if hasattr(field.type, "interior_type") and issubclass(field.type.interior_type(), ConfigType) %}
+        {% module Config(field.type.interior_type()) %}
+        {% end %}
+    </dd>
+{% end %}
+</dl>
+{% else %}
+<p>None.</p>
+{% end %}
