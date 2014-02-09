@@ -210,7 +210,7 @@ def read_quote(client, target, origin, qid: int):
     ))
 
 
-@service.command(r"(?:give me a )?random quote(?: from (?P<channel>\S+)(?: on (?P<network>.+))?)?(?: matching (?P<query>.+))?$", mention=True)
+@service.command(r"(?:give me a )?random quote(?: from (?P<channel>\S+)(?: on (?P<network>.+?))?)?(?: matching (?P<query>.+))?$", mention=True)
 @service.command(r"!quote rand(?: (?P<query>.+))?$")
 def rand_quote(client, target, origin, query=None, channel=None, network=None):
     """
@@ -277,7 +277,7 @@ def _find_quotes(bot, query):
         .where(Quote.id << SQL("({})".format(", ".join(str(qid) for qid in qids))))
 
 
-@service.command(r"find (?:a )?quote(?: from (?P<channel>\S+)(?: on (?P<network>.+))?)? matching (?P<query>.+)$", mention=True)
+@service.command(r"find (?:a )?quote(?: from (?P<channel>\S+)(?: on (?P<network>.+?))?)? matching (?P<query>.+)$", mention=True)
 @service.command(r"!quote find (?P<query>.+)$")
 def find_quote(client, target, origin, query, channel=None, network=None):
     """
