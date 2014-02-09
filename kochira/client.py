@@ -18,7 +18,7 @@ class Client(_Client):
     def _send_message(self, message):
         self.bot.defer_from_thread(super()._send_message, message)
 
-    def on_ctcp_version(self, by, target):
+    def on_ctcp_version(self, by, target, message):
         self.ctcp_reply(by, "VERSION",
                         self.bot.config["core"].get("version", "kochira IRC bot"))
 
