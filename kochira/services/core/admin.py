@@ -137,7 +137,7 @@ def list_authorized(client, target, origin, permission=None, channel=None):
     """
 
     entries = ACLEntry.select().where(ACLEntry.network == client.network,
-                                      permission is not None or ACLEntry.permission == permission,
+                                      permission is None or ACLEntry.permission == permission,
                                       ACLEntry.channel == channel if channel is not None else ACLEntry.channel >> None)
 
     users = {}
