@@ -8,14 +8,14 @@ import threading
 from datetime import datetime
 
 from kochira import config
-from kochira.service import Service
+from kochira.service import Service, Config
 from pathlib import Path
 
 service = Service(__name__, __doc__)
 
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     log_dir = config.Field(doc="Path to the log directory.", default="logs")
 
 

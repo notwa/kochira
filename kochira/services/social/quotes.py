@@ -19,7 +19,7 @@ from whoosh.qparser import QueryParser
 from kochira import config
 from kochira.db import Model, database
 
-from kochira.service import Service
+from kochira.service import Service, Config
 from kochira.auth import requires_permission
 
 from tornado.web import RequestHandler, Application
@@ -28,7 +28,7 @@ from tornado.web import RequestHandler, Application
 service = Service(__name__, __doc__)
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     index_path = config.Field(doc="Path to the full-text index.", default="quotes")
 
 

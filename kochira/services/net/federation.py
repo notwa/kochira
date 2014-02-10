@@ -64,13 +64,13 @@ from zmq.eventloop import zmqstream
 
 from kochira import config
 from kochira.auth import requires_permission
-from kochira.service import Service
+from kochira.service import Service, Config
 
 service = Service(__name__, __doc__)
 
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     class Federation(config.Config):
         autoconnect = config.Field(doc="Whether the bot should attempt to " \
                                        "autoconnect to the federation.")
@@ -290,7 +290,7 @@ def add_federation(client, target, origin, name):
     Connect to a bot specified in the federation configuration.
     """
 
-    config = service.config_for(client.bot)
+    config = service.config_for(client.bot, client.network, target)
     storage = service.storage_for(client.bot)
 
     if name in storage.federations:

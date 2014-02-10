@@ -8,6 +8,11 @@ from . import config
 logger = logging.getLogger(__name__)
 
 
+class Config(config.Config):
+    autoload = config.Field(doc="Autoload this service?", default=False)
+    enabled = config.Field(doc="Enable this service?", default=True)
+
+
 class Service:
     """
     A service provides the bot with additional facilities.
@@ -22,7 +27,7 @@ class Service:
         self.hooks = {}
         self.commands = set([])
         self.tasks = []
-        self.config_factory = config.Config
+        self.config_factory = Config
         self.on_setup = None
         self.on_shutdown = None
         self.logger = logging.getLogger(self.name)
@@ -34,6 +39,7 @@ class Service:
 
         def _decorator(f):
             bisect.insort(self.hooks.setdefault(hook, []), (-priority, id(f), f))
+            f.service = self
             return f
 
         return _decorator

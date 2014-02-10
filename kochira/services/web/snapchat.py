@@ -15,12 +15,12 @@ from datetime import datetime, timedelta
 from pysnap import Snapchat, MEDIA_VIDEO_NOAUDIO, MEDIA_VIDEO
 
 from kochira import config
-from kochira.service import Service
+from kochira.service import Service, Config
 
 service = Service(__name__, __doc__)
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     class Channel(config.Config):
         channel = config.Field(doc="Channel name.")
         network = config.Field(doc="Channel network.")

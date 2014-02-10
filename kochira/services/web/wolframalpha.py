@@ -9,12 +9,12 @@ import requests
 from lxml import etree
 
 from kochira import config
-from kochira.service import Service, background
+from kochira.service import Service, background, Config
 
 service = Service(__name__, __doc__)
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     appid = config.Field(doc="Wolfram|Alpha application ID.")
 
 

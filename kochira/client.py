@@ -5,6 +5,7 @@ import textwrap
 from pydle import Client as _Client
 from pydle.features.rfc1459.protocol import MESSAGE_LENGTH_LIMIT
 
+from .service import Service
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,21 @@ class Client(_Client):
         while len(backlog) > self.bot.config.core.max_backlog:
             backlog.pop()
 
+    def _run_hooks(self, name, *args, **kwargs):
+        for hook in self.bot.get_hooks(name):
+            config = hook.service.config_for(self.bot, self.network)
+
+            if not config.enabled:
+                continue
+
+            try:
+                r = hook(self, *args, **kwargs)
+                if r is Service.EAT:
+                    return Service.EAT
+            except BaseException:
+                logger.error("Hook processing failed", exc_info=True)
+
+
     def __getattribute__(self, name):
         if name.startswith("on_"):
             # automatically generate a hook runner for all on_ functions
@@ -80,11 +96,11 @@ class Client(_Client):
                 f = _Client.__getattribute__(self, name)
             except AttributeError:
                 def _magic_hook(*args, **kwargs):
-                    self.bot.run_hooks(hook_name, self, *args, **kwargs)
+                    self._run_hooks(hook_name, *args, **kwargs)
             else:
                 def _magic_hook(*args, **kwargs):
                     r = f(*args, **kwargs)
-                    self.bot.run_hooks(hook_name, self, *args, **kwargs)
+                    self._run_hooks(hook_name, *args, **kwargs)
                     return r
 
             return _magic_hook

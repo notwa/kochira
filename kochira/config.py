@@ -1,3 +1,6 @@
+import abc
+import collections
+
 def _id(x):
     return x
 
@@ -34,7 +37,7 @@ class Field:
         obj._fields[self.name] = v
 
 
-class _ConfigMeta(type):
+class _ConfigMeta(abc.ABCMeta):
     def __new__(cls, name, bases, dct):
         newcls = type.__new__(cls, name, bases, dct)
 
@@ -56,7 +59,7 @@ class _ConfigMeta(type):
         return newcls
 
 
-class Config(metaclass=_ConfigMeta):
+class Config(collections.MutableMapping, metaclass=_ConfigMeta):
     def __init__(self, values=None):
         if values is None:
             values = {}
@@ -113,6 +116,21 @@ class Config(metaclass=_ConfigMeta):
     @classmethod
     def interior_type(cls):
         return cls
+
+    def __getitem__(self, name):
+        return self._fields[name]
+
+    def __setitem__(self, name, value):
+        self._fields[name] = value
+
+    def __delitem__(self, name):
+        raise TypeError("does not support item deletion")
+
+    def __iter__(self):
+        return iter(self._fields)
+
+    def __len__(self):
+        return len(self._fields)
 
 
 class Mapping:

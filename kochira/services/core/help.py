@@ -5,14 +5,14 @@ This service displays help information on the web server.
 """
 
 from kochira import config
-from kochira.service import Service
+from kochira.service import Service, Config
 from docutils.core import publish_parts
 from tornado.web import RequestHandler, Application, HTTPError, UIModule
 
 service = Service(__name__, __doc__)
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     url = config.Field(doc="Base URL for the help documentation, e.g. ``http://example.com:8000/help``.")
 
 
@@ -133,7 +133,7 @@ def help(client, target, origin):
     Links the user to the web help service, if available.
     """
 
-    config = service.config_for(client.bot)
+    config = service.config_for(client.bot, client.network, target)
 
     if "kochira.services.net.webserver" not in client.bot.services:
         client.message(target, "{origin}: Help currently unavailable.".format(

@@ -8,7 +8,7 @@ server.
 from docutils.core import publish_parts
 
 from kochira import config
-from kochira.service import Service
+from kochira.service import Service, Config
 import os
 import subprocess
 
@@ -19,7 +19,7 @@ service = Service(__name__, __doc__)
 
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     port = config.Field(doc="Port to run the web server on.", default=8080)
     address = config.Field(doc="Address to bind the HTTP server to.", default="0.0.0.0")
     title = config.Field(doc="Title for the web site.", default="Kobun")

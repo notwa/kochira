@@ -9,13 +9,13 @@ import random
 import re
 
 from kochira import config
-from kochira.service import Service, background
+from kochira.service import Service, background, Config
 import requests
 
 service = Service(__name__, __doc__)
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     url = config.Field(doc="The remote cobed to connect to.")
     username = config.Field(doc="The username to use when connecting.")
     password = config.Field(doc="The password to use when connecting.")
@@ -40,7 +40,7 @@ def learn(url, username, password, what):
 @service.hook("channel_message", priority=-9999)
 @background
 def do_reply(client, target, origin, message):
-    config = service.config_for(client.bot)
+    config = service.config_for(client.bot, client.network, target)
 
     front, _, rest = message.partition(" ")
 

@@ -18,13 +18,9 @@ from .client import Client
 from .db import database
 from .scheduler import Scheduler
 from .util import Expando
-from .service import Service
+from .service import Service, Config as ServiceConfig
 
 logger = logging.getLogger(__name__)
-
-
-class BaseServiceConfig(config.Config):
-    autoload = config.Field(doc="Autoload this service?", default=False)
 
 
 class ServiceConfigLoader(collections.Mapping):
@@ -34,10 +30,11 @@ class ServiceConfigLoader(collections.Mapping):
 
     def _config_factory_for(self, name):
         if name not in self.bot.services:
-            config_factory = BaseServiceConfig
+            config_factory = ServiceConfig
         else:
             service, _ = self.bot.services[name]
             config_factory = service.config_factory
+
         return config_factory
 
     def __getitem__(self, name):
@@ -257,14 +254,14 @@ class Bot:
             for service, storage in list(self.services.values())
         ]))
 
-    def run_hooks(self, hook, *args):
+    def run_hooks(self, hook, *args, **kwargs):
         """
         Attempt to dispatch a command to all command handlers.
         """
 
         for hook in self.get_hooks(hook):
             try:
-                r = hook(*args)
+                r = hook(*args, **kwargs)
                 if r is Service.EAT:
                     return Service.EAT
             except BaseException:

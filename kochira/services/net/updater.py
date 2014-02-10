@@ -12,7 +12,7 @@ import subprocess
 
 from kochira import config
 from kochira.auth import requires_permission
-from kochira.service import Service
+from kochira.service import Service, Config
 
 from tornado.web import Application, RequestHandler, asynchronous, HTTPError
 
@@ -20,7 +20,7 @@ service = Service(__name__, __doc__)
 
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     class Channel(config.Config):
         channel = config.Field(doc="Channel name.")
         network = config.Field(doc="Channel network.")

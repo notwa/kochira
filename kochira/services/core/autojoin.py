@@ -5,13 +5,13 @@ This allows the bot to automatically join channels when it connects.
 """
 
 from kochira import config
-from kochira.service import Service
+from kochira.service import Service, Config
 
 service = Service(__name__, __doc__)
 
 
 @service.config
-class Config(config.Config):
+class Config(Config):
     class Channel(config.Config):
         name = config.Field(doc="The name of a network.")
         password = config.Field(doc="The key to a network, if any.",
