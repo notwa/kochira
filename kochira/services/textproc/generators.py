@@ -25,7 +25,8 @@ def run_generator(*args):
     return "".join(str(x) for x in args)
 
 def bind_generator(name, fn, doc):
-    @service.command(re.escape(name) + ".*", eat=False)
+    @service.command("pretend you're a {} programmer".format(re.escape(name)), mention=True, eat=False)
+    @service.command(":{}:".format(re.escape(name)), eat=False)
     def command(client, target, origin):
         client.message(target, fn())
     command.__doc__ = doc
@@ -98,14 +99,14 @@ sepples = partial(run_generator,
                            )
                   )
 
-bind_generator(":java:", java,
+bind_generator("java", java,
 """
 Java programmer simulator.
 
 Generates a valid Java class name.
 """)
 
-bind_generator(":c++:", sepples,
+bind_generator("c++", sepples,
 """
 C++ programmer simulator.
 
