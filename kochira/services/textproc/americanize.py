@@ -17,12 +17,14 @@ gb_dic = enchant.Dict("en_GB")
 
 service = Service(__name__, __doc__)
 
+SIMILARITY_THRESHOLD = 1
+
 
 def has_overlapping_meaning(gb, us):
     gb_syn = set(wordnet.synsets(gb))
     us_syn = set(wordnet.synsets(us))
 
-    return len(gb_syn - us_syn) == 0
+    return len(gb_syn - us_syn) <= SIMILARITY_THRESHOLD
 
 
 def compute_replacements(message):
