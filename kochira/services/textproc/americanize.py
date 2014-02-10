@@ -17,10 +17,10 @@ gb_dic = enchant.Dict("en_GB")
 
 service = Service(__name__, __doc__)
 
-SIMILARITY_THRESHOLD = 1
+DISSIMILARITY_THRESHOLD = 1
 
 
-def similarity(gb, us):
+def dissimilarity(gb, us):
     gb_syn = set(wordnet.synsets(gb))
     us_syn = set(wordnet.synsets(us))
 
@@ -41,12 +41,12 @@ def compute_replacements(message):
 
         if (gb_dic.check(word) or any(word.lower() == s.lower() for s in gb_dic.suggest(word))) and \
             not (us_dic.check(word) or any(word.lower() == s.lower() for s in us_dic.suggest(word))):
-            suggestions = sorted([(similarity(word, s), s) for s in us_dic.suggest(word)
+            suggestions = sorted([(dissimilarity(word, s), i, s) for i, s in enumerate(us_dic.suggest(word))
                                   if s.lower() != word.lower()])
 
             if suggestions:
-                score, replacement = suggestions[0]
-                if score <= SIMILARITY_THRESHOLD:
+                score, _, replacement = suggestions[0]
+                if score <= DISSIMILARITY_THRESHOLD:
                     replacements[word] = replacement
 
     return replacements
