@@ -2,7 +2,7 @@ import logging
 from collections import deque
 
 from pydle import Client as _Client
-from pydle import protocol
+from pydle.features.rfc1459.protocol import MESSAGE_LENGTH_LIMIT
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class Client(_Client):
 
     def _autotruncate(self, command, target, message, suffix=" (truncated)"):
         hostmask = self._format_hostmask(self.nickname)
-        chunklen = protocol.MESSAGE_LENGTH_LIMIT - len('{hostmask} {command} {target} :'.format(
+        chunklen = MESSAGE_LENGTH_LIMIT - len('{hostmask} {command} {target} :'.format(
             hostmask=hostmask,
             command=command,
             target=target
