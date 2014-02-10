@@ -60,7 +60,7 @@ def _config_class_factory(bot):
             realname = config.Field(doc="Real name to use.", default=None)
 
             hostname = config.Field(doc="IRC server hostname.")
-            port = config.Field(doc="IRC serveer port.", default=None)
+            port = config.Field(doc="IRC server port.", default=None)
             password = config.Field(doc="IRC server password.", default=None)
             source_address = config.Field(doc="Source address to connect from.", default="")
 
@@ -81,6 +81,7 @@ def _config_class_factory(bot):
         class Core(config.Config):
             database = config.Field(doc="Database file to use", default="kochira.db")
             max_backlog = config.Field(doc="Maximum backlog lines to store.", default=10)
+            max_workers = config.Field(doc="Max thread pool workers.", default=0)
             version = config.Field(doc="CTCP VERSION reply.", default="kochira IRC bot")
 
         core = config.Field(doc="Core configuration settings.", type=Core)
@@ -107,7 +108,7 @@ class Bot:
         self._connect_to_db()
 
     def run(self):
-        self.executor = ThreadPoolExecutor(multiprocessing.cpu_count())
+        self.executor = ThreadPoolExecutor(self.config.max_workers or multiprocessing.cpu_count())
         self.scheduler = Scheduler(self)
         self.scheduler.start()
 
