@@ -25,8 +25,8 @@ def run_generator(*args):
     return "".join(str(x) for x in args)
 
 def bind_generator(name, fn, doc):
-    @service.command("pretend you're a {} programmer".format(re.escape(name)), mention=True, eat=False)
-    @service.command(":{}:".format(re.escape(name)), eat=False)
+    @service.command("pretend you're a {} programmer".format(re.escape(name)), mention=True)
+    @service.command(":{}:".format(re.escape(name)))
     def command(client, target, origin):
         client.message(target, fn())
     command.__doc__ = doc
