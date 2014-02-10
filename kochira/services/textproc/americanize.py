@@ -42,8 +42,8 @@ def compute_replacements(message):
     for word in blob.words:
         word = str(word)
 
-        if (gb_dic.check(word) or any(word.lower() == s.lower() for s in gb_dic.suggest(word))) \
-           and not us_dic.check(word):
+        if (gb_dic.check(word) or any(word.lower() == s.lower() for s in gb_dic.suggest(word))) and \
+            not (us_dic.check(word) or any(word.lower() == s.lower() for s in us_dic.suggest(word))):
             suggestions = [s for s in us_dic.suggest(word)
                            if s.lower() != word.lower() and
                               word_similarity(word, s) == 1.0]
