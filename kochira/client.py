@@ -28,7 +28,7 @@ class Client(_Client):
         logger.info("Connected to IRC network: %s", self.network)
         super().on_connect()
 
-    def _autotruncate(self, command, target, message, suffix=" (truncated)"):
+    def _autotruncate(self, command, target, message, suffix="..."):
         hostmask = self._format_hostmask(self.nickname)
         chunklen = MESSAGE_LENGTH_LIMIT - len('{hostmask} {command} {target} :'.format(
             hostmask=hostmask,
@@ -37,7 +37,7 @@ class Client(_Client):
         )) - 25
 
         if len(message) > chunklen:
-            message = message[:chunklen - len(suffix) - 1] + " " + suffix
+            message = message[:chunklen - len(suffix)] + suffix
 
         return message
 
