@@ -149,8 +149,8 @@ def list_authorized(client, target, origin, permission=None, channel=None):
         origin=origin,
         network=client.network,
         channel="globally" if channel is None else "on " + channel,
-        users=", ".join(
-            "{name}, {channels} ({perms})".format(
+        users="; ".join(
+            "{name} {channels} ({perms})".format(
                 name=k,
                 channels=", ".join("globally" if channel is None else "on " + channel for channel in channels),
                 perms=", ".join(perms)
