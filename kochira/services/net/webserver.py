@@ -15,6 +15,8 @@ import subprocess
 from tornado.web import RequestHandler, Application, UIModule, HTTPError
 from tornado.httpserver import HTTPServer, HTTPRequest
 
+from urllib.parse import urlparse
+
 service = Service(__name__, __doc__)
 
 
@@ -121,9 +123,26 @@ class FooterModule(UIModule):
                 if status.strip():
                     dirty = True
 
+            p = subprocess.Popen(["git", "config", "--get", "remote.origin.url"], stdout=subprocess.PIPE)
+            remote, _ = p.communicate()
+
+            if p.returncode != 0:
+                remote = None
+            else:
+                remote = urlparse(remote.strip().decode("utf-8"))
+
+                if not remote.scheme.startswith("http"):
+                    remote = None
+                elif remote.username and remote.password:
+                    remote = urlparse(remote.geturl().replace("{username}:{password}@".format(
+                        username=remote.username,
+                        password=remote.password
+                    ), ""))
+
         return self.render_string("_modules/footer.html",
                                   revision=revision,
-                                  dirty=dirty)
+                                  dirty=dirty,
+                                  remote=remote)
 
 
 base_path = os.path.join(os.path.dirname(__file__), "webserver")
