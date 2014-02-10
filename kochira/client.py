@@ -1,8 +1,10 @@
 import logging
 from collections import deque
+import textwrap
 
 from pydle import Client as _Client
 from pydle.features.rfc1459.protocol import MESSAGE_LENGTH_LIMIT
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,7 @@ class Client(_Client):
         )) - 25
 
         if len(message) > chunklen:
-            message = message[:chunklen - len(suffix)] + suffix
+            message = textwrap.wrap(message, chunklen - len(suffix))[0] + suffix
 
         return message
 
