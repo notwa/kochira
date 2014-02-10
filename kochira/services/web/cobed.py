@@ -5,6 +5,7 @@ Allows the bot to reply whenever its nickname is mentioned using a remote Cobe
 brain.
 """
 
+import random
 import re
 
 from kochira import config
@@ -18,7 +19,8 @@ class Config(config.Config):
     url = config.Field(doc="The remote cobed to connect to.")
     username = config.Field(doc="The username to use when connecting.")
     password = config.Field(doc="The password to use when connecting.")
-    reply = config.Field(doc="Whether or not to reply on nickname mention.", default=True)
+    reply = config.Field(doc="Whether or not to generate replies.", default=True)
+    random_replyness = config.Field(doc="Probability the brain will generate a reply for all messages.", default=0.0)
 
 def reply_and_learn(url, username, password, what):
     r = requests.post(url,
@@ -52,6 +54,8 @@ def do_reply(client, target, origin, message):
         mention = True
         reply = True
         message = rest
+    elif random.random() < config.random_replyness:
+        reply = True
 
     message = message.strip()
 
