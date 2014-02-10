@@ -14,3 +14,5 @@ pure-sasl
 docutils
 tornado
 pathlib
+pyenchant
+textblob
