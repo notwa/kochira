@@ -44,7 +44,8 @@ def compute_replacements(message):
 
         if gb_dic.check(word) and not us_dic.check(word):
             suggestions = [s for s in us_dic.suggest(word)
-                           if word_similarity(word, s) == 1.0]
+                           if s.lower() != word.lower() and
+                              word_similarity(word, s) == 1.0]
 
             if suggestions:
                 replacements[word] = suggestions[0]
