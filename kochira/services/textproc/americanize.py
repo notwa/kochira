@@ -24,6 +24,11 @@ def similarity(gb, us):
     gb_syn = set(wordnet.synsets(gb))
     us_syn = set(wordnet.synsets(us))
 
+    # we don't actually know anything about this word in en_GB, so anything we
+    # get back is going to be hella wrong
+    if not gb_syn:
+        return float("inf")
+
     return len(gb_syn - us_syn)
 
 
