@@ -23,7 +23,7 @@ def grant_permission(network, hostmask, permission, channel=None):
     """
     if ACLEntry.select().where(ACLEntry.hostmask == hostmask,
                                ACLEntry.network == network,
-                               ACLEntry.permission == permission if permission is not None else ACLEntry.permission >> None,
+                               ACLEntry.permission == permission,
                                ACLEntry.channel == channel if channel is not None else ACLEntry.channel >> None).exists():
         return False
 
@@ -137,12 +137,22 @@ def list_authorized(client, target, origin, permission=None, channel=None):
     """
 
     entries = ACLEntry.select().where(ACLEntry.network == client.network,
-                                      ACLEntry.permission == permission if permission is not None else ACLEntry.permission >> None,
+                                      permission is not None or ACLEntry.permission == permission,
                                       ACLEntry.channel == channel if channel is not None else ACLEntry.channel >> None)
 
-    client.message(target, "{origin}: Authorized hostmasks: {users}".format(
+    users = {}
+
+    for entry in entries:
+        users.setdefault(entry.hostmask, set([])).add(entry.permission)
+
+    client.message(target, "{origin}: Authorized hostmasks for {network}: {users}".format(
         origin=origin,
-        users=", ".join(entry.hostmask for entry in entries)
+        network=client.network,
+        users=", ".join(
+            "{name} ({perms})".format(
+                name=k,
+                perms=", ".join(v)
+        ) for k, v in users.items())
     ))
 
 
