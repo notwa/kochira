@@ -1,7 +1,8 @@
 """
 Passive-aggressive spelling corrector.
 
-Ensures that users are using Freedom English.
+Ensures that users are using Freedom English. Could be configured for other
+languages, I guess...
 """
 
 import enchant
@@ -10,14 +11,17 @@ import re
 from textblob import TextBlob
 from nltk.corpus import wordnet
 
-from kochira.service import Service, background
-
-from_dic = enchant.Dict("en_US")
-to_dic = enchant.Dict("en_GB")
+from kochira import config
+from kochira.service import Service, background, Config
 
 service = Service(__name__, __doc__)
 
 DISSIMILARITY_THRESHOLD = 0.5
+
+@service.config
+class Config(Config):
+    from_lang = config.Field(doc="Language to convert from.", default="en_GB")
+    to_lang = config.Field(doc="Language to convert to (hint: en_US).", default="en_US")
 
 
 def dissimilarity(from_word, to_word):
@@ -39,7 +43,7 @@ def process_words(words):
         yield from str(word).split("-")
 
 
-def compute_replacements(message):
+def compute_replacements(from_dic, to_dic, message):
     blob = TextBlob(message)
     replacements = {}
 
@@ -60,7 +64,12 @@ def compute_replacements(message):
 @service.hook("channel_message")
 @background
 def murrika(client, target, origin, message):
-    replacements = compute_replacements(message)
+    config = service.config_for(client.bot)
+
+    from_dic = enchant.Dict(config.from_lang)
+    to_dic = enchant.Dict(config.to_lang)
+
+    replacements = compute_replacements(from_dic, to_dic, message)
 
     if not replacements:
         return
