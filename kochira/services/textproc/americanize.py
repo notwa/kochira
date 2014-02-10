@@ -24,11 +24,13 @@ def dissimilarity(from_word, to_word):
     from_syn = set(wordnet.synsets(from_word))
     to_syn = set(wordnet.synsets(to_word))
 
+    both = from_syn & to_syn
+
     # we don't actually know anything about this word
-    if not from_syn or not to_syn:
+    if not both:
         return float("inf")
 
-    return len(from_syn - to_syn) / len(from_syn | to_syn)
+    return len(from_syn - to_syn) / len(both)
 
 
 def process_words(words):
