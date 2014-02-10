@@ -20,11 +20,11 @@ service = Service(__name__, __doc__)
 SIMILARITY_THRESHOLD = 1
 
 
-def has_overlapping_meaning(gb, us):
+def similarity(gb, us):
     gb_syn = set(wordnet.synsets(gb))
     us_syn = set(wordnet.synsets(us))
 
-    return len(gb_syn - us_syn) <= SIMILARITY_THRESHOLD
+    return len(gb_syn - us_syn)
 
 
 def compute_replacements(message):
@@ -36,12 +36,13 @@ def compute_replacements(message):
 
         if (gb_dic.check(word) or any(word.lower() == s.lower() for s in gb_dic.suggest(word))) and \
             not (us_dic.check(word) or any(word.lower() == s.lower() for s in us_dic.suggest(word))):
-            suggestions = [s for s in us_dic.suggest(word)
-                           if s.lower() != word.lower() and
-                              has_overlapping_meaning(word, s)]
+            suggestions = sorted([(similarity(word, s), s) for s in us_dic.suggest(word)
+                                  if s.lower() != word.lower()])
 
             if suggestions:
-                replacements[word] = suggestions[0]
+                score, replacement = suggestions[0]
+                if score <= SIMILARITY_THRESHOLD:
+                    replacements[word] = replacement
 
     return replacements
 
