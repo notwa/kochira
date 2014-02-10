@@ -160,12 +160,12 @@ class Service:
 
         if network is not None:
             network_config = bot.config.networks[network]
-            config = config.combine(network_config.service_overrides.get(self.name, self.config_factory()))
+            config = config.combine(network_config.services.get(self.name, self.config_factory()))
 
             if channel is not None:
                 if channel in network_config.channels:
                     channel_config = network_config.channels[channel]
-                    config = config.combine(channel_config.service_overrides.get(self.name, self.config_factory()))
+                    config = config.combine(channel_config.services.get(self.name, self.config_factory()))
 
         return config
 

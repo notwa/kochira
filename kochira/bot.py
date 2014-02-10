@@ -27,6 +27,7 @@ class ServiceConfigLoader(collections.Mapping):
     def __init__(self, bot, values):
         self.bot = bot
         self.configs = values
+        self._cache = {}
 
     def _config_factory_for(self, name):
         if name not in self.bot.services:
@@ -38,7 +39,12 @@ class ServiceConfigLoader(collections.Mapping):
         return config_factory
 
     def __getitem__(self, name):
-        return self._config_factory_for(name)(self.configs[name])
+        config_factory = self._config_factory_for(name)
+
+        if name not in self._cache or \
+            not isinstance(self._cache[name], config_factory):
+            self._cache[name] = config_factory(self.configs[name])
+        return self._cache[name]
 
     def __iter__(self):
         return iter(self.configs)
@@ -76,13 +82,13 @@ def _config_class_factory(bot):
                 password = config.Field(doc="SASL password.", default=None)
 
             class Channel(config.Config):
-                service_overrides = config.Field(doc="Mapping of per-channel service settings.", type=service_config_loader)
+                services = config.Field(doc="Mapping of per-channel service settings.", type=service_config_loader)
 
             tls = config.Field(doc="TLS settings.", type=TLS, default=TLS())
             sasl = config.Field(doc="SASL settings.", type=SASL, default=SASL())
 
             channels = config.Field(doc="Mapping of channel settings.", type=config.Mapping(Channel))
-            service_overrides = config.Field(doc="Mapping of per-network service settings.", type=service_config_loader)
+            services = config.Field(doc="Mapping of per-network service settings.", type=service_config_loader)
 
         class Core(config.Config):
             database = config.Field(doc="Database file to use", default="kochira.db")

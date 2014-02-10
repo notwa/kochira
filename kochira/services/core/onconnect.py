@@ -12,13 +12,13 @@ service = Service(__name__, __doc__)
 
 @service.config
 class Config(Config):
-    networks = config.Field(doc="Mapping of networks, filled with lists of raw commands.",
-                            type=config.Mapping(config.Many(str)))
+    commands = config.Field(doc="List of commands to run.",
+                            type=config.Many(str))
 
 
 @service.hook("connect", priority=-10)
 def onconnect(client):
     config = service.config_for(client.bot, client.network)
 
-    for command in config.networks.get(client.network, []):
+    for command in config.commands:
         client.raw(command)

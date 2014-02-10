@@ -98,8 +98,10 @@ class Config(collections.MutableMapping, metaclass=_ConfigMeta):
         configuration will be the wider (i.e. this) type.
         """
 
-        if not issubclass(self.__class__, other.__class__):
-            raise TypeError("other class is not this class or narrower")
+        if self.__class__ is not other.__class__ and \
+            not issubclass(self.__class__, other.__class__):
+            raise TypeError("{} is not narrower than {}".format(self.__class__,
+                                                                other.__class__))
 
         fields = self._fields.copy()
 

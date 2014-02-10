@@ -17,13 +17,13 @@ class Config(Config):
         password = config.Field(doc="The key to a network, if any.",
                                 default=None)
 
-    networks = config.Field(doc="Mapping of networks.",
-                            type=config.Mapping(config.Many(Channel)))
+    channels = config.Field(doc="List of channels to join.",
+                            type=config.Many(Channel))
 
 
 @service.hook("connect", priority=-10)
 def autojoin(client):
-    config = service.config_for(client.bot)
+    config = service.config_for(client.bot, client.network)
 
-    for channel in config.networks.get(client.network, []):
+    for channel in config.channels:
         client.join(channel.name, password=channel.password)
