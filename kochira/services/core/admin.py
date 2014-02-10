@@ -141,7 +141,7 @@ def list_authorized(client, target, origin, permission=None, channel=None):
     users = {}
 
     for entry in entries:
-        perms, channels = users.setdefault(entry.hostmask, set([]), set([]))
+        perms, channels = users.setdefault(entry.hostmask, (set([]), set([])))
         perms.add(entry.permission)
         channels.add(entry.channel)
 
