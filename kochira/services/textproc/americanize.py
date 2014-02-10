@@ -17,7 +17,7 @@ to_dic = enchant.Dict("en_GB")
 
 service = Service(__name__, __doc__)
 
-DISSIMILARITY_THRESHOLD = 1
+DISSIMILARITY_THRESHOLD = 0.2
 
 
 def dissimilarity(from_word, to_word):
@@ -28,7 +28,7 @@ def dissimilarity(from_word, to_word):
     if not from_syn or not to_syn:
         return float("inf")
 
-    return len(from_syn - to_syn)
+    return len(from_syn - to_syn) / len(from_syn | to_syn)
 
 
 def process_words(words):
