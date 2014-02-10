@@ -18,10 +18,11 @@ gb_dic = enchant.Dict("en_GB")
 service = Service(__name__, __doc__)
 
 
-MAX_DISSIMILARITY = 1
+def has_overlapping_meaning(gb, us):
+    gb_syn = set(wordnet.synsets(gb))
+    us_syn = set(wordnet.synsets(us))
 
-def dissimilarity(gb, us):
-    return len(set(wordnet.synsets(gb)) ^ set(wordnet.synsets(us)))
+    return len(gb_syn ^ us_syn) < len(gb_syn) + len(us_syn)
 
 
 def compute_replacements(message):
@@ -35,7 +36,7 @@ def compute_replacements(message):
             not (us_dic.check(word) or any(word.lower() == s.lower() for s in us_dic.suggest(word))):
             suggestions = [s for s in us_dic.suggest(word)
                            if s.lower() != word.lower() and
-                              dissimilarity(word, s) <= MAX_DISSIMILARITY]
+                              has_overlapping_meaning(word, s)]
 
             if suggestions:
                 replacements[word] = suggestions[0]
