@@ -43,6 +43,12 @@ def compute_replacements(message):
         word = str(word)
 
         if gb_dic.check(word) and not us_dic.check(word):
+            candidates = [s for s in gb_dic.suggest(word)
+                          if s.lower() == word.lower()]
+
+            if candidates:
+                word = candidates[0]
+
             suggestions = [s for s in us_dic.suggest(word)
                            if s.lower() != word.lower() and
                               word_similarity(word, s) == 1.0]
