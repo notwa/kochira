@@ -24,9 +24,8 @@ def dissimilarity(from_word, to_word):
     from_syn = set(wordnet.synsets(from_word))
     to_syn = set(wordnet.synsets(to_word))
 
-    # we don't actually know anything about this word in en_GB, so anything we
-    # get back is going to be hella wrong
-    if not from_syn:
+    # we don't actually know anything about this word
+    if not from_syn or not to_syn:
         return float("inf")
 
     return len(from_syn - to_syn)
