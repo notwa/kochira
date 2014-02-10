@@ -12,36 +12,40 @@ from nltk.corpus import wordnet
 
 from kochira.service import Service, background
 
-us_dic = enchant.Dict("en_US")
-gb_dic = enchant.Dict("en_GB")
+from_dic = enchant.Dict("en_US")
+to_dic = enchant.Dict("en_GB")
 
 service = Service(__name__, __doc__)
 
 DISSIMILARITY_THRESHOLD = 1
 
 
-def dissimilarity(gb, us):
-    gb_syn = set(wordnet.synsets(gb))
-    us_syn = set(wordnet.synsets(us))
+def dissimilarity(from_word, to_word):
+    from_syn = set(wordnet.synsets(from_word))
+    to_syn = set(wordnet.synsets(to_word))
 
     # we don't actually know anything about this word in en_GB, so anything we
     # get back is going to be hella wrong
-    if not gb_syn:
+    if not from_syn:
         return float("inf")
 
-    return len(gb_syn - us_syn)
+    return len(from_syn - to_syn)
+
+
+def process_words(words):
+    for word in words:
+        # split hyphenated words because those suck
+        yield from str(word).split("-")
 
 
 def compute_replacements(message):
     blob = TextBlob(message)
     replacements = {}
 
-    for word in blob.words:
-        word = str(word)
-
-        if (gb_dic.check(word) or any(word.lower() == s.lower() for s in gb_dic.suggest(word))) and \
-            not (us_dic.check(word) or any(word.lower() == s.lower() for s in us_dic.suggest(word))):
-            suggestions = sorted([(dissimilarity(word, s), i, s) for i, s in enumerate(us_dic.suggest(word))
+    for word in process_words(blob.words):
+        if (to_dic.check(word) or any(word.lower() == s.lower() for s in to_dic.suggest(word))) and \
+            not (from_dic.check(word) or any(word.lower() == s.lower() for s in from_dic.suggest(word))):
+            suggestions = sorted([(dissimilarity(word, s), i, s) for i, s in enumerate(from_dic.suggest(word))
                                   if s.lower() != word.lower()])
 
             if suggestions:
