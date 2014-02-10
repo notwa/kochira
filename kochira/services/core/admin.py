@@ -16,13 +16,41 @@ from kochira.service import Service
 service = Service(__name__, __doc__)
 
 
+@classmethod
+def grant_permission(network, hostmask, permission, channel=None):
+    """
+    Grant a permission to a hostmask.
+    """
+    if ACLEntry.select().where(ACLEntry.hostmask == hostmask,
+                               ACLEntry.network == network,
+                               ACLEntry.permission == permission if permission is not None else ACLEntry.permission >> None,
+                               ACLEntry.channel == channel if channel is not None else ACLEntry.channel >> None).exists():
+        return False
+
+    ACLEntry.create(hostmask=hostmask, network=network,
+                    permission=permission, channel=channel).save()
+
+    return True
+
+
+@classmethod
+def revoke_permission(network, hostmask, permission, channel=None):
+    """
+    Revoke a permission from a hostmask.
+    """
+    return ACLEntry.delete().where(ACLEntry.hostmask == hostmask,
+                                   ACLEntry.network == network,
+                                   permission is None or ACLEntry.permission == permission,
+                                   channel is None or ACLEntry.channel == channel).execute() > 0
+
+
 @service.setup
 def setup_eval_locals(bot):
     storage = service.storage_for(bot)
     storage.eval_locals = {}
 
 
-@service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
+@service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?$", mention=True)
 @requires_permission("admin")
 def grant(client, target, origin, permission, hostmask, channel=None):
     """
@@ -32,17 +60,22 @@ def grant(client, target, origin, permission, hostmask, channel=None):
     basis. Wildcard hostmasks are permitted.
     """
 
-    ACLEntry.grant(client.network, hostmask, permission, channel)
+    if not grant_permission(client.network, hostmask, permission, channel):
+        client.message("{origin}: Permission already exists.".format(
+            origin=origin
+        ))
 
     if channel is not None:
-        message = "Granted permission \"{permission}\" to {hostmask} on channel {channel} for network \"{network}\".".format(
+        message = "{origin}: Granted permission \"{permission}\" to {hostmask} on channel {channel} for network \"{network}\".".format(
+            origin=origin,
             permission=permission,
             hostmask=hostmask,
             channel=channel,
             network=client.network
         )
     else:
-        message = "Granted permission \"{permission}\" to {hostmask} globally for network \"{network}\".".format(
+        message = "{origin}: Granted permission \"{permission}\" to {hostmask} globally for network \"{network}\".".format(
+            origin=origin,
             permission=permission,
             hostmask=hostmask,
             network=client.network
@@ -51,7 +84,7 @@ def grant(client, target, origin, permission, hostmask, channel=None):
     client.message(target, message)
 
 
-@service.command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?\.?$", mention=True)
+@service.command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?$", mention=True)
 @requires_permission("admin")
 def revoke(client, target, origin, permission, hostmask, channel=None):
     """
@@ -65,7 +98,10 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
     if permission == "everything":
         permission = None
 
-    ACLEntry.revoke(client.network, hostmask, permission, channel)
+    if not revoke_permission(client.network, hostmask, permission, channel):
+        client.message("{origin}: Couldn't find any matching hostmasks.".format(
+            origin=origin
+        ))
 
     if permission is None:
         message_part = "all permissions"
@@ -73,20 +109,41 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
         message_part = "permission \"{permission}\"".format(permission=permission)
 
     if channel is not None:
-        message = "Revoked {message_part} from {hostmask} on channel {channel} for network \"{network}\".".format(
+        message = "{origin}: Revoked {message_part} from {hostmask} on channel {channel} for network \"{network}\".".format(
+            origin=origin,
             message_part=message_part,
             hostmask=hostmask,
             channel=channel,
             network=client.network
         )
     else:
-        message = "Revoked {message_part} from {hostmask} globally for network \"{network}\".".format(
+        message = "{origin}: Revoked {message_part} from {hostmask} globally for network \"{network}\".".format(
+            origin=origin,
             message_part=message_part,
             hostmask=hostmask,
             network=client.network
         )
 
     client.message(target, message)
+
+
+@service.command(r"(?:list )?authorized users(?: with (?P<permission>\S+))(?: on channel (?P<channel>\S+))?", mention=True)
+@requires_permission("admin")
+def list_authorized(client, target, origin, permission=None, channel=None):
+    """
+    List authorized hostmasks.
+
+    List permissions that apply.
+    """
+
+    entries = ACLEntry.select().where(ACLEntry.network == client.network,
+                                      ACLEntry.permission == permission if permission is not None else ACLEntry.permission >> None,
+                                      ACLEntry.channel == channel if channel is not None else ACLEntry.channel >> None)
+
+    client.message(target, "{origin}: Authorized hostmasks: {users}".format(
+        origin=origin,
+        users=", ".join(entry.hostmask for entry in entries)
+    ))
 
 
 @service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True)

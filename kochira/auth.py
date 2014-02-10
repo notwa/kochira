@@ -51,24 +51,3 @@ class ACLEntry(Model):
                                        ACLEntry.permission << [permission, "admin"],
                                        (ACLEntry.channel == channel) |
                                        (ACLEntry.channel >> None)).exists()
-
-    @classmethod
-    def grant(cls, network, hostmask, permission, channel=None):
-        """
-        Grant a permission to a hostmask.
-        """
-        if cls.has(hostmask, permission, channel):
-            return
-
-        cls.create(hostmask=hostmask, network=network,
-                   permission=permission, channel=channel).save()
-
-    @classmethod
-    def revoke(cls, network, hostmask, permission, channel=None):
-        """
-        Revoke a permission from a hostmask.
-        """
-        ACLEntry.delete().where(Expression(fn.replace(ACLEntry.hostmask, "*", "%"), "ilike", hostmask),
-                                ACLEntry.network == network,
-                                permission is None or ACLEntry.permission == permission,
-                                channel is None or ACLEntry.channel == channel).execute()
