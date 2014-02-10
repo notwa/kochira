@@ -136,16 +136,17 @@ def list_authorized(client, target, origin, permission=None, channel=None):
 
     entries = ACLEntry.select().where(ACLEntry.network == client.network,
                                       permission is None or ACLEntry.permission == permission,
-                                      ACLEntry.channel == channel if channel is not None else ACLEntry.channel >> None)
+                                      channel is None or ACLEntry.channel == channel)
 
     users = {}
 
     for entry in entries:
         users.setdefault(entry.hostmask, set([])).add(entry.permission)
 
-    client.message(target, "{origin}: Authorized hostmasks for {network}: {users}".format(
+    client.message(target, "{origin}: Authorized hostmasks for {network} {channel}: {users}".format(
         origin=origin,
         network=client.network,
+        channel="globally" if channel is None else "on " + channel,
         users=", ".join(
             "{name} ({perms})".format(
                 name=k,
