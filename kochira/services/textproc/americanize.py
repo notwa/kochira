@@ -22,7 +22,7 @@ def has_overlapping_meaning(gb, us):
     gb_syn = set(wordnet.synsets(gb))
     us_syn = set(wordnet.synsets(us))
 
-    return len(gb_syn ^ us_syn) < len(gb_syn) + len(us_syn)
+    return len(gb_syn - us_syn) == 0
 
 
 def compute_replacements(message):
