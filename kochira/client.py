@@ -1,6 +1,8 @@
 import logging
 from collections import deque
+
 from pydle import Client as _Client
+from pydle import protocol
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +28,32 @@ class Client(_Client):
         logger.info("Connected to IRC network: %s", self.network)
         super().on_connect()
 
+    def _autotruncate(self, command, target, message, suffix=" (truncated)"):
+        hostmask = self._format_hostmask(self.nickname)
+        chunklen = protocol.MESSAGE_LENGTH_LIMIT - len('{hostmask} {command} {target} :'.format(
+            hostmask=hostmask,
+            command=command,
+            target=target
+        )) - 25
+
+        if len(message) > chunklen:
+            message = message[:chunklen - len(suffix) - 1] + " " + suffix
+
+        return message
+
     def message(self, target, message):
+        message = self._autotruncate("PRIVMSG", target, message)
+
         super().message(target, message)
         self.bot.defer_from_thread(self.bot.run_hooks,
                                    "own_message", self, target, message)
+
+    def notice(self, target, message):
+        message = self._autotruncate("PRIVMSG", target, message)
+
+        super().notice(target, message)
+        self.bot.defer_from_thread(self.bot.run_hooks,
+                                   "own_notice", self, target, message)
 
     def on_channel_message(self, target, origin, message):
         backlog = self.backlogs.setdefault(target, deque([]))

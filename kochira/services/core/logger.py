@@ -126,6 +126,11 @@ def on_own_message(client, target, message):
     on_channel_message(client, target, client.nickname, message)
 
 
+@service.hook("own_notice", priority=10000)
+def on_own_notice(client, target, message):
+    on_channel_notice(client, target, client.nickname, message)
+
+
 @service.hook("invite", priority=10000)
 def on_invite(client, target, origin):
     log(client, origin, "-!- {origin} [{hostmask}] is inviting you to {channel}".format(
