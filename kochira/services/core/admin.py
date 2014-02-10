@@ -141,17 +141,20 @@ def list_authorized(client, target, origin, permission=None, channel=None):
     users = {}
 
     for entry in entries:
-        users.setdefault(entry.hostmask, set([])).add(entry.permission)
+        perms, channels = users.setdefault(entry.hostmask, set([]), set([]))
+        perms.add(entry.permission)
+        channels.add(entry.channel)
 
     client.message(target, "{origin}: Authorized hostmasks for {network} {channel}: {users}".format(
         origin=origin,
         network=client.network,
         channel="globally" if channel is None else "on " + channel,
         users=", ".join(
-            "{name} ({perms})".format(
+            "{name} on {channels} ({perms})".format(
                 name=k,
-                perms=", ".join(v)
-        ) for k, v in users.items())
+                channels=", ".join("globally" if channel is None else channel for channel in channels),
+                perms=", ".join(perms)
+        ) for k, (perms, channels) in users.items())
     ))
 
 
