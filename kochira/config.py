@@ -62,19 +62,53 @@ class Config(metaclass=_ConfigMeta):
             values = {}
 
         self._fields = {}
-        self._extra = {}
 
         for k, v in values.items():
-            if k not in self._field_mappings:
-                self._extra[k] = v
-                continue
-            self._fields[k] = self._field_mappings[k].unpack(v)
+            if k in self._field_mappings:
+                v = self._field_mappings[k].unpack(v)
+
+            self._fields[k] = v
 
     def __repr__(self):
         return "{}({})".format(
             self.__class__.__name__,
             ", ".join("{}={!r}".format(k, v) for k, v in self._fields.items())
         )
+
+    @staticmethod
+    def _resolve(mine, other):
+        if isinstance(mine, Config):
+            # if the other side is a config, then we'll just combine
+            return mine.combine(other)
+        elif isinstance(mine, dict):
+            # if they're a dict, then we compose other into mine
+            d = mine.copy()
+            d.update(other)
+            return d
+        else:
+            return other
+
+    def combine(self, other):
+        """
+        Combine two configurations together. The other configuration must be
+        a narrower (i.e. superclass or same) type as this one. The resulting
+        configuration will be the wider (i.e. this) type.
+        """
+
+        if not issubclass(self.__class__, other.__class__):
+            raise TypeError("other class is not this class or narrower")
+
+        fields = self._fields.copy()
+
+        # combine their fields
+        for k, v in other._fields.items():
+            if k in fields:
+                # we need to perform conflict resolution
+                fields[k] = Config._resolve(fields[k], v)
+            else:
+                fields[k] = v
+
+        return self.__class__(fields)
 
     @classmethod
     def interior_type(cls):

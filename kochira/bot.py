@@ -51,6 +51,9 @@ class ServiceConfigLoader(collections.Mapping):
 
 
 def _config_class_factory(bot):
+    service_config_loader = functools.partial(ServiceConfigLoader, bot)
+    service_config_loader.get_default = lambda: {}
+
     class Config(config.Config):
         class Network(config.Config):
             autoconnect = config.Field(doc="Whether or not to autoconnect to this network.", default=True)
@@ -75,8 +78,14 @@ def _config_class_factory(bot):
                 username = config.Field(doc="SASL username.", default=None)
                 password = config.Field(doc="SASL password.", default=None)
 
+            class Channel(config.Config):
+                service_overrides = config.Field(doc="Mapping of per-channel service settings.", type=service_config_loader)
+
             tls = config.Field(doc="TLS settings.", type=TLS, default=TLS())
             sasl = config.Field(doc="SASL settings.", type=SASL, default=SASL())
+
+            channels = config.Field(doc="Mapping of channel settings.", type=config.Mapping(Channel))
+            service_overrides = config.Field(doc="Mapping of per-network service settings.", type=service_config_loader)
 
         class Core(config.Config):
             database = config.Field(doc="Database file to use", default="kochira.db")
@@ -86,7 +95,7 @@ def _config_class_factory(bot):
 
         core = config.Field(doc="Core configuration settings.", type=Core)
         networks = config.Field(doc="Networks to connect to.", type=config.Mapping(Network))
-        services = config.Field(doc="Services to load. Please refer to service documentation for setting this.", type=functools.partial(ServiceConfigLoader, bot))
+        services = config.Field(doc="Services to load. Please refer to service documentation for setting this.", type=service_config_loader)
 
     return Config
 
