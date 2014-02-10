@@ -18,21 +18,10 @@ gb_dic = enchant.Dict("en_GB")
 service = Service(__name__, __doc__)
 
 
-def word_similarity(w1, w2, sim=wordnet.path_similarity):
-    synsets1 = wordnet.synsets(w1)
-    synsets2 = wordnet.synsets(w2)
-    sim_scores = []
+MAX_DISSIMILARITY = 1
 
-    for synset1 in synsets1:
-        for synset2 in synsets2:
-            score = sim(synset1, synset2)
-            if score is not None:
-                sim_scores.append(score)
-
-    if len(sim_scores) == 0:
-        return 0
-    else:
-        return max(sim_scores)
+def dissimilarity(gb, us):
+    return len(set(wordnet.synsets(gb)) ^ set(wordnet.synsets(us)))
 
 
 def compute_replacements(message):
@@ -46,7 +35,7 @@ def compute_replacements(message):
             not (us_dic.check(word) or any(word.lower() == s.lower() for s in us_dic.suggest(word))):
             suggestions = [s for s in us_dic.suggest(word)
                            if s.lower() != word.lower() and
-                              word_similarity(word, s) == 1.0]
+                              dissimilarity(word, s) <= MAX_DISSIMILARITY]
 
             if suggestions:
                 replacements[word] = suggestions[0]
