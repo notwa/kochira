@@ -99,16 +99,78 @@ sepples = partial(run_generator,
                            )
                   )
 
+csharp = partial(run_generator,
+               PickFrom(1, [
+                    "UI",
+                    "SqlFacet",
+                    "SqlContext",
+                    "COM",
+                    "COM",
+                    "Native",
+                    "Invalid",
+                    "Linq",
+                    "Xml",
+                    "Http",
+                    "Buffered",
+                    "ByteArray",
+                    "AppDomain",
+                    "Application",
+                    "Context",
+                    "TextField",
+                    "Activity",
+                    "Buffered",
+                    "Component",
+                    "Collection",
+                    "Net"
+               ]),
+               PickFrom(RandomInt(3, 5), [
+                    "Request",
+                    "Delegate",
+                    "Enumeration",
+                    "Prototype",
+                    "Runtime",
+                    "Transaction",
+                    "Thread",
+                    "Action",
+                    ""
+               ]),
+               PickFrom(1, [
+                    "",
+                    "Fallback",
+                    "Buffer",
+                    "Proxy",
+                    "Exception",
+                    "Provider",
+                    "Listener",
+                    "Event",
+                    "Handler"
+               ]),
+               PickFrom(1, [
+                "",
+                "",
+                "",
+                "32"
+               ])
+               )
+
+
+bind_generator("c#", csharp,
+"""
+C# programmer simulator.
+
+Generates a typical C# class name.
+""")
+
 bind_generator("java", java,
 """
 Java programmer simulator.
 
-Generates a valid Java class name.
+Generates a typical Java class name.
 """)
 
 bind_generator("c++", sepples,
 """
 C++ programmer simulator.
 
-Generates valid C++ code.
+Generates typical C++ code.
 """)
