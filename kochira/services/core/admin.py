@@ -16,7 +16,6 @@ from kochira.service import Service
 service = Service(__name__, __doc__)
 
 
-@classmethod
 def grant_permission(network, hostmask, permission, channel=None):
     """
     Grant a permission to a hostmask.
@@ -33,7 +32,6 @@ def grant_permission(network, hostmask, permission, channel=None):
     return True
 
 
-@classmethod
 def revoke_permission(network, hostmask, permission, channel=None):
     """
     Revoke a permission from a hostmask.
