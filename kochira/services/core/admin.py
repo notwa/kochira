@@ -62,6 +62,7 @@ def grant(client, target, origin, permission, hostmask, channel=None):
         client.message(target, "{origin}: Permission already exists.".format(
             origin=origin
         ))
+        return
 
     if channel is not None:
         message = "{origin}: Granted permission \"{permission}\" to {hostmask} on channel {channel} for network \"{network}\".".format(
@@ -100,6 +101,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
         client.message(target, "{origin}: Couldn't find any matching hostmasks.".format(
             origin=origin
         ))
+        return
 
     if permission is None:
         message_part = "all permissions"
