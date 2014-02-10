@@ -50,7 +50,7 @@ def setup_eval_locals(bot):
     storage.eval_locals = {}
 
 
-@service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?$", mention=True)
+@service.command(r"grant (?P<permission>\S+) to (?P<hostmask>\S+)(?: on (?P<channel>\S+))?$", mention=True)
 @requires_permission("admin")
 def grant(client, target, origin, permission, hostmask, channel=None):
     """
@@ -84,7 +84,7 @@ def grant(client, target, origin, permission, hostmask, channel=None):
     client.message(target, message)
 
 
-@service.command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on channel (?P<channel>\S+))?$", mention=True)
+@service.command(r"revoke (?P<permission>\S+) from (?P<hostmask>\S+)(?: on (?P<channel>\S+))?$", mention=True)
 @requires_permission("admin")
 def revoke(client, target, origin, permission, hostmask, channel=None):
     """
@@ -127,7 +127,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
     client.message(target, message)
 
 
-@service.command(r"(?:list )?authorized users(?: with (?P<permission>\S+))(?: on channel (?P<channel>\S+))?", mention=True)
+@service.command(r"(?:list )?authorized users(?: with (?P<permission>\S+))?(?: on (?P<channel>\S+))?", mention=True)
 @requires_permission("admin")
 def list_authorized(client, target, origin, permission=None, channel=None):
     """
