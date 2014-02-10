@@ -59,7 +59,7 @@ def grant(client, target, origin, permission, hostmask, channel=None):
     """
 
     if not grant_permission(client.network, hostmask, permission, channel):
-        client.message("{origin}: Permission already exists.".format(
+        client.message(target, "{origin}: Permission already exists.".format(
             origin=origin
         ))
 
@@ -97,7 +97,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
         permission = None
 
     if not revoke_permission(client.network, hostmask, permission, channel):
-        client.message("{origin}: Couldn't find any matching hostmasks.".format(
+        client.message(target, "{origin}: Couldn't find any matching hostmasks.".format(
             origin=origin
         ))
 
