@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Config(config.Config):
-    autoload = config.Field(doc="Autoload this service?", default=False)
+    autoload = config.Field(doc="Autoload this service?", default=True)
     enabled = config.Field(doc="Enable this service?", default=True)
 
 

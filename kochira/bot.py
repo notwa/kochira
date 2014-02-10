@@ -82,6 +82,8 @@ def _config_class_factory(bot):
                 password = config.Field(doc="SASL password.", default=None)
 
             class Channel(config.Config):
+                autojoin = config.Field(doc="Whether or not to autojoin to the channel.", default=True)
+                password = config.Field(doc="Password for the channel, if any.", default=None)
                 services = config.Field(doc="Mapping of per-channel service settings.", type=service_config_loader)
 
             tls = config.Field(doc="TLS settings.", type=TLS, default=TLS())

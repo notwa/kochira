@@ -30,6 +30,10 @@ class Client(_Client):
     def on_connect(self):
         logger.info("Connected to IRC network: %s", self.network)
         super().on_connect()
+
+        for name, channel in self.bot.config.networks[self.network].channels.items():
+            self.join(name, password=channel.password)
+
         self._run_hooks("connect", None)
 
     def _autotruncate(self, command, target, message, suffix="..."):
