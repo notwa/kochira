@@ -108,7 +108,7 @@ class Bot:
         self._connect_to_db()
 
     def run(self):
-        self.executor = ThreadPoolExecutor(self.config.max_workers or multiprocessing.cpu_count())
+        self.executor = ThreadPoolExecutor(self.config.core.max_workers or multiprocessing.cpu_count())
         self.scheduler = Scheduler(self)
         self.scheduler.start()
 
