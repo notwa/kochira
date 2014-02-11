@@ -31,8 +31,7 @@ class Config(Config):
                           default="master")
     post_receive_key = config.Field(doc="Enable the post-receive hook if set. This is the ``key=<key>`` query argument.",
                                     default=None)
-    announce = config.Field(doc="Channels to announce updates on.",
-                            type=config.Many(Channel))
+    announce = config.Field(doc="Whether or not to announce. Set this on a per-channel basis.", default=False)
 
 
 class UpdateError(Exception):
@@ -117,12 +116,16 @@ class PostReceiveHandler(RequestHandler):
                 raise future.exception()
             self.finish()
 
-            for announce in config.announce:
-                for line in get_log(head, "HEAD"):
-                    self.application.bot.networks[announce.network].message(
-                        announce.channel,
-                        "Update! {}".format(line)
-                    )
+            for network, client in self.application.bot.networks.items():
+                for channel in client.channels:
+                    config = service.config_for(self.application.bot,
+                                                network, channel)
+
+                    if not config.announce:
+                        continue
+
+                    for line in get_log(head, "HEAD"):
+                        client.message(channel, "Update! {}".format(line))
 
         head = rev_parse("HEAD")
 

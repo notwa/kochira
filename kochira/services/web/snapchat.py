@@ -28,8 +28,7 @@ class Config(Config):
     username = config.Field(doc="The username to use when connecting.")
     password = config.Field(doc="The password to use when connecting.")
     imgur_clientid = config.Field(doc="Client ID for use with Imgur.")
-    announce = config.Field(doc="Channels to announce updates on.",
-                            type=config.Many(Channel))
+    announce = config.Field(doc="Whether or not to announce. Set this on a per-channel basis.", default=False)
 
 
 GIF_FRAMERATE = 7
@@ -102,15 +101,21 @@ def poll_for_updates(bot):
         else:
             link = "(could not convert video)"
 
-        for announce in config.announce:
-            bot.networks[announce.network].message(
-                announce.channel,
-                "New snap from {sender}! {link} ({dt})".format(
-                    sender=sender,
-                    link=link,
-                    dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"] / 1000.0))
+        for network, client in bot.networks.items():
+            for channel in client.channels:
+                config = service.config_for(bot, network, channel)
+
+                if not config.announce:
+                    continue
+
+                client.message(
+                    channel,
+                    "New snap from {sender}! {link} ({dt})".format(
+                        sender=sender,
+                        link=link,
+                        dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"] / 1000.0))
+                    )
                 )
-            )
 
         storage.snapchat.mark_viewed(snap["id"])
 
