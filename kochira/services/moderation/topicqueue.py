@@ -24,7 +24,13 @@ class Config(Config):
 def topic(client, target, origin, topic):
     config = service.config_for(client.bot, client.network, target)
 
-    parts = (client.channels[target].get("topic") or "").split(config.topic_separator)
+    parts = client.channels[target].get("topic")
+
+    if parts:
+        parts = parts.split(config.topic_separator)
+    else:
+        parts = []
+
     parts.insert(0, topic)
 
     while len(config.topic_separator.join(parts)) > TOPIC_LENGTH_LIMIT:
