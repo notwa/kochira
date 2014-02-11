@@ -28,7 +28,8 @@ class Config(Config):
     username = config.Field(doc="The username to use when connecting.")
     password = config.Field(doc="The password to use when connecting.")
     imgur_clientid = config.Field(doc="Client ID for use with Imgur.")
-    announce = config.Field(doc="Whether or not to announce. Set this on a per-channel basis.", default=False)
+    announce = config.Field(doc="Whether or not to announce. Set this on a per-channel basis.",
+                            default=False)
 
 
 GIF_FRAMERATE = 7
