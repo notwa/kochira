@@ -45,6 +45,11 @@ class ServiceConfigLoader(collections.Mapping):
     def __getitem__(self, name):
         config_factory = self._config_factory_for(name)
 
+        # if we can't find the service name immediately, try removing its name
+        # from the list
+        if name.startswith(services.__name__) and name not in self.configs:
+            name = name[len(services.__name__):]
+
         if name not in self._cache or \
             not isinstance(self._cache[name], config_factory):
             self._cache[name] = config_factory(self.configs[name])
