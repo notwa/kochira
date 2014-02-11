@@ -170,12 +170,11 @@ def load_service(client, target, origin, r, service_name):
     be reloaded.
     """
 
+    if service_name[0] == ".":
+        service_name = service.SERVICES_PACKAGE + service_name
+
     try:
-        try:
-            client.bot.load_service(service_name, r is not None)
-        except ImportError:
-            service_name = service.SERVICES_PACKAGE + '.' + service_name
-            client.bot.load_service(service_name, r is not None)
+        client.bot.load_service(service_name, r is not None)
     except Exception as e:
         client.message(target, "Sorry, couldn't load the service \"{name}\".".format(
             name=service_name
@@ -203,8 +202,9 @@ def unload_service(client, target, origin, service_name):
     Unload a currently running service.
     """
 
-    if service_name not in client.bot.services:
-        service_name = service.SERVICES_PACKAGE + '.' + service_name
+    if service_name[0] == ".":
+        service_name = service.SERVICES_PACKAGE + service_name
+
     try:
         client.bot.unload_service(service_name)
     except Exception as e:
