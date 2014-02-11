@@ -1,0 +1,32 @@
+"""
+Topic queuing.
+
+Enables users to add text to the topic via a queue of items.
+"""
+
+from kochira import config
+from kochira.service import Service, Config, requires_permission
+
+from pydle.features.rfc1459.client import TOPIC_LENGTH_LIMIT
+
+
+service = Service(__name__, __doc__)
+
+@service.config
+class Config(Config):
+    topic_separator = config.Field(doc="Separator to use between topic items.", default=" | ")
+
+
+@service.command("add (?P<topic>.+) to topic", mention=True)
+@service.command(".topic (?P<topic>.+)")
+@requires_permission("topic")
+def topic(client, target, origin, topic):
+    config = service.config_for(client.bot, client.network, target)
+
+    parts = (client.channels[target].get("topic") or "").split(config.topic_separator)
+    parts.insert(0, topic)
+
+    while len(config.topic_separator.join(parts)) > TOPIC_LENGTH_LIMIT:
+        parts.pop()
+
+    client.topic(target, config.topic_separator.join(parts))
