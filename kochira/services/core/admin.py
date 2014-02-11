@@ -170,9 +170,6 @@ def load_service(client, target, origin, r, service_name):
     be reloaded.
     """
 
-    if service_name[0] == ".":
-        service_name = service.SERVICES_PACKAGE + service_name
-
     try:
         client.bot.load_service(service_name, r is not None)
     except Exception as e:
@@ -201,9 +198,6 @@ def unload_service(client, target, origin, service_name):
 
     Unload a currently running service.
     """
-
-    if service_name[0] == ".":
-        service_name = service.SERVICES_PACKAGE + service_name
 
     try:
         client.bot.unload_service(service_name)

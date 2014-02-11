@@ -184,6 +184,9 @@ class Bot:
         instance of ``kochira.service.Service`` and configured appropriately.
         """
 
+        if name[0] == ".":
+            name = Service.SERVICES_PACKAGE + name
+
         # ensure that the service's shutdown routine is run
         if name in self.services:
             service, _ = self.services[name]
@@ -219,6 +222,10 @@ class Bot:
         """
         Unload a service from the bot.
         """
+
+        if name[0] == ".":
+            name = Service.SERVICES_PACKAGE + name
+
         service, _ = self.services[name]
         self._shutdown_service(service)
         del self.services[name]

@@ -8,7 +8,7 @@ from kochira import config
 from kochira.auth import requires_permission
 from kochira.service import Service, Config
 
-from pydle.features.rfc1459.client import TOPIC_LENGTH_LIMIT
+from pydle.features.rfc1459.protocol import TOPIC_LENGTH_LIMIT
 
 
 service = Service(__name__, __doc__)
