@@ -213,7 +213,7 @@ class Client(_Client):
         self._run_hooks("private_notice", by, [by, message])
 
     def on_part(self, channel, user, message=None):
-        self._run_hooks("part", channel, [user, message])
+        self._run_hooks("part", channel, [channel, user, message])
 
     def on_topic_change(self, channel, message, by):
         self._run_hooks("topic_change", channel, [channel, message, by])
