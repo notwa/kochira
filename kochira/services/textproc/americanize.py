@@ -53,7 +53,7 @@ def compute_replacements(from_lang, to_lang, message):
     for word in process_words(blob.words):
         if (from_dic.check(word) or any(word.lower() == s.lower() for s in from_dic.suggest(word))) and \
             not (to_dic.check(word) or any(word.lower() == s.lower() for s in to_dic.suggest(word))):
-            suggestions = sorted([(dissimilarity(word, s), i, s) for i, s in enumerate(from_dic.suggest(word))
+            suggestions = sorted([(dissimilarity(word, s), i, s) for i, s in enumerate(to_dic.suggest(word))
                                   if s.lower() != word.lower()])
             if suggestions:
                 score, _, replacement = suggestions[0]
