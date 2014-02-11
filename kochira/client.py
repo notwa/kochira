@@ -1,9 +1,12 @@
 import logging
 from collections import deque
+from datetime import timedelta
 import textwrap
 
 from pydle import Client as _Client
 from pydle.features.rfc1459.protocol import MESSAGE_LENGTH_LIMIT
+
+from zmq.eventloop import ioloop
 
 from .service import Service
 
@@ -11,8 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class Client(_Client):
+    RECONNECT_BACKOFF = [0, 5, 10, 20, 40, 80, 120]
+
     def __init__(self, bot, network, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self._reconnect_timeout = None
+        self._fd = None
 
         self.backlogs = {}
         self.bot = bot
@@ -20,12 +28,88 @@ class Client(_Client):
         # set network name to whatever we have in our config
         self.network = network
 
+    @classmethod
+    def from_config(cls, bot, network_name, config):
+        client = cls(bot, network_name, config.nickname,
+            username=config.username,
+            realname=config.realname,
+            tls_client_cert=config.tls.certificate_file,
+            tls_client_cert_key=config.tls.certificate_keyfile,
+            tls_client_cert_password=config.tls.certificate_password,
+            sasl_username=config.sasl.username,
+            sasl_password=config.sasl.password
+        )
+
+        client.connect(
+            hostname=config.hostname,
+            password=config.password,
+            source_address=(config.source_address, 0),
+            port=config.port,
+            tls=config.tls.enabled,
+            tls_verify=config.tls.verify
+        )
+
+        return client
+
+    def _handle_next_message(self, fd, events):
+        if self.connection.socket is None or not self.connection.receive_data():
+            # connection was closed
+            logging.warn("Lost connection: %s", self.network)
+            self.on_disconnect(False)
+            return
+
+        if self.connection.parse_data():
+            while len(self.connection.message_queue) > 0:
+                self.on_raw(self.connection.get_message())
+
+    def connect(self, *args, reconnect=False, attempt=0, **kwargs):
+        logger.info("Connecting: %s", self.network)
+
+        try:
+            super().connect(*args, reconnect=reconnect, **kwargs)
+
+        except Exception as e:
+            backoff = Client.RECONNECT_BACKOFF[min(
+                attempt,
+                len(Client.RECONNECT_BACKOFF) - 1
+            )]
+
+            logger.warning("Couldn't connect: %s, reattempting in %d seconds: %s",
+                            self.network, backoff, e)
+
+            self._reconnect_timeout = self.bot.io_loop.add_timeout(
+                timedelta(seconds=backoff),
+                lambda: self.connect(*args, reconnect=reconnect,
+                                     attempt=attempt + 1, **kwargs)
+            )
+        else:
+            self.fd = self.connection.socket.fileno()
+            self.bot.io_loop.add_handler(self.fd, self._handle_next_message,
+                                         ioloop.IOLoop.READ)
+
+    def on_disconnect(self, expected):
+        # XXX: hilariously janky, need to fix this
+        network = self.network
+        self._reset_attributes()
+        self.network = network
+
+        if self._reconnect_timeout is not None:
+            self.bot.io_loop.remove_timeout(self._reconnect_timeout)
+            self._reconnect_timeout = None
+
+        self.bot.io_loop.remove_handler(self.fd)
+        self.fd = None
+
+        self._run_hooks("disconnect", None, [expected])
+
+        if not expected:
+            self.connect(reconnect=True)
+
     def _send_message(self, message):
         self.bot.defer_from_thread(super()._send_message, message)
 
-    def on_ctcp_version(self, by, target, message):
-        self.ctcp_reply(by, "VERSION",
-                        self.bot.config.core.version)
+    def on_ctcp_version(self, by, what, contents):
+        self.ctcp_reply(by, "VERSION", self.bot.config.core.version)
 
     def on_connect(self):
         logger.info("Connected to IRC network: %s", self.network)
@@ -38,7 +122,7 @@ class Client(_Client):
 
     def _autotruncate(self, command, target, message, suffix="..."):
         hostmask = self._format_hostmask(self.nickname)
-        chunklen = MESSAGE_LENGTH_LIMIT - len('{hostmask} {command} {target} :'.format(
+        chunklen = MESSAGE_LENGTH_LIMIT - len("{hostmask} {command} {target} :".format(
             hostmask=hostmask,
             command=command,
             target=target
@@ -137,8 +221,8 @@ class Client(_Client):
     def on_quit(self, user, message=None):
         self._run_hooks("quit", user, [user, message])
 
-    def on_ctcp(self, target, what, contents):
-        self._run_hooks("ctcp", target, [target, what, contents])
+    def on_ctcp(self, by, what, contents):
+        self._run_hooks("ctcp", by, [by, what, contents])
 
-    def on_ctcp_action(self, target, what, contents):
-        self._run_hooks("ctcp_action", target, [target, what, contents])
+    def on_ctcp_action(self, by, what, contents):
+        self._run_hooks("ctcp_action", by, [by, what, contents])

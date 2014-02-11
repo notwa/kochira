@@ -10,7 +10,8 @@ import multiprocessing
 from peewee import SqliteDatabase
 import signal
 import yaml
-from zmq.eventloop import ioloop
+
+from tornado import ioloop
 
 from . import config
 from .auth import ACLEntry
@@ -132,49 +133,19 @@ class Bot:
         self._connect_to_irc()
 
     def connect(self, network_name):
-        config = self.config.networks[network_name]
-
-        client = Client(self, network_name, config.nickname,
-            username=config.username,
-            realname=config.realname,
-            tls_client_cert=config.tls.certificate_file,
-            tls_client_cert_key=config.tls.certificate_keyfile,
-            tls_client_cert_password=config.tls.certificate_password,
-            sasl_username=config.sasl.username,
-            sasl_password=config.sasl.password
-        )
-
-        client.connect(
-            hostname=config.hostname,
-            password=config.password,
-            source_address=(config.source_address, 0),
-            port=config.port,
-            tls=config.tls.enabled,
-            tls_verify=config.tls.verify
-        )
-
+        client = Client.from_config(self, network_name,
+                                    self.config.networks[network_name])
         self.networks[network_name] = client
-
-        def handle_next_message(fd=None, events=None):
-            if client._has_message():
-                client.poll_single()
-                self.io_loop.add_callback(handle_next_message)
-
-        self.io_loop.add_handler(client.connection.socket.fileno(),
-                                 handle_next_message,
-                                 ioloop.IOLoop.READ)
-
         return client
 
     def disconnect(self, network_name):
         client = self.networks[network_name]
-        fileno = client.connection.socket.fileno()
-        self.io_loop.remove_handler(fileno)
 
-        try:
-            client.quit()
-        finally:
-            del self.networks[network_name]
+        # schedule this for the next iteration of the ioloop so we can handle
+        # pending messages
+        self.io_loop.add_callback(client.quit)
+
+        del self.networks[network_name]
 
     def _connect_to_db(self):
         db_name = self.config.core.database

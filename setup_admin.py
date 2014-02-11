@@ -1,5 +1,5 @@
 from kochira import Bot
-from kochira.auth import ACLEntry
+from kochira.services.core.admin import grant_permission
 
 bot = Bot()
 
@@ -13,4 +13,4 @@ hostmask = None
 while not hostmask:
     hostmask = input("Hostmask: ")
 
-ACLEntry.grant(network, hostmask, "admin")
+grant_permission(network, hostmask, "admin")
