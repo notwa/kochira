@@ -5,7 +5,8 @@ Enables users to add text to the topic via a queue of items.
 """
 
 from kochira import config
-from kochira.service import Service, Config, requires_permission
+from kochira.auth import requires_permission
+from kochira.service import Service, Config
 
 from pydle.features.rfc1459.client import TOPIC_LENGTH_LIMIT
 
