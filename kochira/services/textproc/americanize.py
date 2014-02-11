@@ -43,16 +43,18 @@ def process_words(words):
         yield from str(word).split("-")
 
 
-def compute_replacements(from_dic, to_dic, message):
+def compute_replacements(from_lang, to_lang, message):
+    from_dic = enchant.Dict(from_lang)
+    to_dic = enchant.Dict(to_lang)
+
     blob = TextBlob(message)
     replacements = {}
 
     for word in process_words(blob.words):
-        if (to_dic.check(word) or any(word.lower() == s.lower() for s in to_dic.suggest(word))) and \
-            not (from_dic.check(word) or any(word.lower() == s.lower() for s in from_dic.suggest(word))):
+        if (from_dic.check(word) or any(word.lower() == s.lower() for s in from_dic.suggest(word))) and \
+            not (to_dic.check(word) or any(word.lower() == s.lower() for s in to_dic.suggest(word))):
             suggestions = sorted([(dissimilarity(word, s), i, s) for i, s in enumerate(from_dic.suggest(word))
                                   if s.lower() != word.lower()])
-
             if suggestions:
                 score, _, replacement = suggestions[0]
                 if score <= DISSIMILARITY_THRESHOLD:
@@ -64,12 +66,9 @@ def compute_replacements(from_dic, to_dic, message):
 @service.hook("channel_message")
 @background
 def murrika(client, target, origin, message):
-    config = service.config_for(client.bot)
+    config = service.config_for(client.bot, client.network, target)
 
-    from_dic = enchant.Dict(config.from_lang)
-    to_dic = enchant.Dict(config.to_lang)
-
-    replacements = compute_replacements(from_dic, to_dic, message)
+    replacements = compute_replacements(config.from_lang, config.to_lang, message)
 
     if not replacements:
         return
