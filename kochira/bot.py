@@ -21,6 +21,9 @@ from .scheduler import Scheduler
 from .util import Expando
 from .service import Service, Config as ServiceConfig
 
+from kochira import services
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -184,9 +187,6 @@ class Bot:
         instance of ``kochira.service.Service`` and configured appropriately.
         """
 
-        if name[0] == ".":
-            name = Service.SERVICES_PACKAGE + name
-
         # ensure that the service's shutdown routine is run
         if name in self.services:
             service, _ = self.services[name]
@@ -198,7 +198,7 @@ class Bot:
         storage = Expando()
 
         try:
-            module = importlib.import_module(name)
+            module = importlib.import_module(name, package=services.__name__)
 
             if reload:
                 module = imp.reload(module)
@@ -222,9 +222,6 @@ class Bot:
         """
         Unload a service from the bot.
         """
-
-        if name[0] == ".":
-            name = Service.SERVICES_PACKAGE + name
 
         service, _ = self.services[name]
         self._shutdown_service(service)

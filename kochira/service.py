@@ -17,7 +17,6 @@ class Service:
     """
     A service provides the bot with additional facilities.
     """
-    SERVICES_PACKAGE = 'kochira.services'
 
     EAT = object()
 
