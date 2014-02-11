@@ -12,6 +12,8 @@ from peewee import CharField, TextField, DateTimeField
 from kochira.db import Model
 from kochira.service import Service
 
+from pydle.features.rfc1459.parsing import normalize
+
 service = Service(__name__, __doc__)
 
 
@@ -22,77 +24,90 @@ class Seen(Model):
     ts = DateTimeField()
     event = CharField(255)
     message = TextField(null=True)
+    target = TextField(null=True)
 
     class Meta:
         indexes = (
             (("who", "network"), True),
         )
 
-    def _format_join(self):
-        return "joining {}".format(self.channel)
+    def _format_join(self, show_channel):
+        return "joining {}".format(self.channel if show_channel else "somewhere")
 
-    def _format_kill(self):
-        msg = "killing {}".format(self.channel)
+    def _format_kill(self, show_channel):
+        msg = "killing {}".format(self.target)
         if self.message is not None:
             msg += " ({})".format(self.message)
         return msg
 
-    def _format_killed(self):
-        msg = "being killed by {}".format(self.channel)
+    def _format_killed(self, show_channel):
+        msg = "being killed by {}".format(self.target)
         if self.message is not None:
             msg += " ({})".format(self.message)
         return msg
 
-    def _format_kick(self):
-        msg = "kicking {}".format(self.channel)
-        if self.message is not None:
+    def _format_kick(self, show_channel):
+        msg = "kicking {} from {}".format(self.target, self.channel if show_channel else "somewhere")
+        if show_channel and self.message is not None:
             msg += " ({})".format(self.message)
         return msg
 
-    def _format_kicked(self):
-        msg = "being kicked by {}".format(self.channel)
-        if self.message is not None:
+    def _format_kicked(self, show_channel):
+        msg = "being kicked by {} from {}".format(self.target, self.channel if show_channel else "somewhere")
+        if show_channel and self.message is not None:
             msg += " ({})".format(self.message)
         return msg
 
-    def _format_mode_change(self):
-        return "setting modes {} on {}".format(self.message, self.channel)
+    def _format_mode_change(self, show_channel):
+        if not show_channel:
+            return "setting modes"
+        else:
+            return "setting modes {} on {}".format(self.message, self.channel)
 
-    def _format_channel_message(self):
-        return "messaging {} with \"{}\"".format(self.channel, self.message)
+    def _format_channel_message(self, show_channel):
+        if not show_channel:
+            return "messaging somewhere"
+        else:
+            return "messaging {} with \"{}\"".format(self.channel, self.message)
 
-    def _format_nick_change(self):
+    def _format_nick_change(self, show_channel):
         return "changing their nickname to {}".format(self.message)
 
-    def _format_nick_changed(self):
+    def _format_nick_changed(self, show_channel):
         return "changing their nickname from {}".format(self.message)
 
-    def _format_channel_notice(self):
-        return "noticing {} with \"{}\"".format(self.channel, self.message)
+    def _format_channel_notice(self, show_channel):
+        if not show_channel:
+            return "noticing somewhere"
+        else:
+            return "noticing {} with \"{}\"".format(self.channel, self.message)
 
-    def _format_part(self):
-        msg = "parting {}".format(self.channel)
-        if self.message is not None:
+    def _format_part(self, show_channel):
+        msg = "parting {}".format(self.channel if show_channel else "somewhere")
+        if show_channel and self.message is not None:
             msg += " ({})".format(self.message)
         return msg
 
-    def _format_topic_change(self):
-        return "changing the topic for {}".format(self.channel)
+    def _format_topic_change(self, show_channel):
+        if not show_channel:
+            return "changing the topic"
+        else:
+            return "changing the topic for {}".format(self.channel)
 
-    def _format_quit(self):
+    def _format_quit(self, show_channel):
         msg = "quitting"
         if self.message is not None:
             msg += " ({})".format(self.message)
         return msg
 
-    def _format_ctcp_action(self):
+    def _format_ctcp_action(self, show_channel):
         return "actioning {} with \"{}\"".format(self.channel, self.message)
 
-    def _format_unknown(self):
+    def _format_unknown(self, show_channel):
         return "doing something"
 
-    def format(self):
-        return getattr(self, "_format_" + self.event, self._format_unknown)()
+    def format(self, show_channel):
+        return getattr(self, "_format_" + self.event, self._format_unknown)(show_channel)
 
 
 @service.setup
@@ -100,20 +115,24 @@ def initialize_models(bot):
     Seen.create_table(True)
 
 
-def update_seen(client, event, who, channel=None, message=None):
+def update_seen(client, event, who, channel=None, message=None, target=None):
     now = datetime.utcnow()
+    who = normalize(who, case_mapping=client._case_mapping)
 
     try:
-        seen = Seen.get(Seen.who == who, Seen.network == client.network)
+        seen = Seen.get(Seen.who == who,
+                        Seen.network == client.network)
     except Seen.DoesNotExist:
-        seen = Seen.create(who=who, channel=channel, network=client.network,
+        seen = Seen.create(who=who, channel=channel,
+                           network=client.network,
                            ts=now, event=event,
-                           message=message)
+                           message=message, target=target)
     else:
         seen.ts = now
         seen.channel = channel
         seen.event = event
         seen.message = message
+        seen.target = target
 
     seen.save()
 
@@ -125,14 +144,14 @@ def on_join(client, target, origin):
 
 @service.hook("kill", priority=5000)
 def on_kill(client, target, by, message=None):
-    update_seen(client, "kill", by)
-    update_seen(client, "killed", target)
+    update_seen(client, "kill", target=target)
+    update_seen(client, "killed", target=by)
 
 
 @service.hook("kick", priority=5000)
 def on_kick(client, channel, target, by, message=None):
-    update_seen(client, "kick", by, channel, message)
-    update_seen(client, "kicked", target, channel, message)
+    update_seen(client, "kick", by, channel, message, target=target)
+    update_seen(client, "kicked", target, channel, message, target=by)
 
 
 @service.hook("mode_change", priority=5000)
@@ -147,8 +166,8 @@ def on_channel_message(client, target, origin, message):
 
 @service.hook("nick_change", priority=5000)
 def on_nick_change(client, old, new):
-    update_seen(client, "nick_change", old, None, new)
-    update_seen(client, "nick_changed", old, None, new)
+    update_seen(client, "nick_change", old, None, target=new)
+    update_seen(client, "nick_changed", new, None, target=old)
 
 
 @service.hook("channel_notice", priority=5000)
@@ -179,17 +198,30 @@ def on_ctcp_action(client, origin, target, message):
 @service.command(r".seen (?P<who>\S+)")
 @service.command(r"when did you last see (?P<who>\S+)\??", mention=True)
 def seen(client, target, origin, who):
+    who_n = normalize(who, case_mapping=client._case_mapping)
+
+    if who_n in [normalize(u, case_mapping=client._case_mapping)
+                 for u in client.channels[target].get("users", [])]:
+        client.message(target, "{origin}: {who} is right there!".format(
+            origin=origin,
+            who=who
+        ))
+        return
+
     try:
-        seen = Seen.get(Seen.who == who, Seen.network == client.network)
+        seen = Seen.get(Seen.who == who_n, Seen.network == client.network)
     except Seen.DoesNotExist:
         client.message(target, "{origin}: I have never seen {who}.".format(
             origin=origin,
             who=who
         ))
     else:
+        show_channel = seen.channel == target or \
+            not "s" in client.channels.get(target, {}).get("modes", {"s": True})
+
         client.message(target, "{origin}: I last saw {who} {what} {when}.".format(
             origin=origin,
-            who=seen.who,
-            what=seen.format(),
+            who=who,
+            what=seen.format(show_channel),
             when=humanize.naturaltime(datetime.utcnow() - seen.ts)
         ))
