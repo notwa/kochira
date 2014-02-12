@@ -6,11 +6,11 @@
 {% raw motd %}
 
 <h2>Networks</h2>
-<p>This instance of Kochira is connected to the following networks:</p>
+<p>I am connected to the following networks:</p>
 <ul>
-{% for network, client in networks %}
+{% for _, client in networks %}
     <li>
-        <strong>{{ network }} ({{ client.connection.hostname }}:{{ client.connection.port }})</strong> as <strong>{{ client.nickname }}</strong>
+        <strong>{{ client.network }} ({{ client.connection.hostname }}:{{ client.connection.port }})</strong> as <strong>{{ client.nickname }}</strong>
         <ul>
         {% for channel, details in client.channels.items() %}
             {% if not details["modes"].get("s") %}
