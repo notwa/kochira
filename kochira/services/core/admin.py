@@ -22,7 +22,7 @@ def setup_eval_locals(bot):
     storage.eval_locals = {}
 
 
-@service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True)
+@service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True, priority=3000)
 @requires_permission("admin")
 def load_service(client, target, origin, r, service_name):
     """
@@ -52,7 +52,7 @@ def load_service(client, target, origin, r, service_name):
     client.message(target, message)
 
 
-@service.command(r"unload service (?P<service_name>\S+)$", mention=True)
+@service.command(r"unload service (?P<service_name>\S+)$", mention=True, priority=3000)
 @requires_permission("admin")
 def unload_service(client, target, origin, service_name):
     """
@@ -76,7 +76,7 @@ def unload_service(client, target, origin, service_name):
     client.message(target, "Unloaded service \"{name}\".".format(name=service_name))
 
 
-@service.command(r"what services are(?: you)? running\??$", mention=True)
+@service.command(r"what services are(?: you)? running\??$", mention=True, priority=3000)
 @service.command(r"(?:list )?services$", mention=True)
 @requires_permission("admin")
 def list_services(client, target, origin):
@@ -91,7 +91,7 @@ def list_services(client, target, origin):
     )
 
 
-@service.command(r"reload(?: all)? services$", mention=True)
+@service.command(r"reload(?: all)? services$", mention=True, priority=3000)
 @requires_permission("admin")
 def reload_services(client, target, origin):
     failed_services = []
@@ -110,8 +110,8 @@ def reload_services(client, target, origin):
         client.message(target, "All services reloaded!")
 
 
-@service.command(r">>> (?P<code>.+)$")
-@service.command(r"eval (?P<code>.+)$", mention=True)
+@service.command(r">>> (?P<code>.+)$", priority=3000)
+@service.command(r"eval (?P<code>.+)$", mention=True, priority=3000)
 @requires_permission("admin")
 def eval_code(client, target, origin, code):
     """
@@ -147,7 +147,7 @@ def eval_code(client, target, origin, code):
         client.message(target, "(no result)")
 
 
-@service.command(r"rehash$", mention=True)
+@service.command(r"rehash$", mention=True, priority=3000)
 @requires_permission("admin")
 def rehash(client, target, origin):
     """
@@ -169,7 +169,7 @@ def rehash(client, target, origin):
     client.message(target, "Configuration rehashed.")
 
 
-@service.command(r"re(?:start|boot)$", mention=True)
+@service.command(r"re(?:start|boot)$", mention=True, priority=3000)
 @requires_permission("admin")
 def restart(client, target, origin):
     """
