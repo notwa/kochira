@@ -32,32 +32,32 @@ class Seen(Model):
         )
 
     def _format_join(self, show_channel):
-        return "joining {}".format(self.channel if show_channel else "somewhere")
+        return "joining {}".format(self.channel if show_channel else "a channel")
 
     def _format_kill(self, show_channel):
-        msg = "killing {}".format(self.target)
+        msg = "killing {} from the network".format(self.target)
         if self.message is not None:
-            msg += " ({})".format(self.message)
+            msg += " with reason \"{}\"".format(self.message)
         return msg
 
     def _format_killed(self, show_channel):
-        msg = "being killed by {}".format(self.target)
+        msg = "being killed from the network by {}".format(self.target)
         if self.message is not None:
-            msg += " ({})".format(self.message)
+            msg += " with reason \"{})\"".format(self.message)
         return msg
 
     def _format_kick(self, show_channel):
         msg = "kicking {} from {}".format(self.target if show_channel else "someone",
-                                          self.channel if show_channel else "somewhere")
+                                          self.channel if show_channel else "a channel")
         if show_channel and self.message is not None:
-            msg += " ({})".format(self.message)
+            msg += " with reason \"{}\"".format(self.message)
         return msg
 
     def _format_kicked(self, show_channel):
         msg = "being kicked by {} from {}".format(self.target if show_channel else "someone",
-                                                  self.channel if show_channel else "somewhere")
+                                                  self.channel if show_channel else "a channel")
         if show_channel and self.message is not None:
-            msg += " ({})".format(self.message)
+            msg += " with reason \"{}\"".format(self.message)
         return msg
 
     def _format_mode_change(self, show_channel):
@@ -68,9 +68,9 @@ class Seen(Model):
 
     def _format_channel_message(self, show_channel):
         if not show_channel:
-            return "messaging somewhere"
+            return "messaging a channel"
         else:
-            return "messaging {} with \"{}\"".format(self.channel, self.message)
+            return "telling {}: \"{}\"".format(self.channel, self.message)
 
     def _format_nick_change(self, show_channel):
         return "changing their nickname to {}".format(self.message)
@@ -80,33 +80,37 @@ class Seen(Model):
 
     def _format_channel_notice(self, show_channel):
         if not show_channel:
-            return "noticing somewhere"
+            return "noticing a channel"
         else:
-            return "noticing {} with \"{}\"".format(self.channel, self.message)
+            return "noticing {}: \"{}\"".format(self.channel, self.message)
 
     def _format_part(self, show_channel):
-        msg = "parting {}".format(self.channel if show_channel else "somewhere")
+        msg = "parting {}".format(self.channel if show_channel else "a channel")
         if show_channel and self.message is not None:
-            msg += " ({})".format(self.message)
+            msg += " with reason \"{}\"".format(self.message)
         return msg
 
     def _format_topic_change(self, show_channel):
         if not show_channel:
-            return "changing the topic"
+            return "changing a topic"
         else:
             return "changing the topic for {}".format(self.channel)
 
     def _format_quit(self, show_channel):
-        msg = "quitting"
+        msg = "quitting the network"
         if self.message is not None:
-            msg += " ({})".format(self.message)
+            msg += " with reason \"{}\"".format(self.message)
         return msg
 
     def _format_ctcp_action(self, show_channel):
-        return "actioning {} with \"{}\"".format(self.channel, self.message)
+        return "actioning {} with \"{}\"".format(self.channel if show_channel else "a channel",
+                                                 self.message)
 
     def _format_unknown(self, show_channel):
-        return "doing something"
+        if show_channel:
+            return "in {}".format(self.channel)
+        else:
+            return "on this network"
 
     def format(self, show_channel):
         return getattr(self, "_format_" + self.event, self._format_unknown)(show_channel)
