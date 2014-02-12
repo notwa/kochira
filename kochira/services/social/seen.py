@@ -198,8 +198,14 @@ def on_ctcp_action(client, origin, target, message):
 
 
 @service.command(r".seen (?P<who>\S+)")
+@service.command(r"have you seen (?P<who>\S+)\??", mention=True)
 @service.command(r"when did you last see (?P<who>\S+)\??", mention=True)
 def seen(client, target, origin, who):
+    """
+    Have you seen?
+
+    Check when a user was last seen.
+    """
     who_n = normalize(who, case_mapping=client._case_mapping)
 
     if who_n in [normalize(u, case_mapping=client._case_mapping)
