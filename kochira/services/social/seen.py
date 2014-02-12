@@ -70,7 +70,7 @@ class Seen(Model):
         if not show_channel:
             return "messaging a channel"
         else:
-            return "telling {}: \"{}\"".format(self.channel, self.message)
+            return "telling {} \"{}\"".format(self.channel, self.message)
 
     def _format_nick_change(self, show_channel):
         return "changing their nickname to {}".format(self.message)
@@ -82,7 +82,7 @@ class Seen(Model):
         if not show_channel:
             return "noticing a channel"
         else:
-            return "noticing {}: \"{}\"".format(self.channel, self.message)
+            return "noticing {} \"{}\"".format(self.channel, self.message)
 
     def _format_part(self, show_channel):
         msg = "parting {}".format(self.channel if show_channel else "a channel")
