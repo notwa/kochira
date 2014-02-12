@@ -20,7 +20,7 @@ def acl_for(client, target=None):
 def has_permission(client, hostmask, permission, target=None):
     for match_hostmask, permissions in acl_for(client, target).items():
         if fnmatch.fnmatch(hostmask, match_hostmask) and \
-            permission in permissions:
+            permission in permissions or "admin" in permissions:
             return True
     return False
 
