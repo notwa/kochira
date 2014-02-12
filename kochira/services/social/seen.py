@@ -43,7 +43,7 @@ class Seen(Model):
     def _format_killed(self, show_channel):
         msg = "being killed from the network by {}".format(self.target)
         if self.message is not None:
-            msg += " with reason \"{})\"".format(self.message)
+            msg += " with reason \"{}\"".format(self.message)
         return msg
 
     def _format_kick(self, show_channel):
