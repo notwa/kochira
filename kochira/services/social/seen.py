@@ -227,7 +227,7 @@ def seen(client, target, origin, who):
         show_channel = seen.channel == target or \
             not "s" in client.channels.get(seen.channel, {}).get("modes", {"s": True})
 
-        client.message(target, "{origin}: I last saw {who} {what} {when}.".format(
+        client.message(target, "{origin}: I last saw {who} {when}, {what}.".format(
             origin=origin,
             who=who,
             what=seen.format(show_channel),
