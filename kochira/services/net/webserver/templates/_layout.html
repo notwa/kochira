@@ -9,6 +9,7 @@
     <body>
         {% module NavBar() %}
         <div id="wrap">
+            {% block before_container %}{% end %}
             <div class="container">
                 {% block body %}{% end %}
             </div>

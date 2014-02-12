@@ -28,6 +28,10 @@ body {
   padding-right: 15px;
 }
 
+.quotes-container {
+  padding-top: 50px;
+}
+
 .service-list {
   column-gap: 30px;
   -webkit-column-gap: 30px;
@@ -47,6 +51,10 @@ body {
 
 .config-options p {
   display: inline;
+}
+
+.navbar-secondary {
+  top: 51px;
 }
 
 @media (min-width: 768px) {
