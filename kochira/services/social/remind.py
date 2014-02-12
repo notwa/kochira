@@ -39,6 +39,7 @@ class Reminder(Model):
     origin = CharField(255)
     who = CharField(255)
     channel = CharField(255)
+    # TODO: requires migration from network to client_name
     network = CharField(255)
     ts = DateTimeField()
     duration = IntegerField(null=True)
@@ -114,7 +115,7 @@ def add_timed_reminder(client, target, origin, who, duration, message):
 
     # persist reminder to the DB
     reminder = Reminder.create(who=who, channel=target, origin=origin,
-                               message=message, network=client.network,
+                               message=message, network=client.name,
                                ts=datetime.utcnow(),
                                duration=dt.total_seconds())
     reminder.save()
@@ -142,7 +143,7 @@ def add_reminder(client, target, origin, who, message):
         who = origin
 
     Reminder.create(who=who, channel=target, origin=origin, message=message,
-                    network=client.network, ts=datetime.utcnow(),
+                    network=client.name, ts=datetime.utcnow(),
                     duration=None).save()
 
     client.message(target, "{origin}: Okay, I'll let {who} know.".format(

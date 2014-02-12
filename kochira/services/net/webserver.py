@@ -79,7 +79,7 @@ class IndexHandler(RequestHandler):
 
         self.render("index.html",
                     motd=publish_parts(config.motd, writer_name="html", settings_overrides={"initial_header_level": 2})["fragment"],
-                    networks=sorted(self.application.bot.networks.items()))
+                    clients=sorted(self.application.bot.clients.items()))
 
 class NotFoundHandler(RequestHandler):
     def get(self):

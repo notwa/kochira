@@ -100,8 +100,8 @@ def _config_class_factory(bot):
             sasl = config.Field(doc="SASL settings.", type=SASL, default=SASL())
 
             channels = config.Field(doc="Mapping of channel settings.", type=config.Mapping(Channel))
-            services = config.Field(doc="Mapping of per-network service settings.", type=service_config_loader)
-            acl = config.Field(doc="Mapping of per-network access control lists.", type=config.Mapping(config.Many(str, is_set=True)))
+            services = config.Field(doc="Mapping of per-client service settings.", type=service_config_loader)
+            acl = config.Field(doc="Mapping of per-client access control lists.", type=config.Mapping(config.Many(str, is_set=True)))
 
         class Core(config.Config):
             database = config.Field(doc="Database file to use", default="kochira.db")
@@ -110,7 +110,7 @@ def _config_class_factory(bot):
             version = config.Field(doc="CTCP VERSION reply.", default="kochira IRC bot")
 
         core = config.Field(doc="Core configuration settings.", type=Core)
-        networks = config.Field(doc="Networks to connect to.", type=config.Mapping(Network))
+        clients = config.Field(doc="Clients to connect.", type=config.Mapping(Network))
         services = config.Field(doc="Services to load. Please refer to service documentation for setting this.", type=service_config_loader)
 
     return Config
@@ -123,7 +123,7 @@ class Bot:
 
     def __init__(self, config_file="config.yml"):
         self.services = {}
-        self.networks = {}
+        self.clients = {}
         self.io_loop = ioloop.IOLoop()
 
         self.config_class = _config_class_factory(self)
@@ -144,18 +144,18 @@ class Bot:
 
     def connect(self, name):
         client = Client.from_config(self, name,
-                                    self.config.networks[name])
-        self.networks[name] = client
+                                    self.config.clients[name])
+        self.clients[name] = client
         return client
 
     def disconnect(self, name):
-        client = self.networks[name]
+        client = self.clients[name]
 
         # schedule this for the next iteration of the ioloop so we can handle
         # pending messages
         self.io_loop.add_callback(client.quit)
 
-        del self.networks[name]
+        del self.clients[name]
 
     def _connect_to_db(self):
         db_name = self.config.core.database
@@ -163,7 +163,7 @@ class Bot:
         logger.info("Opened database connection: %s", db_name)
 
     def _connect_to_irc(self):
-        for name, config in self.config.networks.items():
+        for name, config in self.config.clients.items():
             if config.autoconnect:
                 self.connect(name)
 

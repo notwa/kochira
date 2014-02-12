@@ -39,7 +39,7 @@ this requester, other responder
 I (this requester) need to make a request to you (other responder)::
 
     [
-        my network name,
+        my client name,
         my requesting user's hostmask,
         remaining IRC payload (request)...
     ]
@@ -51,7 +51,7 @@ You (other requester) need a response from me (this responder)::
 
     [
         your identity,
-        my network name,
+        my client name,
         my bot's hostmask,
         remaining IRC payload (response)...
     ]
@@ -122,8 +122,8 @@ class RequesterConnection:
                                               io_loop=self.bot.io_loop)
             self.stream.on_recv(self.on_raw_recv)
 
-    def request(self, network, target, origin, message):
-        msg = [network.encode("utf-8"),
+    def request(self, client_name, target, origin, message):
+        msg = [client_name.encode("utf-8"),
                (origin + "!user@federated/kochira/" + origin).encode("utf-8"),
                b"PRIVMSG",
                target.encode("utf-8"),
@@ -138,9 +138,9 @@ class RequesterConnection:
         service.logger.info("Received response from %s: %s", self.identity,
                             msg)
 
-        network, origin, type, *args = msg
+        client_name, origin, type, *args = msg
 
-        network = network.decode("utf-8")
+        client_name = client_name.decode("utf-8")
         origin, _, _ = origin.decode("utf-8").partition("!")
 
         if type == b"PRIVMSG":
@@ -149,7 +149,7 @@ class RequesterConnection:
             target = target.decode("utf-8")
             message = message.decode("utf-8")
 
-            self.bot.networks[network].message(
+            self.bot.clients[client_name].message(
                 target,
                 "(via {identity}) {message}".format(
                     identity=self.identity,
@@ -207,10 +207,10 @@ def on_router_recv(bot, msg):
 
     service.logger.info("Received request from %s: %s", ident, msg)
 
-    network, origin, type, *args = msg
+    client_name, origin, type, *args = msg
 
     ident = ident.decode("utf-8")
-    network = network.decode("utf-8")
+    client_name = client_name.decode("utf-8")
     origin, _, _ = origin.decode("utf-8").partition("!")
 
     if type == b"PRIVMSG":
@@ -219,7 +219,7 @@ def on_router_recv(bot, msg):
         target = target.decode("utf-8")
         message = message.decode("utf-8")
 
-        client = ResponderClient(bot, ident, network, target)
+        client = ResponderClient(bot, ident, client_name, target)
 
         bot.run_hooks("channel_message", client, target, origin, message)
 

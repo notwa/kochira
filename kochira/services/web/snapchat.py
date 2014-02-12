@@ -21,10 +21,6 @@ service = Service(__name__, __doc__)
 
 @service.config
 class Config(Config):
-    class Channel(config.Config):
-        channel = config.Field(doc="Channel name.")
-        network = config.Field(doc="Channel network.")
-
     username = config.Field(doc="The username to use when connecting.")
     password = config.Field(doc="The password to use when connecting.")
     imgur_clientid = config.Field(doc="Client ID for use with Imgur.")
@@ -102,9 +98,9 @@ def poll_for_updates(bot):
         else:
             link = "(could not convert video)"
 
-        for network, client in bot.networks.items():
+        for client_name, client in bot.clients.items():
             for channel in client.channels:
-                config = service.config_for(bot, network, channel)
+                config = service.config_for(bot, client_name, channel)
 
                 if not config.announce:
                     continue

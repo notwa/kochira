@@ -19,20 +19,20 @@ class Config(Config):
     log_dir = config.Field(doc="Path to the log directory.", default="logs")
 
 
-def _is_log_open(storage, network, channel):
-    return (network, channel) in storage.handles
+def _is_log_open(storage, client_name, channel):
+    return (client_name, channel) in storage.handles
 
 
-def _get_file_handle(storage, network, channel):
-    k = (network, channel)
+def _get_file_handle(storage, client_name, channel):
+    k = (client_name, channel)
 
     if k not in storage.handles:
-        network_path = storage.path / network
+        client_name_path = storage.path / client_name
 
-        if not network_path.exists():
-            network_path.mkdir(parents=True)
+        if not client_name_path.exists():
+            client_name_path.mkdir(parents=True)
 
-        path = network_path / (channel + ".log")
+        path = client_name_path / (channel + ".log")
         f = path.open("ab")
 
         service.logger.debug("Opened handle for: %s", path)

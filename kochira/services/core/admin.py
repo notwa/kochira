@@ -179,7 +179,7 @@ def restart(client, target, origin):
     space.
     """
 
-    for client in list(client.bot.networks.values()):
+    for client in list(client.bot.clients.values()):
         client.quit("Restarting...")
 
     # The following code is ported from Tornado.

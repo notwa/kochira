@@ -151,14 +151,14 @@ class Service:
         if self.on_shutdown is not None:
             self.on_shutdown(bot)
 
-    def config_for(self, bot, name=None, channel=None):
+    def config_for(self, bot, client_name=None, channel=None):
         """
         Get the configuration settings.
         """
         config = bot.config.services.get(self.name, self.config_factory())
 
-        if name is not None:
-            client_config = bot.config.networks[name]
+        if client_name is not None:
+            client_config = bot.config.clients[client_name]
             config = config.combine(client_config.services.get(self.name, self.config_factory()))
 
             if channel is not None:

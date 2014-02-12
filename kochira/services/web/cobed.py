@@ -40,7 +40,7 @@ def learn(url, username, password, what):
 @service.hook("channel_message", priority=-9999)
 @background
 def do_reply(client, target, origin, message):
-    config = service.config_for(client.bot, client.network, target)
+    config = service.config_for(client.bot, client.name, target)
 
     front, _, rest = message.partition(" ")
 

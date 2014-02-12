@@ -8,7 +8,7 @@
 <h2>Networks</h2>
 <p>I am connected to the following networks:</p>
 <ul>
-{% for _, client in networks %}
+{% for _, client in clients %}
     <li>
         <strong>{{ client.network }} ({{ client.connection.hostname }}:{{ client.connection.port }})</strong> as <strong>{{ client.nickname }}</strong>
         <ul>

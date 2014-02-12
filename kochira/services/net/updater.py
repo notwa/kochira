@@ -21,10 +21,6 @@ service = Service(__name__, __doc__)
 
 @service.config
 class Config(Config):
-    class Channel(config.Config):
-        channel = config.Field(doc="Channel name.")
-        network = config.Field(doc="Channel network.")
-
     remote = config.Field(doc="Remote to pull updates from.",
                           default="origin")
     branch = config.Field(doc="Branch to pull updates from.",
@@ -116,10 +112,10 @@ class PostReceiveHandler(RequestHandler):
                 raise future.exception()
             self.finish()
 
-            for network, client in self.application.bot.networks.items():
+            for client_name, client in self.application.bot.clients.items():
                 for channel in client.channels:
                     config = service.config_for(self.application.bot,
-                                                network, channel)
+                                                client_name, channel)
 
                     if not config.announce:
                         continue

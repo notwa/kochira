@@ -15,6 +15,7 @@ service = Service(__name__, __doc__)
 
 class Profile(Model):
     who = CharField(255)
+    # TODO: requires migration from network to client_name
     network = CharField(255)
     text = TextField()
 

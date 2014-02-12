@@ -29,7 +29,7 @@ class Client(_Client):
 
     @property
     def config(self):
-        return self.bot.config.networks[self.name]
+        return self.bot.config.clients[self.name]
 
     @classmethod
     def from_config(cls, bot, name, config):
@@ -112,10 +112,10 @@ class Client(_Client):
         self.ctcp_reply(by, "VERSION", self.bot.config.core.version)
 
     def on_connect(self):
-        logger.info("Connected to IRC network: %s", self.name)
+        logger.info("Connected to IRC: %s", self.name)
         super().on_connect()
 
-        for name, channel in self.bot.config.networks[self.name].channels.items():
+        for name, channel in self.bot.config.clients[self.name].channels.items():
             self.join(name, password=channel.password)
 
         self._run_hooks("connect", None)
