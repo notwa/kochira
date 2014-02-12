@@ -140,20 +140,20 @@ class Bot:
         self._load_services()
         self._connect_to_irc()
 
-    def connect(self, network_name):
-        client = Client.from_config(self, network_name,
-                                    self.config.networks[network_name])
-        self.networks[network_name] = client
+    def connect(self, name):
+        client = Client.from_config(self, name,
+                                    self.config.networks[name])
+        self.networks[name] = client
         return client
 
-    def disconnect(self, network_name):
-        client = self.networks[network_name]
+    def disconnect(self, name):
+        client = self.networks[name]
 
         # schedule this for the next iteration of the ioloop so we can handle
         # pending messages
         self.io_loop.add_callback(client.quit)
 
-        del self.networks[network_name]
+        del self.networks[name]
 
     def _connect_to_db(self):
         db_name = self.config.core.database
@@ -163,9 +163,9 @@ class Bot:
         ACLEntry.create_table(True)
 
     def _connect_to_irc(self):
-        for network_name, config in self.config.networks.items():
+        for name, config in self.config.networks.items():
             if config.autoconnect:
-                self.connect(network_name)
+                self.connect(name)
 
         self.io_loop.start()
 

@@ -59,7 +59,7 @@ def log(client, channel, what):
     now = datetime.utcnow()
 
     storage = service.storage_for(client.bot)
-    f = _get_file_handle(storage, client.network, channel)
+    f = _get_file_handle(storage, client.name, channel)
 
     with storage.lock:
         f.write(("{now} {what}\n".format(
@@ -87,7 +87,7 @@ def log_global(client, origin, what):
         if origin in info["users"]:
             log(client, channel, what)
 
-    if _is_log_open(service.storage_for(client.bot), client.network, origin):
+    if _is_log_open(service.storage_for(client.bot), client.name, origin):
         log(client, origin, what)
 
 

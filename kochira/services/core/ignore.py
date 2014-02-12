@@ -38,14 +38,14 @@ def add_ignore(client, target, origin, hostmask):
     """
 
     if Ignore.select().where(Ignore.hostmask == hostmask,
-                             Ignore.network == client.network).exists():
+                             Ignore.network == client.name).exists():
         client.message(target, "{origin}: I'm already ignoring {hostmask}.".format(
             origin=origin,
             hostmask=hostmask
         ))
         return
 
-    Ignore.create(hostmask=hostmask, network=client.network).save()
+    Ignore.create(hostmask=hostmask, network=client.name).save()
 
     client.message(target, "{origin}: Okay, now ignoring everything from {hostmask}.".format(
         origin=origin,
@@ -64,9 +64,9 @@ def list_ignores(client, target, origin):
 
     client.message(target, "{origin}: Ignores for {network}: {ignores}".format(
         origin=origin,
-        network=client.network,
+        network=client.name,
         ignores=", ".join(ignore.hostmask for ignore in
-                          Ignore.select().where(Ignore.network == client.network))
+                          Ignore.select().where(Ignore.network == client.name))
     ))
 
 
@@ -81,7 +81,7 @@ def remove_ignore(client, target, origin, hostmask):
     """
 
     if Ignore.delete().where(Ignore.hostmask == hostmask,
-                             Ignore.network == client.network).execute() == 0:
+                             Ignore.network == client.name).execute() == 0:
         client.message(target, "{origin}: I'm not ignoring {hostmask}.".format(
             origin=origin,
             hostmask=hostmask
@@ -103,5 +103,5 @@ def ignore_message(client, target, origin, message):
     )
 
     if Ignore.select().where(Expression(hostmask, "ilike", fn.replace(Ignore.hostmask, "*", "%")),
-                             Ignore.network == client.network).exists():
+                             Ignore.network == client.name).exists():
         return service.EAT

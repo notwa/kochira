@@ -66,7 +66,7 @@ def compute_replacements(from_lang, to_lang, message):
 @service.hook("channel_message")
 @background
 def murrika(client, target, origin, message):
-    config = service.config_for(client.bot, client.network, target)
+    config = service.config_for(client.bot, client.name, target)
 
     replacements = compute_replacements(config.from_lang, config.to_lang, message)
 

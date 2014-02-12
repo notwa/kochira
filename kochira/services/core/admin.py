@@ -58,7 +58,7 @@ def grant(client, target, origin, permission, hostmask, channel=None):
     basis. Wildcard hostmasks are permitted.
     """
 
-    if not grant_permission(client.network, hostmask, permission, channel):
+    if not grant_permission(client.name, hostmask, permission, channel):
         client.message(target, "{origin}: Permission already exists.".format(
             origin=origin
         ))
@@ -70,14 +70,14 @@ def grant(client, target, origin, permission, hostmask, channel=None):
             permission=permission,
             hostmask=hostmask,
             channel=channel,
-            network=client.network
+            network=client.name
         )
     else:
         message = "{origin}: Granted permission \"{permission}\" to {hostmask} globally for network \"{network}\".".format(
             origin=origin,
             permission=permission,
             hostmask=hostmask,
-            network=client.network
+            network=client.name
         )
 
     client.message(target, message)
@@ -97,7 +97,7 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
     if permission == "everything":
         permission = None
 
-    if not revoke_permission(client.network, hostmask, permission, channel):
+    if not revoke_permission(client.name, hostmask, permission, channel):
         client.message(target, "{origin}: Couldn't find any matching hostmasks.".format(
             origin=origin
         ))
@@ -114,14 +114,14 @@ def revoke(client, target, origin, permission, hostmask, channel=None):
             message_part=message_part,
             hostmask=hostmask,
             channel=channel,
-            network=client.network
+            network=client.name
         )
     else:
         message = "{origin}: Revoked {message_part} from {hostmask} globally for network \"{network}\".".format(
             origin=origin,
             message_part=message_part,
             hostmask=hostmask,
-            network=client.network
+            network=client.name
         )
 
     client.message(target, message)
@@ -136,7 +136,7 @@ def list_authorized(client, target, origin, permission=None, channel=None):
     List permissions that apply.
     """
 
-    entries = ACLEntry.select().where(ACLEntry.network == client.network,
+    entries = ACLEntry.select().where(ACLEntry.network == client.name,
                                       permission is None or ACLEntry.permission == permission,
                                       channel is None or ACLEntry.channel == channel)
 
@@ -149,7 +149,7 @@ def list_authorized(client, target, origin, permission=None, channel=None):
 
     client.message(target, "{origin}: Authorized hostmasks for {network} {channel}: {users}".format(
         origin=origin,
-        network=client.network,
+        network=client.name,
         channel="globally" if channel is None else "on " + channel,
         users="; ".join(
             "{name} {channels} ({perms})".format(

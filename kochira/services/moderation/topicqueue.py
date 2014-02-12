@@ -22,7 +22,7 @@ class Config(Config):
 @service.command(".topic (?P<topic>.+)")
 @requires_permission("topic")
 def topic(client, target, origin, topic):
-    config = service.config_for(client.bot, client.network, target)
+    config = service.config_for(client.bot, client.name, target)
 
     parts = client.channels[target].get("topic")
 

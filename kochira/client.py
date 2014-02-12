@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class Client(_Client):
     RECONNECT_BACKOFF = [0, 5, 10, 20, 40, 80, 120]
 
-    def __init__(self, bot, network, *args, **kwargs):
+    def __init__(self, bot, name, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._reconnect_timeout = None
@@ -25,8 +25,7 @@ class Client(_Client):
         self.backlogs = {}
         self.bot = bot
 
-        # set network name to whatever we have in our config
-        self.network = network
+        self.name = name
 
     @classmethod
     def from_config(cls, bot, network_name, config):
@@ -54,7 +53,7 @@ class Client(_Client):
     def _handle_next_message(self, fd, events):
         if self.connection.socket is None or not self.connection.receive_data():
             # connection was closed
-            logging.warn("Lost connection: %s", self.network)
+            logging.warn("Lost connection: %s", self.name)
             self.on_disconnect(False)
             return
 
@@ -63,7 +62,7 @@ class Client(_Client):
                 self.on_raw(self.connection.get_message())
 
     def connect(self, *args, reconnect=False, attempt=0, **kwargs):
-        logger.info("Connecting: %s", self.network)
+        logger.info("Connecting: %s", self.name)
 
         try:
             super().connect(*args, reconnect=reconnect, **kwargs)
@@ -74,7 +73,7 @@ class Client(_Client):
             )]
 
             logger.warning("Couldn't connect: %s, reattempting in %d seconds: %s",
-                            self.network, backoff, e)
+                            self.name, backoff, e)
 
             self._reconnect_timeout = self.bot.io_loop.add_timeout(
                 timedelta(seconds=backoff),
@@ -87,10 +86,7 @@ class Client(_Client):
                                          ioloop.IOLoop.READ)
 
     def on_disconnect(self, expected):
-        # XXX: hilariously janky, need to fix this
-        network = self.network
         self._reset_attributes()
-        self.network = network
 
         if self._reconnect_timeout is not None:
             self.bot.io_loop.remove_timeout(self._reconnect_timeout)
@@ -111,10 +107,10 @@ class Client(_Client):
         self.ctcp_reply(by, "VERSION", self.bot.config.core.version)
 
     def on_connect(self):
-        logger.info("Connected to IRC network: %s", self.network)
+        logger.info("Connected to IRC network: %s", self.name)
         super().on_connect()
 
-        for name, channel in self.bot.config.networks[self.network].channels.items():
+        for name, channel in self.bot.config.networks[self.name].channels.items():
             self.join(name, password=channel.password)
 
         self._run_hooks("connect", None)
@@ -154,7 +150,7 @@ class Client(_Client):
             kwargs = {}
 
         for hook in self.bot.get_hooks(name):
-            config = hook.service.config_for(self.bot, self.network, target)
+            config = hook.service.config_for(self.bot, self.name, target)
 
             if not config.enabled:
                 continue

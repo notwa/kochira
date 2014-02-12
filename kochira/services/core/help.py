@@ -133,7 +133,7 @@ def help(client, target, origin):
     Links the user to the web help service, if available.
     """
 
-    config = service.config_for(client.bot, client.network, target)
+    config = service.config_for(client.bot, client.name, target)
 
     if "kochira.services.net.webserver" not in client.bot.services:
         client.message(target, "{origin}: Help currently unavailable.".format(

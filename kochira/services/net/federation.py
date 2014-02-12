@@ -168,10 +168,10 @@ class ResponderClient:
     The remoting proxy takes remote queries, runs them and sends them back to
     the remote via the router.
     """
-    def __init__(self, bot, remote_name, network, target):
+    def __init__(self, bot, remote_name, name, target):
         self.bot = bot
         self.remote_name = remote_name
-        self.network = network
+        self.name = name
         self.target = target
 
     @property
@@ -186,7 +186,7 @@ class ResponderClient:
         raise RuntimeError("operation not supported in federated mode")
 
     def message(self, target, message):
-        msg = [self.network.encode("utf-8"),
+        msg = [self.name.encode("utf-8"),
                (self.nickname + "!bot@federated/kochira/" + self.nickname).encode("utf-8"),
                b"PRIVMSG",
                target.encode("utf-8"),
@@ -290,7 +290,7 @@ def add_federation(client, target, origin, name):
     Connect to a bot specified in the federation configuration.
     """
 
-    config = service.config_for(client.bot, client.network, target)
+    config = service.config_for(client.bot, client.name, target)
     storage = service.storage_for(client.bot)
 
     if name in storage.federations:
@@ -373,7 +373,7 @@ def federated_request(client, target, origin, name, what, mode=None):
     else:
         if mode == ":":
             what = name + ": " + what
-        remote.request(client.network, target, origin, what)
+        remote.request(client.name, target, origin, what)
 
 
 @service.command(r"who are you federated with\??$", mention=True)
