@@ -114,7 +114,8 @@ def how_many_shouts(client, target, origin, who=None):
             s="s" if num != 1 else ""
         ))
     else:
-        num = Shout.select().where(Shout.who == who).count()
+        num = Shout.select().where(Shout.who == who,
+                                   Shout.network == client.network).count()
         client.message(target, "{origin}: {who} has shouted {num} time{s}.".format(
             origin=origin,
             who=who,
