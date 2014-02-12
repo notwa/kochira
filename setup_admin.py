@@ -1,16 +1,26 @@
-from kochira import Bot
-from kochira.services.core.admin import grant_permission
+import sys
 
-bot = Bot()
+if __name__ == "__main__":
+    print("""\
 
-print("Enter a network and hostmask to grant full administrator permissions to.")
+WARNING! WARNING! WARNING!
 
-network = None
-while not network:
-    network = input("Network (one of {}): ".format(", ".join(bot.config.networks)))
+This script has been _deprecated_. All ACL entries are now stored in
+config.yml.
 
-hostmask = None
-while not hostmask:
-    hostmask = input("Hostmask: ")
+You must now specify your ACLs like so:
 
-grant_permission(network, hostmask, "admin")
+    networks:
+        Foonet:
+            acl:
+                "foo!bar@baz":
+                     - quote
+                     - reply
+
+            channels:
+                "#foo":
+                    acl:
+                        "bar!bar@baz":
+                            - admin
+""")
+    sys.exit(1)
