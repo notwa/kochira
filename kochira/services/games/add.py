@@ -24,6 +24,11 @@ def initialize_models(bot):
 @service.command("add", mention=True)
 @service.command("!add", mention=False)
 def add(client, target, origin):
+    """
+    Add to the number.
+
+    Uh, yeah.
+    """
     try:
         a = Add.get()
     except Add.DoesNotExist:
