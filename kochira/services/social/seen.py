@@ -47,13 +47,15 @@ class Seen(Model):
         return msg
 
     def _format_kick(self, show_channel):
-        msg = "kicking {} from {}".format(self.target, self.channel if show_channel else "somewhere")
+        msg = "kicking {} from {}".format(self.target if show_channel else "someone",
+                                          self.channel if show_channel else "somewhere")
         if show_channel and self.message is not None:
             msg += " ({})".format(self.message)
         return msg
 
     def _format_kicked(self, show_channel):
-        msg = "being kicked by {} from {}".format(self.target, self.channel if show_channel else "somewhere")
+        msg = "being kicked by {} from {}".format(self.target if show_channel else "someone",
+                                                  self.channel if show_channel else "somewhere")
         if show_channel and self.message is not None:
             msg += " ({})".format(self.message)
         return msg
