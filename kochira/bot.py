@@ -227,6 +227,10 @@ class Bot:
         """
         Unload a service from the bot.
         """
+        # if we can't find the service name immediately, try removing its name
+        # from the list
+        if name[0] == "." and name not in self.services:
+            name = services.__name__ + "." + name
 
         service, _ = self.services[name]
         self._shutdown_service(service)
