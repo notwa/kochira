@@ -67,8 +67,7 @@ class Client(_Client):
 
         try:
             super().connect(*args, reconnect=reconnect, **kwargs)
-
-        except Exception as e:
+        except (OSError, IOError) as e:
             backoff = Client.RECONNECT_BACKOFF[min(
                 attempt,
                 len(Client.RECONNECT_BACKOFF) - 1
