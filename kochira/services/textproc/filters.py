@@ -53,10 +53,10 @@ def fabulousify(s):
 
 def run_filter(f, client, target, origin, text=None):
     if text is None:
-        if len(client.backlogs[target]) == 1:
+        if not client.backlogs.get(target, []):
             return
 
-        _, text = client.backlogs[target][1]
+        _, text = client.backlogs[target][0]
 
     text = f(text)
 

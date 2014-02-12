@@ -12,6 +12,7 @@ from peewee import CharField, TextField, DateTimeField
 from kochira.db import Model
 from kochira.service import Service
 
+from pydle.client import UNREGISTERED_NICKNAME
 from pydle.features.rfc1459.parsing import normalize
 
 service = Service(__name__, __doc__)
@@ -176,6 +177,9 @@ def on_channel_message(client, target, origin, message):
 
 @service.hook("nick_change", priority=5000)
 def on_nick_change(client, old, new):
+    if old == UNREGISTERED_NICKNAME:
+        return
+
     update_seen(client, "nick_change", old, None, target=new)
     update_seen(client, "nick_changed", new, None, target=old)
 

@@ -39,7 +39,7 @@ def sed(client, target, origin, pattern, replacement, who=None, flags=None):
         ))
         return
 
-    for other, message in list(client.backlogs.get(target, []))[1:]:
+    for other, message in client.backlogs.get(target, []):
         if who is None or other == who:
             match = expr.search(message)
 

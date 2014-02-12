@@ -131,16 +131,19 @@ class Client(_Client):
     def message(self, target, message):
         message = self._autotruncate("PRIVMSG", target, message)
 
-        super().message(target, message)
-        self.bot.defer_from_thread(self._run_hooks, "own_message", target,
-                                   [target, message])
+        @self.bot.defer_from_thread
+        def _callback():
+            super(Client, self).message(target, message)
+            self._run_hooks("own_message", target, [target, message])
+            self._add_to_backlog(target, self.nickname, message)
 
     def notice(self, target, message):
         message = self._autotruncate("PRIVMSG", target, message)
 
-        super().notice(target, message)
-        self.bot.defer_from_thread(self._run_hooks, "own_notice", target,
-                                   [target, message])
+        @self.bot.defer_from_thread
+        def _callback():
+            super(Client, self).notice(target, message)
+            self._run_hooks("own_notice", target, [target, message])
 
     def _run_hooks(self, name, target, args=None, kwargs=None):
         if args is None:
@@ -162,6 +165,13 @@ class Client(_Client):
             except BaseException:
                 logger.error("Hook processing failed", exc_info=True)
 
+    def _add_to_backlog(self, target, by, message):
+        backlog = self.backlogs.setdefault(target, deque([]))
+        backlog.appendleft((by, message))
+
+        while len(backlog) > self.bot.config.core.max_backlog:
+            backlog.pop()
+
     def on_invite(self, channel, by):
         self._run_hooks("invite", by, [channel, by])
 
@@ -181,22 +191,12 @@ class Client(_Client):
         self._run_hooks("user_mode_change", None, [modes])
 
     def on_channel_message(self, target, by, message):
-        backlog = self.backlogs.setdefault(target, deque([]))
-        backlog.appendleft((by, message))
-
-        while len(backlog) > self.bot.config.core.max_backlog:
-            backlog.pop()
-
         self._run_hooks("channel_message", target, [target, by, message])
+        self._add_to_backlog(target, by, message)
 
     def on_private_message(self, by, message):
-        backlog = self.backlogs.setdefault(by, deque([]))
-        backlog.appendleft((by, message))
-
-        while len(backlog) > self.bot.config.core.max_backlog:
-            backlog.pop()
-
         self._run_hooks("private_message", by, [by, message])
+        self._add_to_backlog(by, by, message)
 
     def on_nick_change(self, old, new):
         self._run_hooks("nick_change", new, [old, new])
