@@ -19,7 +19,7 @@ class Config(Config):
 
 
 @service.command("add (?P<topic>.+) to topic", mention=True)
-@service.command(".topic (?P<topic>.+)")
+@service.command("!topic (?P<topic>.+)")
 @requires_permission("topic")
 def topic(client, target, origin, topic):
     """
