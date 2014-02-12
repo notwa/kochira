@@ -32,13 +32,14 @@ class Client(_Client):
         return self.bot.config.networks[self.name]
 
     @classmethod
-    def from_config(cls, bot, network_name, config):
-        client = cls(bot, network_name, config.nickname,
+    def from_config(cls, bot, name, config):
+        client = cls(bot, name, config.nickname,
             username=config.username,
             realname=config.realname,
             tls_client_cert=config.tls.certificate_file,
             tls_client_cert_key=config.tls.certificate_keyfile,
             tls_client_cert_password=config.tls.certificate_password,
+            sasl_identity=config.sasl.identity,
             sasl_username=config.sasl.username,
             sasl_password=config.sasl.password
         )

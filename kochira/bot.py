@@ -86,6 +86,7 @@ def _config_class_factory(bot):
                 certificate_password = config.Field(doc="TLS certificate password.", default=None)
 
             class SASL(config.Config):
+                identity = config.Field(doc="SASL identity. Usually empty.", default=None)
                 username = config.Field(doc="SASL username.", default=None)
                 password = config.Field(doc="SASL password.", default=None)
 
