@@ -22,6 +22,13 @@ class Config(Config):
 @service.command(".topic (?P<topic>.+)")
 @requires_permission("topic")
 def topic(client, target, origin, topic):
+    """
+    Prepend to topic.
+
+    Prepends some new text to the topic. If the topic is too long, it will
+    evict the oldest part of the topic.
+    """
+
     config = service.config_for(client.bot, client.name, target)
 
     parts = client.channels[target].get("topic")
