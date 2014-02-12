@@ -27,6 +27,10 @@ class Client(_Client):
 
         self.name = name
 
+    @property
+    def config(self):
+        return self.bot.config.networks[self.name]
+
     @classmethod
     def from_config(cls, bot, network_name, config):
         client = cls(bot, network_name, config.nickname,

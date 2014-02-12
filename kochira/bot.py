@@ -14,7 +14,6 @@ import yaml
 from tornado import ioloop
 
 from . import config
-from .auth import ACLEntry
 from .client import Client
 from .db import database
 from .scheduler import Scheduler
@@ -94,12 +93,14 @@ def _config_class_factory(bot):
                 autojoin = config.Field(doc="Whether or not to autojoin to the channel.", default=True)
                 password = config.Field(doc="Password for the channel, if any.", default=None)
                 services = config.Field(doc="Mapping of per-channel service settings.", type=service_config_loader)
+                acl = config.Field(doc="Mapping of per-channel access control lists.", type=config.Mapping(config.Many(str, is_set=True)))
 
             tls = config.Field(doc="TLS settings.", type=TLS, default=TLS())
             sasl = config.Field(doc="SASL settings.", type=SASL, default=SASL())
 
             channels = config.Field(doc="Mapping of channel settings.", type=config.Mapping(Channel))
             services = config.Field(doc="Mapping of per-network service settings.", type=service_config_loader)
+            acl = config.Field(doc="Mapping of per-network access control lists.", type=config.Mapping(config.Many(str, is_set=True)))
 
         class Core(config.Config):
             database = config.Field(doc="Database file to use", default="kochira.db")
@@ -159,8 +160,6 @@ class Bot:
         db_name = self.config.core.database
         database.initialize(SqliteDatabase(db_name, threadlocals=True))
         logger.info("Opened database connection: %s", db_name)
-
-        ACLEntry.create_table(True)
 
     def _connect_to_irc(self):
         for name, config in self.config.networks.items():

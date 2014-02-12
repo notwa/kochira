@@ -1,7 +1,28 @@
+import fnmatch
 import functools
 
-from peewee import CharField, Expression, fn
-from .db import Model
+
+def acl_for(client, target=None):
+    acl = client.config.acl.copy()
+
+    if target is not None:
+        if target in client.config.channels:
+            channel_acl = client.config.channels[target].acl
+        else:
+            channel_acl = {}
+
+        for hostmask, permissions in channel_acl.items():
+            acl.setdefault(hostmask, set([])).update(permissions)
+
+    return acl
+
+
+def has_permission(client, hostmask, permission, target=None):
+    for match_hostmask, permissions in acl_for(client, target).items():
+        if fnmatch.fnmatch(hostmask, match_hostmask) and \
+            permission in permissions:
+            return True
+    return False
 
 
 def requires_permission(permission):
@@ -17,37 +38,8 @@ def requires_permission(permission):
                 username=client.users[origin]["username"],
                 hostname=client.users[origin]["hostname"]
             )
-            if not ACLEntry.has(client.name, hostmask, permission, target):
+            if not has_permission(client, hostmask, permission, target):
                 return
             return f(client, target, origin, *args, **kwargs)
         return _inner
     return _decorator
-
-
-class ACLEntry(Model):
-    """
-    An entry in the database for an ACL.
-    """
-
-    hostmask = CharField()
-    network = CharField()
-    permission = CharField()
-    channel = CharField(null=True)
-
-    class Meta:
-        indexes = (
-            (("hostmask", "network", "channel"), False),
-            (("hostmask", "network", "channel", "permission"), True)
-        )
-
-
-    @classmethod
-    def has(cls, network, hostmask, permission, channel=None):
-        """
-        Check if a hostmask has a given permission.
-        """
-        return ACLEntry.select().where(Expression(hostmask, "ilike", fn.replace(ACLEntry.hostmask, "*", "%")),
-                                       ACLEntry.network == network,
-                                       ACLEntry.permission << [permission, "admin"],
-                                       (ACLEntry.channel == channel) |
-                                       (ACLEntry.channel >> None)).exists()

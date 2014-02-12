@@ -153,11 +153,15 @@ class Mapping:
 
 
 class Many:
-    def __init__(self, type):
+    def __init__(self, type, is_set=False):
         self.type = type
+        self.is_set = is_set
 
     def __call__(self, xs):
-        return [self.type(x) for x in xs]
+        ys = [self.type(x) for x in xs]
+        if self.is_set:
+            ys = set(ys)
+        return ys
 
     def interior_type(self):
         if hasattr(self.type, "interior_type"):
@@ -166,4 +170,4 @@ class Many:
         return self.type
 
     def get_default(self):
-        return []
+        return [] if not self.is_set else set([])
