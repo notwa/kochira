@@ -77,7 +77,7 @@ def unload_service(client, target, origin, service_name):
 
 
 @service.command(r"what services are(?: you)? running\??$", mention=True, priority=3000)
-@service.command(r"(?:list )?services$", mention=True)
+@service.command(r"(?:list )?services$", mention=True, priority=3000)
 @requires_permission("admin")
 def list_services(client, target, origin):
     """

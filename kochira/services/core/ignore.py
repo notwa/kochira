@@ -71,7 +71,7 @@ def list_ignores(client, target, origin):
     ))
 
 
-@service.command(r"(?:unignore|don't ignore|stop ignoring|remove ignore from) (?P<hostmask>\S+)$", mention=True)
+@service.command(r"(?:unignore|don't ignore|stop ignoring|remove ignore from) (?P<hostmask>\S+)$", mention=True, priority=3000)
 @requires_permission("ignore")
 def remove_ignore(client, target, origin, hostmask):
     """
