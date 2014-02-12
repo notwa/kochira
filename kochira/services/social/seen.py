@@ -201,7 +201,7 @@ def on_ctcp_action(client, origin, target, message):
     update_seen(client, "ctcp_action", origin, target, message)
 
 
-@service.command(r".seen (?P<who>\S+)")
+@service.command(r"!seen (?P<who>\S+)")
 @service.command(r"have you seen (?P<who>\S+)\??", mention=True)
 @service.command(r"when did you last see (?P<who>\S+)\??", mention=True)
 def seen(client, target, origin, who):
@@ -211,14 +211,6 @@ def seen(client, target, origin, who):
     Check when a user was last seen.
     """
     who_n = normalize(who, case_mapping=client._case_mapping)
-
-    if who_n in [normalize(u, case_mapping=client._case_mapping)
-                 for u in client.channels[target].get("users", [])]:
-        client.message(target, "{origin}: {who} is right there!".format(
-            origin=origin,
-            who=who
-        ))
-        return
 
     try:
         seen = Seen.get(Seen.who == who_n, Seen.network == client.network)
