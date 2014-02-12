@@ -73,10 +73,10 @@ class Seen(Model):
             return "telling {} \"{}\"".format(self.channel, self.message)
 
     def _format_nick_change(self, show_channel):
-        return "changing their nickname to {}".format(self.message)
+        return "changing their nickname to {}".format(self.target)
 
     def _format_nick_changed(self, show_channel):
-        return "changing their nickname from {}".format(self.message)
+        return "changing their nickname from {}".format(self.target)
 
     def _format_channel_notice(self, show_channel):
         if not show_channel:
@@ -94,7 +94,8 @@ class Seen(Model):
         if not show_channel:
             return "changing a topic"
         else:
-            return "changing the topic for {}".format(self.channel)
+            return "changing the topic for {} to \"{}\"".format(self.channel,
+                                                                self.message)
 
     def _format_quit(self, show_channel):
         msg = "quitting the network"
@@ -103,8 +104,11 @@ class Seen(Model):
         return msg
 
     def _format_ctcp_action(self, show_channel):
-        return "actioning {} with \"{}\"".format(self.channel if show_channel else "a channel",
-                                                 self.message)
+        if not show_channel:
+            return "actioning a channel"
+        else:
+            return "actioning {} with \"{}\"".format(self.channel,
+                                                     self.message)
 
     def _format_unknown(self, show_channel):
         if show_channel:
