@@ -67,7 +67,8 @@ def list_badwords(client, target, origin):
     client.message(target, "{origin}: The following are bad words: {badwords}".format(
         origin=origin,
         badwords=", ".join(badword.word if is_regex(badword.word) else "\"" + badword.word + "\""
-                           for badword in Badword.select().order_by(Badword.word))
+                           for badword in Badword.select().where(Badword.client_name == client.name,
+                                                                 Badword.channel == target).order_by(Badword.word))
     ))
 
 
