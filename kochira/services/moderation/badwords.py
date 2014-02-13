@@ -36,6 +36,7 @@ class Badword(Model):
 class Config(Config):
     chanserv_kick = config.Field(doc="Ask ChanServ to perform the kick.", default=False)
     chanserv_op = config.Field(doc="Ask ChanServ to op with the given command, if not already opped.", default=None)
+    kick_message = config.Field(doc="Kick message.", default="Watch your language!")
 
 
 @service.command("(?P<word>.+) is a bad word", mention=True)
@@ -103,9 +104,10 @@ def check_badwords(client, target, origin, message):
 
     def _callback():
         if config.chanserv_kick:
-            client.message("ChanServ", "KICK {target} {origin} Watch your language!".format(target=target, origin=origin))
+            client.message("ChanServ", "KICK {target} {origin} {message}".format(
+                target=target, origin=origin, message=config.kick_message))
         else:
-            client.rawmsg("KICK", target, origin, "Watch your language!")
+            client.rawmsg("KICK", target, origin, config.kick_message)
 
     for badword in Badword.select().where(Badword.client_name == client.name,
                                           Badword.channel == target):
@@ -124,7 +126,8 @@ def check_badwords(client, target, origin, message):
                 ops.update(client.channels[target]["modes"].get(op_mode, []))
 
             if client.nickname not in ops and config.chanserv_op is not None:
-                client.message("ChanServ", config.chanserv_op.format(target=target, me=client.nickname))
+                client.message("ChanServ", config.chanserv_op.format(
+                    target=target, me=client.nickname))
                 client.bot.event_loop.schedule(_callback)
             else:
                 _callback()
