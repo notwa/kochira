@@ -7,8 +7,8 @@
         <link rel="stylesheet" href="/static/style.css">
     </head>
     <body>
-        {% module NavBar() %}
         <div id="wrap">
+            {% module NavBar() %}
             {% block before_container %}{% end %}
             <div class="container">
                 {% block body %}{% end %}
