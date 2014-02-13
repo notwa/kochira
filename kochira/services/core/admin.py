@@ -128,7 +128,7 @@ def eval_code(client, target, origin, code):
     sys.stdout = buf
 
     try:
-        eval(compile(code, "<irc>", "single"),
+        exec(compile(code, "<irc>", "single"),
              storage.eval_globals, storage.eval_locals)
     except BaseException as e:
         client.message(target, "<<! {name}: {info}".format(
