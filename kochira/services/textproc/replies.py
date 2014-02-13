@@ -67,7 +67,7 @@ def do_reply(client, target, origin, message):
             expr = reply.what[1:-1]
         else:
             expr = r"\b{}\b".format(re.escape(reply.what))
-        if re.search(expr, message) is not None:
+        if re.search(expr, message, re.I) is not None:
             replies.append(reply.reply)
 
     if not replies:

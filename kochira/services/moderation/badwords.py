@@ -80,6 +80,6 @@ def check_badwords(client, target, origin, message):
         else:
             expr = r"\b{}\b".format(re.escape(badword.word))
 
-        if re.search(expr, message) is not None:
+        if re.search(expr, message, re.I) is not None:
             client.rawmsg("KICK", target, origin, "Watch your language!")
             return Service.EAT
