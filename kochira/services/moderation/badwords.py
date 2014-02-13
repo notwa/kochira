@@ -124,7 +124,7 @@ def check_badwords(client, target, origin, message):
                 ops.update(client.channels[target]["modes"].get(op_mode, []))
 
             if client.nickname not in ops and config.chanserv_op is not None:
-                client.message("ChanServ", "{command} {target} {nickname}".format(command=config.chanserv_op, target=target, nickname=client.nickname))
+                client.message("ChanServ", config.chanserv_op.format(target=target, me=client.nickname))
                 client.bot.event_loop.schedule(_callback)
             else:
                 _callback()
