@@ -16,6 +16,8 @@ from kochira.auth import requires_permission
 
 service = Service(__name__, __doc__)
 
+
+@service.model
 class Reply(Model):
     what = CharField(255)
     reply = CharField(255)
@@ -28,11 +30,6 @@ class Reply(Model):
 
 def is_regex(what):
     return what[0] == "/" and what[-1] == "/"
-
-
-@service.setup
-def initialize_model(bot):
-    Reply.create_table(True)
 
 
 @service.command(r"stop replying to (?P<what>.+)$", mention=True)

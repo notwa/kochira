@@ -22,6 +22,7 @@ class Config(Config):
     reply = config.Field(doc="Whether or not to generate replies.", default=True)
     random_replyness = config.Field(doc="Probability the brain will generate a reply for all messages.", default=0.0)
 
+
 def reply_and_learn(url, username, password, what):
     r = requests.post(url,
                       params={"q": what},

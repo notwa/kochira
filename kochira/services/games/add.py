@@ -12,13 +12,9 @@ from kochira.service import Service
 service = Service(__name__, __doc__)
 
 
+@service.model
 class Add(Model):
     number = IntegerField()
-
-
-@service.setup
-def initialize_models(bot):
-    Add.create_table(True)
 
 
 @service.command("add", mention=True)

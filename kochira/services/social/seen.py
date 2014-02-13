@@ -18,6 +18,7 @@ from pydle.features.rfc1459.parsing import normalize
 service = Service(__name__, __doc__)
 
 
+@service.model
 class Seen(Model):
     who = CharField(255)
     channel = CharField(255, null=True)
@@ -119,11 +120,6 @@ class Seen(Model):
 
     def format(self, show_channel):
         return getattr(self, "_format_" + self.event, self._format_unknown)(show_channel)
-
-
-@service.setup
-def initialize_models(bot):
-    Seen.create_table(True)
 
 
 def update_seen(client, event, who, channel=None, message=None, target=None):

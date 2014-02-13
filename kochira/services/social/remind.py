@@ -34,6 +34,8 @@ def parse_time(s):
 
     return dt
 
+
+@service.model
 class Reminder(Model):
     message = TextField()
     origin = CharField(255)
@@ -47,8 +49,6 @@ class Reminder(Model):
 
 @service.setup
 def initialize_model(bot):
-    Reminder.create_table(True)
-
     for reminder in Reminder.select() \
         .where(~(Reminder.duration >> None)):
         dt = (reminder.ts + timedelta(seconds=reminder.duration)) - datetime.utcnow()

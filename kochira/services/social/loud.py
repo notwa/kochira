@@ -16,6 +16,7 @@ from kochira.service import Service
 service = Service(__name__, __doc__)
 
 
+@service.model
 class Shout(Model):
     message = TextField()
     who = CharField(255)
@@ -36,8 +37,6 @@ def is_shout(text):
 @service.setup
 def initialize_model(bot):
     storage = service.storage_for(bot)
-
-    Shout.create_table(True)
     storage.last_shout = None
 
 

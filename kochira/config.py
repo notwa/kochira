@@ -37,7 +37,7 @@ class Field:
         obj._fields[self.name] = v
 
 
-class _ConfigMeta(abc.ABCMeta):
+class ConfigMeta(abc.ABCMeta):
     def __new__(cls, name, bases, dct):
         newcls = type.__new__(cls, name, bases, dct)
 
@@ -59,7 +59,7 @@ class _ConfigMeta(abc.ABCMeta):
         return newcls
 
 
-class Config(collections.MutableMapping, metaclass=_ConfigMeta):
+class Config(collections.MutableMapping, metaclass=ConfigMeta):
     def __init__(self, values=None):
         if values is None:
             values = {}

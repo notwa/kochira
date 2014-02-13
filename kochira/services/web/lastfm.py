@@ -23,6 +23,7 @@ class Config(Config):
     api_key = config.Field(doc="Last.fm API key.")
 
 
+@service.model
 class LastFMProfile(Model):
     who = CharField(255)
     network = CharField(255)
@@ -32,11 +33,6 @@ class LastFMProfile(Model):
         indexes = (
             (("who", "network"), True),
         )
-
-
-@service.setup
-def initialize_model(bot):
-    LastFMProfile.create_table(True)
 
 
 def query_lastfm(api_key, method, arguments):

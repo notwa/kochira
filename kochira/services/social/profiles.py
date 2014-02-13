@@ -12,7 +12,7 @@ from kochira.service import Service
 
 service = Service(__name__, __doc__)
 
-
+@service.model
 class Profile(Model):
     who = CharField(255)
     # TODO: requires migration from network to client_name
@@ -23,11 +23,6 @@ class Profile(Model):
         indexes = (
             (("who", "network"), True),
         )
-
-
-@service.setup
-def initialize_model(bot):
-    Profile.create_table(True)
 
 
 @service.command(r"forget(?: about)? me$", mention=True)

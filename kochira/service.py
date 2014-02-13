@@ -25,6 +25,7 @@ class Service:
         self.doc = doc
         self.hooks = {}
         self.commands = set([])
+        self.models = set([])
         self.tasks = []
         self.config_factory = Config
         self.on_setup = None
@@ -137,10 +138,15 @@ class Service:
         self.on_shutdown = f
         return f
 
+    def _autocreate_models(self):
+        for model in self.models:
+            model.create_table(True)
+
     def run_setup(self, bot):
         """
         Run all setup functions for the service.
         """
+        self._autocreate_models()
         if self.on_setup is not None:
             self.on_setup(bot)
 
@@ -174,6 +180,10 @@ class Service:
         """
         _, storage = bot.services[self.name]
         return storage
+
+    def model(self, model):
+        self.models.add(model)
+        return model
 
 
 def background(f):

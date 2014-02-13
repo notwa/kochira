@@ -44,6 +44,7 @@ WHOOSH_SCHEMA = whoosh.fields.Schema(
 )
 
 
+@service.model
 class Quote(Model):
     by = CharField(255)
     quote = TextField()
@@ -82,7 +83,6 @@ def initialize_model(bot):
         storage.index = whoosh.index.open_dir(config.index_path)
 
     storage.quote_qp = QueryParser("quote", schema=WHOOSH_SCHEMA)
-    Quote.create_table(True)
 
 
 def _add_quote(bot, network, channel, origin, quote):

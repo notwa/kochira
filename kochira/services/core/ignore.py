@@ -13,6 +13,7 @@ from kochira.service import Service
 service = Service(__name__, __doc__)
 
 
+@service.model
 class Ignore(Model):
     hostmask = CharField(255)
     # TODO: requires migration from network to client_name
@@ -22,11 +23,6 @@ class Ignore(Model):
         indexes = (
             (("hostmask", "network"), True),
         )
-
-
-@service.setup
-def initialize_model(bot):
-    Ignore.create_table(True)
 
 
 @service.command(r"(?:ignore|add ignore for) (?P<hostmask>\S+)$", mention=True)
