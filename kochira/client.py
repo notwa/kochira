@@ -6,8 +6,6 @@ import textwrap
 from pydle import Client as _Client
 from pydle.features.rfc1459.protocol import MESSAGE_LENGTH_LIMIT
 
-from zmq.eventloop import ioloop
-
 from .service import Service
 
 logger = logging.getLogger(__name__)
@@ -55,22 +53,13 @@ class Client(_Client):
 
         return client
 
-    def _handle_next_message(self, fd, events):
-        if self.connection.socket is None or not self.connection.receive_data():
-            # connection was closed
-            logging.warn("Lost connection: %s", self.name)
-            self.on_disconnect(False)
-            return
-
-        if self.connection.parse_data():
-            while len(self.connection.message_queue) > 0:
-                self.on_raw(self.connection.get_message())
-
     def connect(self, *args, reconnect=False, attempt=0, **kwargs):
         logger.info("Connecting: %s", self.name)
 
         try:
-            super().connect(*args, reconnect=reconnect, **kwargs)
+            super().connect(*args, reconnect=reconnect,
+                            eventloop=self.bot.event_loop,
+                            **kwargs)
         except (OSError, IOError) as e:
             backoff = Client.RECONNECT_BACKOFF[min(
                 attempt,
@@ -80,25 +69,20 @@ class Client(_Client):
             logger.warning("Couldn't connect: %s, reattempting in %d seconds: %s",
                             self.name, backoff, e)
 
-            self._reconnect_timeout = self.bot.io_loop.add_timeout(
+            self._reconnect_timeout = self.bot.event_loop.io_loop.add_timeout(
                 timedelta(seconds=backoff),
                 lambda: self.connect(*args, reconnect=reconnect,
                                      attempt=attempt + 1, **kwargs)
             )
         else:
-            self.fd = self.connection.socket.fileno()
-            self.bot.io_loop.add_handler(self.fd, self._handle_next_message,
-                                         ioloop.IOLoop.READ)
+            self.handle_forever()
 
     def on_disconnect(self, expected):
         self._reset_attributes()
 
         if self._reconnect_timeout is not None:
-            self.bot.io_loop.remove_timeout(self._reconnect_timeout)
+            self.bot.event_loop.io_loop.remove_timeout(self._reconnect_timeout)
             self._reconnect_timeout = None
-
-        self.bot.io_loop.remove_handler(self.fd)
-        self.fd = None
 
         self._run_hooks("disconnect", None, [expected])
 

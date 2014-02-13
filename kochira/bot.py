@@ -11,7 +11,7 @@ from peewee import SqliteDatabase
 import signal
 import yaml
 
-from tornado import ioloop
+from pydle.async import EventLoop
 
 from . import config
 from .client import Client
@@ -124,7 +124,7 @@ class Bot:
     def __init__(self, config_file="config.yml"):
         self.services = {}
         self.clients = {}
-        self.io_loop = ioloop.IOLoop()
+        self.event_loop = EventLoop()
 
         self.config_class = _config_class_factory(self)
         self.config_file = config_file
@@ -153,7 +153,7 @@ class Bot:
 
         # schedule this for the next iteration of the ioloop so we can handle
         # pending messages
-        self.io_loop.add_callback(client.quit)
+        self.event_loop.schedule(client.quit)
 
         del self.clients[name]
 
@@ -167,7 +167,7 @@ class Bot:
             if config.autoconnect:
                 self.connect(name)
 
-        self.io_loop.start()
+        self.event_loop.run()
 
     def _load_services(self):
         for service, config in self.config.services.items():
@@ -182,7 +182,7 @@ class Bot:
         self.scheduler.unschedule_service(service)
 
     def defer_from_thread(self, fn, *args, **kwargs):
-        self.io_loop.add_callback(functools.partial(fn, *args, **kwargs))
+        self.event_loop.schedule(functools.partial(fn, *args, **kwargs))
 
     def load_service(self, name, reload=False):
         """

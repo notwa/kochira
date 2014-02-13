@@ -171,10 +171,10 @@ def setup_webserver(bot):
     storage.application.bot = bot
     storage.application.name = None
 
-    @bot.io_loop.add_callback
+    @bot.event_loop.schedule
     def _callback():
         storage.http_server = HTTPServer(storage.application,
-                                         io_loop=bot.io_loop)
+                                         io_loop=bot.event_loop.io_loop)
         storage.http_server.listen(config.port, config.address)
         service.logger.info("web server ready")
 
@@ -183,7 +183,7 @@ def setup_webserver(bot):
 def shutdown_webserver(bot):
     storage = service.storage_for(bot)
 
-    @bot.io_loop.add_callback
+    @bot.event_loop.schedule
     def _callback():
         storage.http_server.stop()
         service.logger.info("web server stopped")
