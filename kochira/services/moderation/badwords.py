@@ -71,7 +71,7 @@ def list_badwords(client, target, origin):
     ))
 
 
-@service.hook("message")
+@service.hook("channel_message")
 def check_badwords(client, target, origin, message):
     for badword in Badword.select().where(Badword.client_name == client.name,
                                           Badword.channel == target):
