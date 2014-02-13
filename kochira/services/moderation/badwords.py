@@ -32,6 +32,12 @@ class Badword(Model):
 @service.command("(?P<word>.+) is a bad word", mention=True)
 @requires_permission("badword")
 def add_badword(client, target, origin, word):
+    """
+    Add a bad word.
+
+    Next person to say the bad word will be kicked. Bad word can be delimited
+    by forward slashes to act as a regular expression.
+    """
     if Badword.select().where(Badword.client_name == client.name,
                               Badword.channel == target,
                               Badword.word == word).exists():
@@ -50,6 +56,11 @@ def add_badword(client, target, origin, word):
 @service.command("(?P<word>.+) is not a bad word", mention=True, priority=1)
 @requires_permission("badword")
 def remove_badword(client, target, origin, word):
+    """
+    Remove a bad word.
+
+    Permits the word to be said freely on the channel.
+    """
     if Badword.delete().where(Badword.client_name == client.name,
                               Badword.channel == target,
                               Badword.word == word).execute() == 0:
@@ -64,6 +75,11 @@ def remove_badword(client, target, origin, word):
 
 @service.command("(?:list )?bad words", mention=True)
 def list_badwords(client, target, origin):
+    """
+    List bad words.
+
+    List all bad words enforced.
+    """
     client.message(target, "{origin}: The following are bad words: {badwords}".format(
         origin=origin,
         badwords=", ".join(badword.word if is_regex(badword.word) else "\"" + badword.word + "\""
