@@ -5,17 +5,20 @@ Kick people for using bad words.
 """
 
 import re
+import itertools
 
 from peewee import CharField
 
+from kochira import config
 from kochira.auth import requires_permission
 from kochira.db import Model
-from kochira.service import Service
+from kochira.service import Service, Config
 
 service = Service(__name__, __doc__)
 
 def is_regex(what):
     return what[0] == "/" and what[-1] == "/"
+
 
 @service.model
 class Badword(Model):
@@ -27,6 +30,12 @@ class Badword(Model):
         indexes = (
             (("client_name", "channel", "word"), True),
         )
+
+
+@service.config
+class Config(Config):
+    chanserv_kick = config.Field("Ask ChanServ to perform the kick.", default=False)
+    chanserv_op = config.Field("Ask ChanServ to op with the given command, if not already opped.", default=None)
 
 
 @service.command("(?P<word>.+) is a bad word", mention=True)
@@ -90,6 +99,14 @@ def list_badwords(client, target, origin):
 
 @service.hook("channel_message")
 def check_badwords(client, target, origin, message):
+    config = service.config_for(client.bot, client.name, target)
+
+    def _callback():
+        if config.chanserv_kick:
+            client.message("ChanServ", "KICK {target} {origin} Watch your language!".format(target=target, origin=origin))
+        else:
+            client.rawmsg("KICK", target, origin, "Watch your language!")
+
     for badword in Badword.select().where(Badword.client_name == client.name,
                                           Badword.channel == target):
         if is_regex(badword.word):
@@ -98,5 +115,17 @@ def check_badwords(client, target, origin, message):
             expr = r"\b{}\b".format(re.escape(badword.word))
 
         if re.search(expr, message, re.I) is not None:
-            client.rawmsg("KICK", target, origin, "Watch your language!")
+            op_modes = set(itertools.takewhile(lambda x: x != "v",
+                                               client._nickname_prefixes.values()))
+
+            ops = set([])
+
+            for op_mode in op_modes:
+                ops.update(client.channels[target]["modes"].get(op_mode, []))
+
+            if client.nickname not in ops and config.chanserv_op is not None:
+                client.message("ChanServ", "{command} {target} {origin}".format(command=config.chanserv_op, target=target, origin=origin))
+                client.bot.eventloop.schedule(_callback)
+            else:
+                _callback()
             return Service.EAT
