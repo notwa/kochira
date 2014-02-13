@@ -34,8 +34,8 @@ class Badword(Model):
 
 @service.config
 class Config(Config):
-    chanserv_kick = config.Field("Ask ChanServ to perform the kick.", default=False)
-    chanserv_op = config.Field("Ask ChanServ to op with the given command, if not already opped.", default=None)
+    chanserv_kick = config.Field(doc="Ask ChanServ to perform the kick.", default=False)
+    chanserv_op = config.Field(doc="Ask ChanServ to op with the given command, if not already opped.", default=None)
 
 
 @service.command("(?P<word>.+) is a bad word", mention=True)
