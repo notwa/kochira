@@ -74,8 +74,6 @@ class Client(_Client):
                 lambda: self.connect(*args, reconnect=reconnect,
                                      attempt=attempt + 1, **kwargs)
             )
-        else:
-            self.handle_forever()
 
     def on_disconnect(self, expected):
         self._reset_attributes()
