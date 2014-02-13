@@ -19,6 +19,7 @@ service = Service(__name__, __doc__)
 @service.setup
 def setup_eval_locals(bot):
     storage = service.storage_for(bot)
+    storage.eval_globals = {"bot": bot}
     storage.eval_locals = {}
 
 
@@ -128,7 +129,7 @@ def eval_code(client, target, origin, code):
 
     try:
         eval(compile(code, "<irc>", "single"),
-             {"bot": client.bot}, storage.eval_locals)
+             storage.eval_globals, storage.eval_locals)
     except BaseException as e:
         client.message(target, "<<! {name}: {info}".format(
             name=e.__class__.__name__,
