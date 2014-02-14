@@ -8,8 +8,11 @@ import re
 import requests
 from lxml import etree
 
+from pydle.async import blocking
+
 from kochira import config
 from kochira.service import Service, background, Config
+from kochira.userdata import UserData
 
 service = Service(__name__, __doc__)
 
@@ -21,6 +24,7 @@ class Config(Config):
 @service.command(r"!wa (?P<query>.+)$")
 @service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)
 @background
+@blocking
 def compute(client, target, origin, query):
     """
     Compute.
@@ -28,7 +32,17 @@ def compute(client, target, origin, query):
     Run a query on Wolfram|Alpha and display the result.
     """
 
+    try:
+        user_data = yield UserData.lookup(client, origin)
+    except UserData.DoesNotExist:
+        user_data = {}
+
     config = service.config_for(client.bot)
+
+    location = user_data.get("location", None)
+
+    if location is not None:
+        query = "latlong=\"{lat:.10},{lng:.10}\" ".format(**location) + query
 
     resp = requests.get("http://api.wolframalpha.com/v2/query",
         params={
