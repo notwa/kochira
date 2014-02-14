@@ -4,6 +4,7 @@ from datetime import timedelta
 import textwrap
 
 from pydle import Client as _Client
+from pydle.async import Future, blocking
 from pydle.features.rfc1459.protocol import MESSAGE_LENGTH_LIMIT
 
 from .service import Service
@@ -132,6 +133,7 @@ class Client(_Client):
             super(Client, self).notice(target, message)
             self._run_hooks("own_notice", target, [target, message])
 
+    @blocking
     def _run_hooks(self, name, target, args=None, kwargs=None):
         if args is None:
             args = []
@@ -147,6 +149,9 @@ class Client(_Client):
 
             try:
                 r = hook(self, *args, **kwargs)
+                if isinstance(r, Future):
+                    r = yield r
+
                 if r is Service.EAT:
                     return Service.EAT
             except BaseException:

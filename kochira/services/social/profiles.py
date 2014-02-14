@@ -4,25 +4,12 @@ Personal profiles.
 This service allows the bot to keep track of people's profiles.
 """
 
-from peewee import CharField, TextField
-
-from kochira.db import Model
+from pydle.async import blocking
 
 from kochira.service import Service
+from kochira.userdata import UserData
 
 service = Service(__name__, __doc__)
-
-@service.model
-class Profile(Model):
-    who = CharField(255)
-    # TODO: requires migration from network to client_name
-    network = CharField(255)
-    text = TextField()
-
-    class Meta:
-        indexes = (
-            (("who", "network"), True),
-        )
 
 
 @service.command(r"forget(?: about)? me$", mention=True)
@@ -33,18 +20,28 @@ def forget_profile(client, target, origin):
     Remove the given profile text from the user.
     """
 
-    if Profile.delete().where(Profile.network == client.name,
-                              Profile.who == origin).execute():
-        client.message(target, "{origin}: Okay, I won't remember you anymore.".format(
-            origin=origin
-        ))
+    try:
+        user_data = yield UserData.lookup(client, origin)
+    except UserData.DoesNotExist:
+        exists = False
     else:
+        exists = "profile" in user_data
+
+    if not exists:
         client.message(target, "{origin}: I don't know who you are.".format(
             origin=origin
         ))
+        return
+
+    del user_data["profile"]
+
+    client.message(target, "{origin}: Okay, I won't remember you anymore.".format(
+        origin=origin
+    ))
 
 
 @service.command(r"[Ii](?: a|')m (?P<text>.+)$", mention=True)
+@blocking
 def remember_profile(client, target, origin, text):
     """
     Remember profile.
@@ -53,14 +50,14 @@ def remember_profile(client, target, origin, text):
     """
 
     try:
-        profile = Profile.get(Profile.network == client.name,
-                              Profile.who == origin)
-    except Profile.DoesNotExist:
-        profile = Profile.create(network=client.name, who=origin,
-                                 text=text)
+        user_data = yield UserData.lookup(client, origin)
+    except UserData.DoesNotExist:
+        client.message(target, "{origin}: Please authenticate before you add a profile.".format(
+            origin=origin
+        ))
+        return
 
-    profile.text = text
-    profile.save()
+    user_data["profile"] = text
 
     client.message(target, "{origin}: Okay, I'll remember you.".format(
         origin=origin
@@ -69,27 +66,27 @@ def remember_profile(client, target, origin, text):
 
 @service.command(r"who am [Ii]\??$", mention=True)
 @service.command(r"who(?: is|'s| the .* is) (?P<who>\S+)\??$", mention=True)
+@blocking
 def get_profile(client, target, origin, who=None):
     """
     Get profile.
 
     Retrieve profile text for a user.
     """
-
     if who is None:
         who = origin
 
-    try:
-        profile = Profile.get(Profile.network == client.name,
-                              Profile.who == who)
-    except Profile.DoesNotExist:
+    user_data = yield UserData.lookup_default(client, who)
+
+    if "profile" not in user_data:
         client.message(target, "{origin}: {who} hasn't told me who they are yet.".format(
             origin=origin,
             who=who
         ))
-    else:
-        client.message(target, "{origin}: {who} is {text}".format(
+        return
+
+    client.message(target, "{origin}: {who} is {text}".format(
         origin=origin,
-        who=profile.who,
-        text=profile.text
+        who=who,
+        text=user_data["profile"]
     ))

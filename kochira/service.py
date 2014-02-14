@@ -3,6 +3,8 @@ import re
 import logging
 import bisect
 
+from pydle.async import blocking, Future
+
 from . import config
 
 logger = logging.getLogger(__name__)
@@ -194,13 +196,11 @@ def background(f):
     f.background = True
 
     @functools.wraps(f)
+    @blocking
     def _inner(client, *args, **kwargs):
-        future = client.bot.executor.submit(f, client, *args, **kwargs)
-
-        @future.add_done_callback
-        def on_complete(future):
-            exc = future.exception()
-            if exc is not None:
-                logger.error("Command error", exc_info=exc)
+        result = yield client.bot.executor.submit(f, client, *args, **kwargs)
+        if isinstance(result, Future):
+            result = yield result
+        return result
 
     return _inner

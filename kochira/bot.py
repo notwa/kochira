@@ -19,6 +19,7 @@ from .db import database
 from .scheduler import Scheduler
 from .util import Expando
 from .service import Service, Config as ServiceConfig
+from .userdata import UserDataKVPair
 
 from kochira import services
 
@@ -161,6 +162,7 @@ class Bot:
         db_name = self.config.core.database
         database.initialize(SqliteDatabase(db_name, threadlocals=True))
         logger.info("Opened database connection: %s", db_name)
+        UserDataKVPair.create_table(True)
 
     def _connect_to_irc(self):
         for name, config in self.config.clients.items():

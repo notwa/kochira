@@ -5,11 +5,12 @@ Enables users to grant each other karma.
 """
 
 from datetime import datetime, timedelta
-from peewee import CharField, IntegerField
+
+from pydle.async import blocking
 
 from kochira import config
-from kochira.db import Model
 from kochira.service import Service, Config
+from kochira.userdata import UserData
 
 service = Service(__name__, __doc__)
 
@@ -26,19 +27,8 @@ def initialize(bot):
     storage.granters = {}
 
 
-@service.model
-class Karma(Model):
-    who = CharField(255)
-    network = CharField(255)
-    karma = IntegerField()
-
-    class Meta:
-        indexes = (
-            (("who", "network"), True),
-        )
-
-
 @service.command(r"(?P<who>\S+)\+\+")
+@blocking
 def add_karma(client, target, origin, who):
     """
     Add karma.
@@ -50,9 +40,7 @@ def add_karma(client, target, origin, who):
 
     now = datetime.utcnow()
 
-    who_n = client.normalize(who)
-
-    if client.normalize(origin) == who_n:
+    if client.normalize(origin) == client.normalize(who):
         client.message(target, "{origin}: You can't give yourself karma.".format(
             origin=origin
         ))
@@ -68,41 +56,41 @@ def add_karma(client, target, origin, who):
         return
 
     try:
-        karma = Karma.get(Karma.who == who_n, Karma.network == client.network)
-    except Karma.DoesNotExist:
-        karma = Karma.create(who=who_n, network=client.network, karma=0)
+        user_data = yield UserData.lookup(client, who)
+    except UserData.DoesNotExist:
+        client.message(target, "{origin}: {who}'s account is not registered.".format(
+            origin=origin,
+            who=who
+        ))
+        return
 
-    karma.karma += 1
-    karma.save()
+    user_data.setdefault("karma", 0)
+    user_data["karma"] += 1
 
     storage.granters[origin, client.network] = now
 
     client.message(target, "{origin}: {who} now has {n} karma.".format(
         origin=origin,
         who=who,
-        n=karma.karma
+        n=user_data["karma"]
     ))
 
 
 @service.command(r"!karma (?P<who>\S+)")
 @service.command(r"karma for (?P<who>\S+)", mention=True)
+@blocking
 def get_karma(client, target, origin, who):
     """
     Get karma.
 
     Get the amount of karma for a user.
     """
-    who_n = client.normalize(who)
 
-    try:
-        karma = Karma.get(Karma.who == who_n, Karma.network == client.network)
-    except Karma.DoesNotExist:
-        n = 0
-    else:
-        n = karma.karma
+    user_data = yield UserData.lookup_default(client, who)
+    karma = user_data.get("karma", 0)
 
     client.message(target, "{origin}: {who} has {n} karma.".format(
         origin=origin,
         who=who,
-        n=n
+        n=karma
     ))

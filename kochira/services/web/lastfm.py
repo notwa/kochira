@@ -9,11 +9,12 @@ import requests
 import gzip
 import humanize
 from datetime import datetime
-from peewee import CharField
 from lxml import etree
 
+from pydle.async import blocking
+
 from kochira import config
-from kochira.db import Model
+from kochira.userdata import UserData
 from kochira.service import Service, background, Config
 
 service = Service(__name__, __doc__)
@@ -21,18 +22,6 @@ service = Service(__name__, __doc__)
 @service.config
 class Config(Config):
     api_key = config.Field(doc="Last.fm API key.")
-
-
-@service.model
-class LastFMProfile(Model):
-    who = CharField(255)
-    network = CharField(255)
-    lastfm_user = CharField(255)
-
-    class Meta:
-        indexes = (
-            (("who", "network"), True),
-        )
 
 
 def query_lastfm(api_key, method, arguments):
@@ -132,18 +121,15 @@ def get_user_now_playing(api_key, user):
     return None
 
 
+@blocking
 def get_lfm_username(client, who):
-    try:
-        profile = LastFMProfile.get(LastFMProfile.network == client.network,
-                                    LastFMProfile.who == who)
-
-        return profile.lastfm_user
-    except LastFMProfile.DoesNotExist:
-        return who
+    user_data = yield UserData.lookup_default(client, who)
+    return user_data.get("lastfm_user", who)
 
 
 @service.command(r"!lfm (?P<lfm_username>\S+)$")
 @service.command(r"my last\.fm username is (?P<lfm_username>\S+)$", mention=True)
+@blocking
 def setup_user(client, target, origin, lfm_username):
     """
     Set username.
@@ -152,14 +138,14 @@ def setup_user(client, target, origin, lfm_username):
     """
 
     try:
-        profile = LastFMProfile.get(LastFMProfile.network == client.network,
-                                    LastFMProfile.who == origin)
-    except LastFMProfile.DoesNotExist:
-        profile = LastFMProfile.create(network=client.network, who=origin,
-                                       lastfm_user=lfm_username)
+        user_data = yield UserData.lookup(client, origin)
+    except UserData.DoesNotExist:
+        client.message(target, "{origin}: You must be authenticated to set your Last.fm username.".format(
+            origin=origin
+        ))
+        return
 
-    profile.lastfm_user = lfm_username
-    profile.save()
+    user_data["lastfm_user"] = lfm_username
 
     client.message(target, "{origin}: You have been associated with the Last.fm username {user}.".format(
         origin=origin,
@@ -169,6 +155,7 @@ def setup_user(client, target, origin, lfm_username):
 
 @service.command(r"!lfm$")
 @service.command(r"what is my last\.fm username\??$", mention=True)
+@blocking
 def check_user(client, target, origin):
     """
     Now playing.
@@ -177,17 +164,23 @@ def check_user(client, target, origin):
     """
 
     try:
-        profile = LastFMProfile.get(LastFMProfile.network == client.network,
-                                    LastFMProfile.who == origin)
-    except LastFMProfile.DoesNotExist:
+        user_data = yield UserData.lookup(client, origin)
+    except UserData.DoesNotExist:
+        client.message(target, "{origin}: You must be authenticated to set your Last.fm username.".format(
+            origin=origin
+        ))
+        return
+
+    if "lastfm_user" not in user_data:
         client.message(target, "{origin}: You don't have a Last.fm username associated with your nickname. Please use \"!lfm\" to associate one.".format(
             origin=origin
         ))
-    else:
-        client.message(target, "{origin}: Your nickname is associated with {user}.".format(
-            origin=origin,
-            user=profile.lastfm_user
-        ))
+        return
+
+    client.message(target, "{origin}: Your nickname is associated with {user}.".format(
+        origin=origin,
+        user=user_data["lastfm_user"]
+    ))
 
 
 @service.command(r"!tasteometer (?P<user1>\S+) (?P<user2>\S+)$")
@@ -195,6 +188,7 @@ def check_user(client, target, origin):
 @service.command(r"compare my last\.fm with (?P<user2>\S+)$", mention=True)
 @service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$", mention=True)
 @background
+@blocking
 def compare_users(client, target, origin, user2, user1=None):
     """
     Tasteometer.
@@ -207,8 +201,8 @@ def compare_users(client, target, origin, user2, user1=None):
     if user1 is None:
         user1 = origin
 
-    lfm1 = get_lfm_username(client, user1)
-    lfm2 = get_lfm_username(client, user2)
+    lfm1 = yield get_lfm_username(client, user1)
+    lfm2 = yield get_lfm_username(client, user2)
 
     comparison = get_compare_users(config.api_key, lfm1, lfm2)
 
@@ -234,6 +228,7 @@ def compare_users(client, target, origin, user2, user1=None):
 @service.command(r"what am i playing\??$", mention=True)
 @service.command(r"what is (?P<who>\S+) playing\??$", mention=True)
 @background
+@blocking
 def now_playing(client, target, origin, who=None):
     """
     Get username.
@@ -246,7 +241,7 @@ def now_playing(client, target, origin, who=None):
     if who is None:
         who = origin
 
-    lfm = get_lfm_username(client, who)
+    lfm = yield get_lfm_username(client, who)
 
     track = get_user_now_playing(config.api_key, lfm)
 
