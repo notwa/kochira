@@ -39,21 +39,19 @@ def compute(client, target, origin, query):
 
     config = service.config_for(client.bot)
 
-    location = user_data.get("location", None)
+    params = {
+        "input": query,
+        "appid": config.appid,
+        "format": "plaintext",
+        "reinterpret": "true"
+    }
 
+    location = user_data.get("location", None)
     if location is not None:
-        query = "latlong=\"{lat:.10},{lng:.10}\" ".format(
-            lat=location["lat"],
-            lng=-location["lng"]
-        ) + query
+        params["latlong"] = "{lat:.10},{lng:.10}".format(**location)
 
     resp = requests.get("http://api.wolframalpha.com/v2/query",
-        params={
-            "input": query,
-            "appid": config.appid,
-            "format": "plaintext",
-            "reinterpret": "true"
-        },
+        params,
         stream=True
     )
 
