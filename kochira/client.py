@@ -122,8 +122,8 @@ class Client(_Client):
         @self.bot.defer_from_thread
         def _callback():
             super(Client, self).message(target, message)
-            self._run_hooks("own_message", target, [target, message])
             self._add_to_backlog(target, self.nickname, message)
+            self._run_hooks("own_message", target, [target, message])
 
     def notice(self, target, message):
         message = self._autotruncate("PRIVMSG", target, message)
@@ -184,12 +184,12 @@ class Client(_Client):
         self._run_hooks("user_mode_change", None, [modes])
 
     def on_channel_message(self, target, by, message):
-        self._run_hooks("channel_message", target, [target, by, message])
         self._add_to_backlog(target, by, message)
+        self._run_hooks("channel_message", target, [target, by, message])
 
     def on_private_message(self, by, message):
-        self._run_hooks("private_message", by, [by, message])
         self._add_to_backlog(by, by, message)
+        self._run_hooks("private_message", by, [by, message])
 
     def on_nick_change(self, old, new):
         self._run_hooks("nick_change", new, [old, new])
