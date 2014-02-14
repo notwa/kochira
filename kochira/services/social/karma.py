@@ -46,7 +46,7 @@ def add_karma(client, target, origin, who):
     Increment a user's karma.
     """
     storage = service.storage_for(client.bot)
-    config = service.storage_for(client.bot, client.name, target)
+    config = service.config_for(client.bot, client.name, target)
 
     now = datetime.utcnow()
 
