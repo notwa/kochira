@@ -4,11 +4,26 @@ Karma tracker.
 Enables users to grant each other karma.
 """
 
+from datetime import datetime, timedelta
 from peewee import CharField, IntegerField
+
+from kochira import config
 from kochira.db import Model
-from kochira.service import Service
+from kochira.service import Service, Config
 
 service = Service(__name__, __doc__)
+
+
+@service.config
+class Config(Config):
+    timeout = config.Field(doc="Timeout for granting another user karma, in seconds.", default=30 * 60)
+
+
+@service.setup
+def initialize(bot):
+    storage = service.storage_for(bot)
+
+    storage.granters = {}
 
 
 @service.model
@@ -30,6 +45,10 @@ def add_karma(client, target, origin, who):
 
     Increment a user's karma.
     """
+    storage = service.storage_for(client.bot)
+    config = service.storage_for(client.bot, client.name, target)
+
+    now = datetime.utcnow()
 
     who_n = client.normalize(who)
 
@@ -37,6 +56,16 @@ def add_karma(client, target, origin, who):
         client.message(target, "{origin}: You can't give yourself karma.".format(
             origin=origin
         ))
+        return
+
+    last_grant = storage.granters.get((origin, client.network),
+                                      datetime.fromtimestamp(0))
+
+    if now - last_grant <= timedelta(config.timeout):
+        client.message(target, "{origin}: Please wait a while before granting someone karma.".format(
+            origin=origin
+        ))
+        return
 
     try:
         karma = Karma.get(Karma.who == who_n, Karma.network == client.network)
@@ -45,6 +74,8 @@ def add_karma(client, target, origin, who):
 
     karma.karma += 1
     karma.save()
+
+    storage.granters[origin, client.network] = now
 
     client.message(target, "{origin}: {who} now has {n} karma.".format(
         origin=origin,
