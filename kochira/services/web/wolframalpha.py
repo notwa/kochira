@@ -84,7 +84,7 @@ def compute(client, target, origin, query):
                 origin=origin,
                 line=line
             ))
-    else:
+    elif primary:
         client.message(target, "{origin}: {inp} = {primary}".format(
             origin=origin,
             inp=inp,
