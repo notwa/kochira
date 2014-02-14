@@ -17,8 +17,8 @@ class Add(Model):
     number = IntegerField()
 
 
-@service.command("add", mention=True)
-@service.command("!add", mention=False)
+@service.command("add", mention=True, allow_private=False)
+@service.command("!add", mention=False, allow_private=False)
 def add(client, target, origin):
     """
     Add to the number.
