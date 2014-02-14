@@ -4,7 +4,7 @@ Personal profiles.
 This service allows the bot to keep track of people's profiles.
 """
 
-from pydle.async import blocking
+from pydle.async import coroutine
 
 from kochira.service import Service
 from kochira.userdata import UserData
@@ -41,7 +41,7 @@ def forget_profile(client, target, origin):
 
 
 @service.command(r"[Ii](?: a|')m (?P<text>.+)$", mention=True)
-@blocking
+@coroutine
 def remember_profile(client, target, origin, text):
     """
     Remember profile.
@@ -66,7 +66,7 @@ def remember_profile(client, target, origin, text):
 
 @service.command(r"who am [Ii]\??$", mention=True)
 @service.command(r"who(?: is|'s| the .* is) (?P<who>\S+)\??$", mention=True)
-@blocking
+@coroutine
 def get_profile(client, target, origin, who=None):
     """
     Get profile.

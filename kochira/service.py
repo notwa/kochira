@@ -3,7 +3,7 @@ import re
 import logging
 import bisect
 
-from pydle.async import blocking, Future
+from pydle.async import coroutine, Future
 
 from . import config
 
@@ -65,7 +65,7 @@ class Service:
             f.patterns.add((pattern, mention))
 
             @functools.wraps(f)
-            @blocking
+            @coroutine
             def _command_handler(client, origin, target, message):
                 if strip:
                     message = message.strip()
@@ -200,7 +200,7 @@ def background(f):
     f.background = True
 
     @functools.wraps(f)
-    @blocking
+    @coroutine
     def _inner(client, *args, **kwargs):
         result = yield client.bot.executor.submit(f, client, *args, **kwargs)
         if isinstance(result, Future):

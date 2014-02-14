@@ -3,7 +3,7 @@ import peewee
 import collections
 from .db import Model
 
-from pydle.async import blocking
+from pydle.async import coroutine
 
 
 class JSONField(peewee.TextField):
@@ -86,7 +86,7 @@ class UserData(collections.MutableMapping):
     class DoesNotExist(Exception): pass
 
     @classmethod
-    @blocking
+    @coroutine
     def lookup(cls, client, nickname):
         whois = yield client.whois(nickname)
 
@@ -107,7 +107,7 @@ class UserData(collections.MutableMapping):
         return cls(client.network, account)
 
     @classmethod
-    @blocking
+    @coroutine
     def lookup_default(cls, client, nickname):
         try:
             r = yield cls.lookup(client, nickname)

@@ -11,7 +11,7 @@ import humanize
 from datetime import datetime
 from lxml import etree
 
-from pydle.async import blocking
+from pydle.async import coroutine
 
 from kochira import config
 from kochira.userdata import UserData
@@ -145,7 +145,7 @@ def get_user_now_playing(api_key, user):
     return None
 
 
-@blocking
+@coroutine
 def get_lfm_username(client, who):
     user_data = yield UserData.lookup_default(client, who)
     return user_data.get("lastfm_user", who)
@@ -153,7 +153,7 @@ def get_lfm_username(client, who):
 
 @service.command(r"!lfm (?P<lfm_username>\S+)$")
 @service.command(r"my last\.fm username is (?P<lfm_username>\S+)$", mention=True)
-@blocking
+@coroutine
 def setup_user(client, target, origin, lfm_username):
     """
     Set username.
@@ -179,7 +179,7 @@ def setup_user(client, target, origin, lfm_username):
 
 @service.command(r"!lfm$")
 @service.command(r"what is my last\.fm username\??$", mention=True)
-@blocking
+@coroutine
 def check_user(client, target, origin):
     """
     Now playing.
@@ -212,7 +212,7 @@ def check_user(client, target, origin):
 @service.command(r"compare my last\.fm with (?P<user2>\S+)$", mention=True)
 @service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$", mention=True)
 @background
-@blocking
+@coroutine
 def compare_users(client, target, origin, user2, user1=None):
     """
     Tasteometer.
@@ -252,7 +252,7 @@ def compare_users(client, target, origin, user2, user1=None):
 @service.command(r"what am i playing\??$", mention=True)
 @service.command(r"what is (?P<who>\S+) playing\??$", mention=True)
 @background
-@blocking
+@coroutine
 def now_playing(client, target, origin, who=None):
     """
     Get username.

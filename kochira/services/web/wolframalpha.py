@@ -8,7 +8,7 @@ import re
 import requests
 from lxml import etree
 
-from pydle.async import blocking
+from pydle.async import coroutine
 
 from kochira import config
 from kochira.service import Service, background, Config
@@ -24,7 +24,7 @@ class Config(Config):
 @service.command(r"!wa (?P<query>.+)$")
 @service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)
 @background
-@blocking
+@coroutine
 def compute(client, target, origin, query):
     """
     Compute.

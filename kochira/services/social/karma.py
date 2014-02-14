@@ -6,7 +6,7 @@ Enables users to grant each other karma.
 
 from datetime import datetime, timedelta
 
-from pydle.async import blocking
+from pydle.async import coroutine
 
 from kochira import config
 from kochira.service import Service, Config
@@ -28,7 +28,7 @@ def initialize(bot):
 
 
 @service.command(r"(?P<who>\S+)\+\+")
-@blocking
+@coroutine
 def add_karma(client, target, origin, who):
     """
     Add karma.
@@ -78,7 +78,7 @@ def add_karma(client, target, origin, who):
 
 @service.command(r"!karma (?P<who>\S+)")
 @service.command(r"karma for (?P<who>\S+)", mention=True)
-@blocking
+@coroutine
 def get_karma(client, target, origin, who):
     """
     Get karma.

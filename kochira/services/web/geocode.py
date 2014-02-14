@@ -6,7 +6,7 @@ Look up and reverse look up addresses.
 
 import requests
 
-from pydle.async import blocking
+from pydle.async import coroutine
 
 from kochira import config
 from kochira.service import Service, background, Config
@@ -32,7 +32,7 @@ def geocode(address):
 
 @service.command(r"my location is (?P<place>.+)", mention=True)
 @background
-@blocking
+@coroutine
 def set_location(client, target, origin, place):
     """
     Set location.
@@ -79,7 +79,7 @@ def set_location(client, target, origin, place):
 @service.command(r"find (?P<what>.+?) near (?:me|(?P<place>.+))", mention=True)
 @service.command(r"find (?P<what>.+?) within (?P<radius>\d+) ?m of (?:me|(?P<place>.+))", mention=True)
 @background
-@blocking
+@coroutine
 def nearby_search(client, target, origin, what, place=None, radius : int=None):
     """
     Nearby search.
