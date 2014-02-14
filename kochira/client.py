@@ -153,6 +153,7 @@ class Client(_Client):
                     r = yield r
 
                 if r is Service.EAT:
+                    logging.debug("EAT suppressed further hooks.")
                     return Service.EAT
             except BaseException:
                 logger.error("Hook processing failed", exc_info=True)

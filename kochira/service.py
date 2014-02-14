@@ -65,6 +65,7 @@ class Service:
             f.patterns.add((pattern, mention))
 
             @functools.wraps(f)
+            @blocking
             def _command_handler(client, origin, target, message):
                 if strip:
                     message = message.strip()
@@ -90,6 +91,9 @@ class Service:
                         kwargs[k] = f.__annotations__[k](v)
 
                 r = f(client, origin, target, **kwargs)
+
+                if isinstance(r, Future):
+                    r = yield r
 
                 if r is not None:
                     return r
