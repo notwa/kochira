@@ -51,7 +51,7 @@ def compute(client, target, origin, query):
         params["latlong"] = "{lat:.10},{lng:.10}".format(**location)
 
     resp = requests.get("http://api.wolframalpha.com/v2/query",
-        params,
+        params=params,
         stream=True
     )
 
