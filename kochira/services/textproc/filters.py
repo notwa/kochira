@@ -56,7 +56,7 @@ def run_filter(f, client, target, origin, text=None):
         if not client.backlogs.get(target, []):
             return
 
-        if len(client.backlogs[target] < 2):
+        if len(client.backlogs[target]) < 2:
             return
 
         _, text = client.backlogs[target][1]
