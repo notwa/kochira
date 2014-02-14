@@ -63,7 +63,7 @@ def set_location(client, target, origin, place):
 
     user_data["location"] = result["geometry"]["location"]
 
-    client.message(target, "{origin}: Okay, set your location to {formatted_address} ({lat:0.000f}, {lng})".format(
+    client.message(target, "{origin}: Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10})".format(
         origin=origin,
         formatted_address=result["formatted_address"],
         lat=result["geometry"]["location"]["lat"],
