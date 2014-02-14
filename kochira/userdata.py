@@ -117,7 +117,9 @@ class UserData(collections.MutableMapping):
             return r
 
     def __repr__(self):
-        return "{__name__}{data}".format(
+        return "<{__name__} network={network!r} account={account!r} {data}>".format(
             __name__=self.__class__.__name__,
+            network=self.network,
+            account=self.account,
             data=dict(self)
         )
