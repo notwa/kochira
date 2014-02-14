@@ -117,8 +117,14 @@ def get_user_now_playing(api_key, user):
             }
         )
         info = track_info_r.xpath("/lfm[@status='ok']/track")
-        user_playcount, = int(info.xpath("userplaycount/text()") or 0)
-        user_loved, = int(info.xpath("userloved/text()") or 0)
+
+        if info:
+            info, = info
+            user_playcount, = int(info.xpath("userplaycount/text()") or 0)
+            user_loved, = int(info.xpath("userloved/text()") or 0)
+        else:
+            user_playcount = 0
+            user_loved = 0
 
         return {
             "user": user,
