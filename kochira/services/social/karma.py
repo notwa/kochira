@@ -61,7 +61,7 @@ def add_karma(client, target, origin, who):
     last_grant = storage.granters.get((origin, client.network),
                                       datetime.fromtimestamp(0))
 
-    if now - last_grant <= timedelta(config.timeout):
+    if now - last_grant <= timedelta(seconds=config.timeout):
         client.message(target, "{origin}: Please wait a while before granting someone karma.".format(
             origin=origin
         ))
