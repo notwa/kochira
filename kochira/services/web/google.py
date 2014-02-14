@@ -50,10 +50,11 @@ def search(client, target, origin, term, num: int=None):
     total = len(results)
 
     if num >= total or num < 0:
-        client.message(target, "{origin}: Can't find that definition of \"{term}\".".format(
+        client.message(target, "{origin}: Can't find anything matching \"{term}\".".format(
             origin=origin,
             term=term
         ))
+        return
 
     client.message(target, "{origin}: {title}: {url} ({num} of {total})".format(
         origin=origin,
