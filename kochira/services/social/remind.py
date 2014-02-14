@@ -40,9 +40,9 @@ class Reminder(Model):
     message = TextField()
     origin = CharField(255)
     who = CharField(255)
+    who_n = CharField(255)
     channel = CharField(255)
-    # TODO: requires migration from network to client_name
-    network = CharField(255)
+    client_name = CharField(255)
     ts = DateTimeField()
     duration = IntegerField(null=True)
 
@@ -64,8 +64,8 @@ def initialize_model(bot):
 def play_timed_reminder(bot, reminder):
     needs_archive = False
 
-    if reminder.network in bot.networks:
-        client = bot.networks[reminder.network]
+    if reminder.client_name in bot.clients:
+        client = bot.clients[reminder.client_name]
 
         if reminder.channel in client.channels:
             if reminder.who in client.channels[reminder.channel]["users"]:
@@ -114,8 +114,9 @@ def add_timed_reminder(client, target, origin, who, duration, message):
         return
 
     # persist reminder to the DB
-    reminder = Reminder.create(who=who, channel=target, origin=origin,
-                               message=message, network=client.name,
+    reminder = Reminder.create(who=who, who_n=client.normalize(who),
+                               channel=target, origin=origin,
+                               message=message, client_name=client.name,
                                ts=datetime.utcnow(),
                                duration=dt.total_seconds())
     reminder.save()
@@ -142,8 +143,9 @@ def add_reminder(client, target, origin, who, message):
     if who.lower() == "me" and who not in client.channels[target]["users"]:
         who = origin
 
-    Reminder.create(who=who, channel=target, origin=origin, message=message,
-                    network=client.name, ts=datetime.utcnow(),
+    Reminder.create(who=who, who_n=client.normalize(who),
+                    channel=target, origin=origin, message=message,
+                    client_name=client.name, ts=datetime.utcnow(),
                     duration=None).save()
 
     client.message(target, "{origin}: Okay, I'll let {who} know.".format(
@@ -164,10 +166,11 @@ def play_reminder_on_join(client, channel, user):
 
 def play_reminder(client, target, origin):
     now = datetime.utcnow()
+    origin = client.normalize(origin)
 
-    for reminder in Reminder.select().where(Reminder.who == origin,
+    for reminder in Reminder.select().where(Reminder.who_n == origin,
                                             Reminder.channel == target,
-                                            Reminder.network == client.network,
+                                            Reminder.client_name == client.name,
                                             Reminder.duration >> None) \
         .order_by(Reminder.ts.asc()):
 
@@ -180,7 +183,7 @@ def play_reminder(client, target, origin):
             message=reminder.message
         ))
 
-    Reminder.delete().where(Reminder.who == origin,
+    Reminder.delete().where(Reminder.who_n == origin,
                             Reminder.channel == target,
-                            Reminder.network == client.network,
+                            Reminder.client_name == client.name,
                             Reminder.duration >> None).execute()

@@ -13,7 +13,6 @@ from kochira.db import Model
 from kochira.service import Service
 
 from pydle.client import UNREGISTERED_NICKNAME
-from pydle.features.rfc1459.parsing import normalize
 
 service = Service(__name__, __doc__)
 
@@ -124,7 +123,7 @@ class Seen(Model):
 
 def update_seen(client, event, who, channel=None, message=None, target=None):
     now = datetime.utcnow()
-    who = normalize(who, case_mapping=client._case_mapping)
+    who = client.normalize(who)
 
     try:
         seen = Seen.get(Seen.who == who,
@@ -214,7 +213,7 @@ def seen(client, target, origin, who):
 
     Check when a user was last seen.
     """
-    who_n = normalize(who, case_mapping=client._case_mapping)
+    who_n = client.normalize(who)
 
     try:
         seen = Seen.get(Seen.who == who_n, Seen.network == client.network)
