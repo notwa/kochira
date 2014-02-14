@@ -108,13 +108,27 @@ def get_user_now_playing(api_key, user):
         )
         tags = track_tags_r.xpath("/lfm[@status='ok']/toptags/tag/name/text()")
 
+        track_info_r = query_lastfm(
+            api_key,
+            "track.getInfo", {
+                "username": user,
+                "artist": artist,
+                "track": name
+            }
+        )
+        info = track_info_r.xpath("/lfm[@status='ok']/track")
+        user_playcount, = int(info.xpath("userplaycount/text()") or 0)
+        user_loved, = int(info.xpath("userloved/text()") or 0)
+
         return {
             "user": user,
             "artist": artist,
             "name": name,
             "album": album,
-            "tags": tags[:5],
+            "tags": tags,
             "ts": ts,
+            "user_playcount": user_playcount,
+            "user_loved": user_loved,
             "now_playing": now_playing
         }
 
@@ -252,11 +266,13 @@ def now_playing(client, target, origin, who=None):
         ))
         return
 
-    track_descr = "{artist} - {name}{album}{tags}".format(
+    track_descr = "{artist} - {name}{album}{tags} (played {playcount} times{loved})".format(
         name=track["name"],
         artist=track["artist"],
         album=(" - " + track["album"]) if track["album"] else "",
-        tags=(" (" + ", ".join(track["tags"]) + ")") if track["tags"] else ""
+        tags=(" (" + ", ".join(track["tags"][:5]) + ")") if track["tags"] else "",
+        playcount=track["user_playcount"],
+        loved="; loved" if track["user_loved"] else ""
     )
 
     if not track["now_playing"]:
