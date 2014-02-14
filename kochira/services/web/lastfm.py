@@ -120,8 +120,12 @@ def get_user_now_playing(api_key, user):
 
         if info:
             info, = info
-            user_playcount, = int(info.xpath("userplaycount/text()") or 0)
-            user_loved, = int(info.xpath("userloved/text()") or 0)
+
+            user_playcount, = info.xpath("userplaycount/text()")
+            user_playcount = int(user_playcount)
+
+            user_loved, = info.xpath("userloved/text()")
+            user_loved = int(user_loved)
         else:
             user_playcount = 0
             user_loved = 0
