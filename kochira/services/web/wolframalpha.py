@@ -22,20 +22,23 @@ class Config(Config):
 
 
 @service.command(r"!wa (?P<query>.+)$")
-@service.command(r"(?:compute|calculate|mathify) (?P<query>.+)$", mention=True)
+@service.command(r"(?:compute|calculate|mathify) (?:for (?P<who>\S+))?(?P<query>.+)$", mention=True)
 @background
 @coroutine
-def compute(client, target, origin, query):
+def compute(client, target, origin, query, who=None):
     """
     Compute.
 
     Run a query on Wolfram|Alpha and display the result.
     """
 
-    try:
-        user_data = yield UserData.lookup(client, origin)
-    except UserData.DoesNotExist:
-        user_data = {}
+    if who is not None:
+        user_data = yield UserData.lookup_default(client, who)
+    else:
+        try:
+            user_data = yield UserData.lookup(client, origin)
+        except UserData.DoesNotExist:
+            user_data = {}
 
     config = service.config_for(client.bot)
 
