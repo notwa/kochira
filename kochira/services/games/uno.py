@@ -277,7 +277,7 @@ def start_uno(client, target, origin):
 def stop_uno(client, target, origin):
     storage = service.storage_for(client.bot)
     del storage.contexts[client.name, target]
-    client.remove_context("uno", target)
+    service.remove_context(client, "uno", target)
     client.message(target, "{origin} has stopped the game.".format(
         origin=origin
     ))
