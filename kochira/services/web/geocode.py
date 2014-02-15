@@ -57,14 +57,7 @@ def set_location(client, target, origin, place):
         ))
         return
 
-    if len(results) > 1:
-        client.message(target, "{origin}: Please be more specific than \"{place}\".".format(
-            origin=origin,
-            place=place
-        ))
-        return
-
-    result, = results
+    result = results[0]
 
     user_data["location"] = result["geometry"]["location"]
 
