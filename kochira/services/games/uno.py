@@ -152,17 +152,17 @@ class Game:
         if card not in self.players[self.turn]:
             raise UnoStateError(UnoStateError.NOT_IN_HAND)
 
-        if (top_color == color or top_color == Game.WILD) and color != Game.WILD:
+        if color == Game.WILD:
+            if target_color not in (Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW):
+                raise ValueError("must specify a valid target color")
+            self.players[self.turn].remove(card)
+            self.discard_pile.append((target_color, rank))
+        elif top_color == color or top_color == Game.WILD:
             self.players[self.turn].remove(card)
             self.discard_pile.append(card)
         elif top_rank == rank:
             self.players[self.turn].remove(card)
             self.discard_pile.append(card)
-        elif color == Game.WILD:
-            if target_color not in (Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW):
-                raise ValueError("must specify a valid target color")
-            self.players[self.turn].remove(card)
-            self.discard_pile.append((target_color, rank))
         else:
             raise UnoStateError(UnoStateError.CARD_NOT_COMPATIBLE)
 
@@ -231,7 +231,7 @@ Game.SETS = {
         [(color, Game.DRAW_TWO) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 4 +
         [(color, Game.REVERSE) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 8 +
         [(color, Game.SKIP) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 8 +
-        [(Game.WILD, Game.DRAW_FOUR)] * 8,
+        [(Game.WILD, Game.DRAW_FOUR)] * 8
 }
 
 
@@ -576,10 +576,10 @@ def pass_(client, target, origin):
     send_hand(client, game.turn, game)
 
 
-@service.command(r"!cards", contexts={"uno"})
-def list_cards(client, target, origin):
+@service.command(r"!hand", contexts={"uno"})
+def show_hand(client, target, origin):
     """
-    List cards.
+    Show hand.
 
     List cards in hand.
     """
