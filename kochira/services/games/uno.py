@@ -135,6 +135,14 @@ class Game:
 
         self.players[player] = hand
 
+    def leave(self, player):
+        hand = self.players[player]
+        del self.players[player]
+        self.draw_pile.extend(hand)
+        random.shuffle(self.draw_pile)
+
+        return self.started and len(self.players) <= 1
+
     def play(self, card, target_color=None):
         color, rank = card
 
@@ -206,6 +214,9 @@ class Game:
 
         self.discard_pile.append(self._draw())
 
+    def scores(self):
+        return sorted(self.players.items(), key=lambda x: len(x[1]))
+
 
 Game.SETS = {
     "standard":
@@ -242,8 +253,11 @@ def show_card_irc(card):
 
 
 def send_summary(client, target, game, prefix=""):
-    client.message(target, prefix + "It's now {turn}'s turn. Top card: {top}".format(
+    client.message(target, prefix + "It's now {turn}'s turn. Players: {players}; Top card ({count} left): {top}".format(
         turn=game.turn,
+        players=", ".join("{} ({} cards)".format(k, len(v))
+                          for k, v in game.scores()),
+        count=len(game.draw_pile),
         top=show_card_irc(game.top)
     ))
 
@@ -252,6 +266,19 @@ def send_hand(client, player, game):
     client.notice(player, "Your hand: {hand}".format(
         hand=" ".join(show_card_irc(card) for card in game.players[player])
     ))
+
+
+def do_game_over(client, target, prefix=""):
+    storage = service.storage_for(client.bot)
+
+    game = storage.contexts[client.name, target]
+
+    client.message(target, prefix + "Game over! Final results: {results}".format(
+        results=", ".join("{} ({} cards)".format(k, len(v))
+                          for k, v in game.scores())
+    ))
+    del storage.contexts[client.name, target]
+    service.remove_context(client, "uno", target)
 
 
 @service.command(r"uno(?: (?P<set>.+))?", mention=True)
@@ -445,14 +472,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
         return
 
     if game_over:
-        client.message(target, prefix + "Game over! Final results: {results}".format(
-            results=", ".join("{} ({} cards)".format(k, len(v))
-                              for k, v
-                                  in sorted(game.players.items(),
-                                            key=lambda x: len(x[1])))
-        ))
-        del storage.contexts[client.name, target]
-        service.remove_context(client, "uno", target)
+        do_game_over(client, target, prefix)
         return
 
     if len(game.players[last_turn]) == 1:
@@ -573,3 +593,30 @@ def list_cards(client, target, origin):
         return
 
     send_hand(client, origin, game)
+
+
+@service.command(r"!leave", contexts={"uno"})
+def leave(client, target, origin):
+    """
+    Leave game.
+
+    Leave the game, if you're participating.
+    """
+    storage = service.storage_for(client.bot)
+    game = storage.contexts[client.name, target]
+
+    if origin not in game.players:
+        client.message(target, "{origin}: You're not in this game.".format(
+            origin=origin
+        ))
+        return
+
+    game_over = game.leave(origin)
+
+    if game_over:
+        do_game_over(client, target)
+        return
+
+    client.message(target, "{origin} left the game. Their cards were shuffled back into the pile.".format(
+        origin=origin
+    ))
