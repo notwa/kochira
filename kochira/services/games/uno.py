@@ -261,6 +261,7 @@ def start_uno(client, target, origin):
         client.message(target, "{origin}: A game is already in progress.".format(
             origin=origin
         ))
+        return
 
     g = Game()
     g.join(origin)
@@ -316,6 +317,7 @@ def deal_uno(client, target, origin):
         client.message(target, "{origin}: This game is already in progress.".format(
             origin=origin
         ))
+        return
 
     if len(game.players) < 2:
         client.message(target, "{origin}: There aren't enough players to deal yet.".format(
