@@ -220,7 +220,7 @@ Game.SETS = {
         [(color, Game.DRAW_TWO) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 4 +
         [(color, Game.REVERSE) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 8 +
         [(color, Game.SKIP) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 8 +
-        [(Game.WILD, Game.DRAW_FOUR)] * 4,
+        [(Game.WILD, Game.DRAW_FOUR)] * 8,
 }
 
 
@@ -443,8 +443,11 @@ def play_card(client, target, origin, raw_card, target_color=None):
         return
 
     if game_over:
-        client.message(target, "Game over! Congratulations to {winner}!".format(
-            winner=sorted(game.players.keys(), key=lambda k: len(game.players[k]))[0]
+        client.message(target, "Game over! Final results: {results}".format(
+            results=", ".join("{} ({} cards)".format(k, len(v))
+                              for k, v
+                                  in sorted(game.players.items(),
+                                            key=lambda x: len(x[1])))
         ))
         del storage.contexts[client.name, target]
         service.remove_context(client, "uno", target)
