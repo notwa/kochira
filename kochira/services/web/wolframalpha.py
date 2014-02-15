@@ -76,7 +76,7 @@ def compute(client, target, origin, query, who=None):
         r"(?<!\\)\\:([0-9a-fA-F]{4})",
         lambda x: chr(int(x.group(1), 16)),
         "\n".join(result_node.xpath("pod[@primary='true']/subpod[1]/plaintext/text()")).strip()
-    ).replace("\n", " / ")
+    ).replace("\n", "; ")
 
     client.message(target, "{origin}: {inp} = {primary}".format(
         origin=origin,
