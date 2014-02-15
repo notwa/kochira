@@ -63,7 +63,7 @@ def add_badword(client, target, origin, word):
         ))
 
 
-@service.command("(?P<word>.+) is not a bad word", mention=True, priority=1)
+@service.command("(?P<word>.+) is not a bad word", mention=True, priority=2550)
 @requires_permission("badword")
 def remove_badword(client, target, origin, word):
     """
