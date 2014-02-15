@@ -63,7 +63,7 @@ class Service:
             if not hasattr(f, "patterns"):
                 f.patterns = set([])
 
-            f.patterns.add((pattern, mention))
+            f.patterns.add((pattern, mention, contexts))
 
             @functools.wraps(f)
             @coroutine

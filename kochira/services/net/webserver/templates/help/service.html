@@ -27,7 +27,7 @@
 <div class="section" id="{{command.__name__}}">
 <h3>{{get_short_doc(command.__doc__)}}</h3>
 <pre class="literal-block">{{"\n".join(sorted((pattern if not mention else "$bot: " + pattern).rstrip("$")
-                                              for pattern, mention in command.patterns))}}</pre>
+                                              for pattern, mention, contexts in command.patterns))}}</pre>
 <dl class="dl-horizontal">
 {% if hasattr(command, "permissions") %}<dt>Requires permission</dt><dd>{{", ".join(command.permissions)}}</dd>{% end %}
 </dl>
