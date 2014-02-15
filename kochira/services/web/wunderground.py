@@ -104,7 +104,7 @@ def weather(client, target, origin, where=None):
     precip = observation["precip_today_" + _unitize("metric", "in")]
     weather = observation["weather"]
 
-    client.message(target, "{origin}: Today's weather for {place} is: {weather}, {temp} º{cf}, wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
+    client.message(target, "{origin}: Today's weather for {place} is: {weather}, {temp}º {cf}, wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
         origin=origin,
         place=place,
         weather=weather,
