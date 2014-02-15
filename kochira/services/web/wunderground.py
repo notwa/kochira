@@ -55,12 +55,10 @@ def weather(client, target, origin, where=None):
             return
         location = user_data["location"]
     else:
-        try:
-            user_data = yield UserData.lookup_default(client, where)
-        except UserData.DoesNotExist:
-            user_data = {}
+        user_data = yield UserData.lookup_default(client, where)
+        location = user_data.get("location")
 
-        if "location" not in user_data:
+        if location is None:
             geocoded = geocode(where)
 
             if not geocoded:
@@ -71,8 +69,6 @@ def weather(client, target, origin, where=None):
                 return
 
             location = geocoded[0]["geometry"]["location"]
-        else:
-            location = user_data["location"]
 
     r = requests.get("http://api.wunderground.com/api/{api_key}/conditions/q/{lat},{lng}.json".format(
         api_key=config.api_key,
