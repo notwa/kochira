@@ -175,6 +175,8 @@ class Game:
         else:
             raise UnoStateError(UnoStateError.CARD_NOT_COMPATIBLE)
 
+        self.has_drawn = False
+
         if not self.players[self.turn]:
             return True
 
