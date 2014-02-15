@@ -59,13 +59,18 @@ def set_location(client, target, origin, place):
 
     result = results[0]
 
-    user_data["location"] = result["geometry"]["location"]
+    location = {
+        "lat": float(result["geometry"]["location"]["lat"]),
+        "lng": float(result["geometry"]["location"]["lng"])
+    }
+
+    user_data["location"] = location
 
     client.message(target, "{origin}: Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).".format(
         origin=origin,
         formatted_address=result["formatted_address"],
-        lat=result["geometry"]["location"]["lat"],
-        lng=result["geometry"]["location"]["lng"]
+        lat=location["lat"],
+        lng=location["lng"]
     ))
 
 
@@ -108,9 +113,6 @@ def nearby_search(client, target, origin, what, place=None, radius : int=None):
             return
 
         location = results[0]["geometry"]["location"]
-
-    location["lat"] = float(location["lat"])
-    location["lng"] = float(location["lng"])
 
     results = requests.get(
         "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
