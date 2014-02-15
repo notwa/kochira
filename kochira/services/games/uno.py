@@ -180,8 +180,6 @@ class Game:
         if not self.players[self.turn]:
             return True
 
-        self._advance()
-
         # now handle special cards
         if rank == Game.DRAW_TWO:
             self.players[self.turn].extend([self._draw() for _ in range(2)])
@@ -194,6 +192,7 @@ class Game:
             self.players[self.turn].extend([self._draw() for _ in range(4)])
             self._advance()
 
+        self._advance()
         return False
 
     @property
@@ -486,6 +485,7 @@ def pass_(client, target, origin):
         return
 
     send_summary(client, target, game, "{} passes. ".format(origin))
+    send_hand(client, game.turn, game)
 
 
 @service.command(r"!cards", contexts={"uno"})
