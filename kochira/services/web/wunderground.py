@@ -42,12 +42,12 @@ def weather(client, target, origin, where=None):
     """
     config = service.config_for(client.bot, client.name, target)
 
-    try:
-        user_data = yield UserData.lookup(client, origin)
-    except UserData.DoesNotExist:
-        user_data = {}
-
     if where is None:
+        try:
+            user_data = yield UserData.lookup(client, origin)
+        except UserData.DoesNotExist:
+            user_data = {}
+
         if "location" not in user_data:
             client.message(target, "{origin}: I don't have location data for you.".format(
                 origin=origin,
@@ -55,16 +55,24 @@ def weather(client, target, origin, where=None):
             return
         location = user_data["location"]
     else:
-        geocoded = geocode(where)
+        try:
+            user_data = yield UserData.lookup_default(client, where)
+        except UserData.DoesNotExist:
+            user_data = {}
 
-        if not geocoded:
-            client.message(target, "{origin}: I don't know where \"{where}\" is.".format(
-                origin=origin,
-                where=where
-            ))
-            return
+        if "location" not in user_data:
+            geocoded = geocode(where)
 
-        location = geocoded[0]["geometry"]["location"]
+            if not geocoded:
+                client.message(target, "{origin}: I don't know where \"{where}\" is.".format(
+                    origin=origin,
+                    where=where
+                ))
+                return
+
+            location = geocoded[0]["geometry"]["location"]
+        else:
+            location = user_data["location"]
 
     r = requests.get("http://api.wunderground.com/api/{api_key}/conditions/q/{lat:.10},{lng:.10}.json".format(
         api_key=config.api_key,
@@ -104,10 +112,11 @@ def weather(client, target, origin, where=None):
     precip = observation["precip_today_" + _unitize("metric", "in")]
     weather = observation["weather"]
 
-    client.message(target, "{origin}: Today's weather for {place} is: {weather}, {temp}º {cf}, wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
+    client.message(target, "{origin}: Today's weather for {place} is: {weather}, {temp}º {cf} (feels like {feelslike}º {cf}), wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
         origin=origin,
         place=place,
         weather=weather,
+        feelslike=feelslike,
         temp=temp,
         cf=_unitize("C", "F"),
         wind_dir=wind_dir,
