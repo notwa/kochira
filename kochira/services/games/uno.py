@@ -5,6 +5,7 @@ The popular card game Uno, now on IRC.
 """
 
 import random
+import itertools
 from collections import OrderedDict
 
 from kochira.service import Service
@@ -42,33 +43,13 @@ class Game:
     DRAW_FOUR = 13
     WILD_RANK = 14
 
-    def __init__(self):
-        self.draw_pile = self._make_draw_pile()
+    def __init__(self, pile=None):
+        self.draw_pile = list(pile or Game.SETS["standard"])
+        random.shuffle(self.draw_pile)
+
         self.discard_pile = []
         self.started = False
         self.players = OrderedDict()
-
-    def _make_draw_pile(self):
-        draw_pile = []
-
-        for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]:
-            draw_pile.append((color, 0))
-
-            for _ in range(2):
-                draw_pile.append((color, Game.DRAW_TWO))
-                draw_pile.append((color, Game.REVERSE))
-                draw_pile.append((color, Game.SKIP))
-
-            for i in range(1, 10):
-                for _ in range(2):
-                    draw_pile.append((color, i))
-
-        for _ in range(4):
-            draw_pile.append((Game.WILD, Game.WILD_RANK))
-            draw_pile.append((Game.WILD, Game.DRAW_FOUR))
-
-        random.shuffle(draw_pile)
-        return draw_pile
 
     def _draw(self):
         if not self.draw_pile:
@@ -226,6 +207,23 @@ class Game:
         self.discard_pile.append(self._draw())
 
 
+Game.SETS = {
+    "standard":
+        [(color, 0) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] +
+        [card for card in itertools.product([Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW], range(1, 10))] * 2 +
+        [(color, Game.DRAW_TWO) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 2 +
+        [(color, Game.REVERSE) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 2 +
+        [(color, Game.SKIP) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 2 +
+        [(Game.WILD, Game.WILD_RANK)] * 4 +
+        [(Game.WILD, Game.DRAW_FOUR)] * 4,
+    "hitler":
+        [(color, Game.DRAW_TWO) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 4 +
+        [(color, Game.REVERSE) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 8 +
+        [(color, Game.SKIP) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] * 8 +
+        [(Game.WILD, Game.DRAW_FOUR)] * 4,
+}
+
+
 def show_card_irc(card):
     color, rank = card
     return "\x03" + {
@@ -256,9 +254,9 @@ def send_hand(client, player, game):
     ))
 
 
-@service.command(r"uno", mention=True)
-@service.command(r"!uno")
-def start_uno(client, target, origin):
+@service.command(r"uno(?: (?P<set>.+))?", mention=True)
+@service.command(r"!uno(?: (?P<set>.+))?")
+def start_uno(client, target, origin, set=None):
     """
     Start game.
 
@@ -274,7 +272,17 @@ def start_uno(client, target, origin):
         ))
         return
 
-    g = Game()
+    if set is not None:
+        try:
+            set = Game.SETS[set.lower()]
+        except:
+            client.message(target, "{origin}: I don't know what set \"{set}\" is.".format(
+                origin=origin,
+                set=set
+            ))
+            return
+
+    g = Game(set)
     g.join(origin)
     storage.contexts[k] = g
 
