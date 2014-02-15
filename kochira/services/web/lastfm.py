@@ -270,18 +270,20 @@ def now_playing(client, target, origin, who=None):
     track = get_user_now_playing(config.api_key, lfm)
 
     if track is None:
-        client.message(target, "{origin}: {who} has never scrobbled anything.".format(
+        client.message(target, "{origin}: {who} ({lfm}) has never scrobbled anything.".format(
             origin=origin,
-            who=who
+            who=who,
+            lfm=lfm
         ))
         return
 
-    track_descr = "{artist} - {name}{album}{tags} (played {playcount} times{loved})".format(
+    track_descr = "{artist} - {name}{album}{tags} (played {playcount} time{s}{loved})".format(
         name=track["name"],
         artist=track["artist"],
         album=(" - " + track["album"]) if track["album"] else "",
         tags=(" (" + ", ".join(track["tags"][:5]) + ")") if track["tags"] else "",
         playcount=track["user_playcount"],
+        s="s" if len(track["user_playcount"]) != 1 else "",
         loved="; loved" if track["user_loved"] else ""
     )
 
