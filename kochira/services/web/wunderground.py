@@ -6,8 +6,6 @@ Get weather data from Weather Underground
 
 import requests
 
-from urllib.parse import quote
-
 from pydle.async import coroutine
 
 from kochira import config
@@ -22,6 +20,17 @@ class Config(Config):
     api_key = config.Field(doc="Weather Underground API key.")
 
 
+def geocode(address):
+    return requests.get(
+        "https://maps.googleapis.com/maps/api/geocode/json",
+        params={
+            "address": address,
+            "sensor": "false"
+        }
+    ).json().get("results", [])
+
+
+@service.command(r"!weather(?: (?P<where>.+))?")
 @service.command(r"weather(?: for (?P<where>.+))?", mention=True)
 @background
 @coroutine
@@ -44,12 +53,22 @@ def weather(client, target, origin, where=None):
                 origin=origin,
             ))
             return
-        where = "{lat:.10},{lng:.10}".format(**user_data["location"])
+        location = user_data["location"]
+    else:
+        geocoded = geocode(where)
 
+        if not geocoded:
+            client.message(target, "{origin}: I don't know where \"{place}\" is.".format(
+                origin=origin,
+                place=place
+            ))
+            return
 
-    r = requests.get("http://api.wunderground.com/api/{api_key}/conditions/q/{where}.json".format(
+        location = geocoded[0]["geometry"]["location"]
+
+    r = requests.get("http://api.wunderground.com/api/{api_key}/conditions/q/{lat:.10},{lng:.10}.json".format(
         api_key=config.api_key,
-        where=quote(where)
+        **location
     )).json()
 
     if "error" in r:
