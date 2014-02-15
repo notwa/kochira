@@ -75,9 +75,11 @@ class Game:
             raise UnoStateError(UnoStateError.NO_MORE_DRAWS)
         return self.draw_pile.pop()
 
+    def _next_turn_index(self):
+        return (self._turn_index + self.direction) % len(self.players)
+
     def _advance(self):
-        self.turn_index += self.direction
-        self.turn_index %= len(self.players)
+        self._turn_index = self._next_turn_index()
 
     @staticmethod
     def show_card(card):
@@ -201,7 +203,11 @@ class Game:
 
     @property
     def turn(self):
-        return list(self.players.keys())[self.turn_index]
+        return list(self.players.keys())[self._turn_index]
+
+    @property
+    def next_turn(self):
+        return list(self.players.keys())[self._next_turn_index()]
 
     @property
     def top(self):
@@ -213,7 +219,7 @@ class Game:
 
         self.started = True
         self.turns = list(self.players.keys())
-        self.turn_index = 0
+        self._turn_index = 0
         self.direction = 1
         self.has_drawn = False
 
@@ -400,6 +406,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
         return
 
     last_turn = game.turn
+    usual_turn = game.next_turn
 
     try:
         game_over = game.play(card, {
@@ -442,14 +449,21 @@ def play_card(client, target, origin, raw_card, target_color=None):
 
     prefix = ""
 
+    cards_drawn = None
+
     if rank == Game.REVERSE:
         prefix = "Order reversed! "
     elif rank == Game.DRAW_TWO:
+        cards_drawn = game.players[usual_turn][-2:]
         prefix = "Draw two! "
     elif rank == Game.DRAW_FOUR:
+        cards_drawn = game.players[usual_turn][-4:]
         prefix = "Draw four! "
     elif rank == Game.SKIP:
         prefix = "Skip! "
+
+    if cards_drawn is not None:
+        client.notice(usual_turn, "You drew: {}".format(" ".join(show_card_irc(card) for card in cards_drawn)))
 
     send_summary(client, target, game, prefix)
     send_hand(client, game.turn, game)
