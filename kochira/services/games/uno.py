@@ -416,6 +416,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
     last_turn = game.turn
     usual_turn = game.next_turn
 
+    prefix = ""
     try:
         game_over = game.play(card, {
             "r": Game.RED,
@@ -425,6 +426,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
         }.get(target_color))
     except UnoStateError as e:
         if e.code == UnoStateError.NO_MORE_DRAWS:
+            prefix = "Looks like the pile ran out! "
             game_over = True
         elif e.code == UnoStateError.CARD_NOT_COMPATIBLE:
             client.message(target, "{origin}: You can't play that card right now.".format(
@@ -443,7 +445,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
         return
 
     if game_over:
-        client.message(target, "Game over! Final results: {results}".format(
+        client.message(target, prefix + "Game over! Final results: {results}".format(
             results=", ".join("{} ({} cards)".format(k, len(v))
                               for k, v
                                   in sorted(game.players.items(),
