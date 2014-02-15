@@ -144,7 +144,7 @@ class Game:
         if card not in self.players[self.turn]:
             raise UnoStateError(UnoStateError.NOT_IN_HAND)
 
-        if top_color == color or top_color == Game.WILD:
+        if (top_color == color or top_color == Game.WILD) and color != Game.WILD:
             self.players[self.turn].remove(card)
             self.discard_pile.append(card)
         elif top_rank == rank:
