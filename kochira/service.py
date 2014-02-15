@@ -48,7 +48,7 @@ class Service:
         return _decorator
 
     def command(self, pattern, priority=0, mention=False, strip=True,
-                re_flags=re.I, eat=True, allow_private=True):
+                re_flags=re.I, eat=True, allow_private=True, contexts=None):
         """
         Register a command for use with the bot.
 
@@ -68,6 +68,15 @@ class Service:
             @functools.wraps(f)
             @coroutine
             def _command_handler(client, target, origin, message):
+                # check for contexts
+                my_contexts = client.contexts.get(self.name, {}).get(target, set([]))
+                my_contexts |= client.contexts.get(self.name, {}).get(None, set([]))
+
+                if contexts is not None:
+                    if not my_contexts & contexts:
+                        return
+
+                # check for permissions
                 permissions = getattr(f, "permissions", set([]))
 
                 hostmask = "{nickname}!{username}@{hostname}".format(
@@ -169,8 +178,17 @@ class Service:
 
     def run_shutdown(self, bot):
         """
-        Run all setup functions for the service.
+        Run all shutdown functions for the service.
         """
+
+        # unschedule remaining work
+        bot.scheduler.unschedule_service(self)
+
+        # clear service contexts
+        for client in bot.clients.values():
+            if self.name in client.contexts:
+                del client.contexts[self.name]
+
         if self.on_shutdown is not None:
             self.on_shutdown(bot)
 
@@ -201,6 +219,20 @@ class Service:
     def model(self, model):
         self.models.add(model)
         return model
+
+    def add_context(self, client, context, target=None):
+        client.contexts \
+            .setdefault(self.name, {}) \
+            .setdefault(target, set([])) \
+            .add(context)
+
+    def has_context(self, client, context, target=None):
+        return context in client.contexts \
+            .get(self.name, {}) \
+            .get(target, set([]))
+
+    def remove_context(self, client, context, target=None):
+        client.contexts[self.name][target].remove(context)
 
 
 def background(f):

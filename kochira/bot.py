@@ -179,10 +179,6 @@ class Bot:
                 except:
                     pass # it gets logged
 
-    def _shutdown_service(self, service):
-        service.run_shutdown(self)
-        self.scheduler.unschedule_service(service)
-
     def defer_from_thread(self, fn, *args, **kwargs):
         self.event_loop.schedule(functools.partial(fn, *args, **kwargs))
 
@@ -194,10 +190,13 @@ class Bot:
         instance of ``kochira.service.Service`` and configured appropriately.
         """
 
+        if name[0] == ".":
+            name = services.__name__ + name
+
         # ensure that the service's shutdown routine is run
         if name in self.services:
             service, _ = self.services[name]
-            self._shutdown_service(service)
+            service.run_shutdown(self)
 
         # we create an expando storage first for bots to load any locals they
         # need
@@ -205,7 +204,7 @@ class Bot:
         storage = Expando()
 
         try:
-            module = importlib.import_module(name, package=services.__name__)
+            module = importlib.import_module(name)
 
             if reload:
                 module = imp.reload(module)
@@ -235,7 +234,7 @@ class Bot:
             name = services.__name__ + name
 
         service, _ = self.services[name]
-        self._shutdown_service(service)
+        service.run_shutdown(self)
         del self.services[name]
 
     def get_hooks(self, hook):
