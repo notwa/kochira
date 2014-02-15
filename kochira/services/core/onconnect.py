@@ -21,4 +21,4 @@ def onconnect(client):
     config = service.config_for(client.bot, client.name)
 
     for command in config.commands:
-        client.raw(command)
+        client.rawmsg(*command)
