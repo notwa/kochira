@@ -58,9 +58,9 @@ def weather(client, target, origin, where=None):
         geocoded = geocode(where)
 
         if not geocoded:
-            client.message(target, "{origin}: I don't know where \"{place}\" is.".format(
+            client.message(target, "{origin}: I don't know where \"{where}\" is.".format(
                 origin=origin,
-                place=place
+                where=where
             ))
             return
 
