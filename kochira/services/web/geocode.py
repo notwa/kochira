@@ -43,9 +43,16 @@ def get_location(client, target, origin, place):
     who = None
 
     user_data = yield UserData.lookup_default(client, place)
+
     if "location" in user_data:
-        who = place
-        place = "{lat},{lng}".format(**user_data["location"])
+        location = user_data["location"]
+
+        client.message(target, "{origin}: {who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).".format(
+            origin=origin,
+            who=place,
+            **location
+        ))
+        return
 
     results = geocode(place)
 
@@ -104,16 +111,15 @@ def set_location(client, target, origin, place):
 
     location = {
         "lat": float(result["geometry"]["location"]["lat"]),
-        "lng": float(result["geometry"]["location"]["lng"])
+        "lng": float(result["geometry"]["location"]["lng"]),
+        "formatted_address": result["formatted_address"]
     }
 
     user_data["location"] = location
 
     client.message(target, "{origin}: Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).".format(
         origin=origin,
-        formatted_address=result["formatted_address"],
-        lat=location["lat"],
-        lng=location["lng"]
+        **location
     ))
 
 
