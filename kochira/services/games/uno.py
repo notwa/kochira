@@ -241,7 +241,7 @@ def show_card_irc(card):
         Game.RED: "04r",
         Game.GREEN: "03g",
         Game.BLUE: "02b",
-        Game.YELLOW: "08y",
+        Game.YELLOW: "07y",
         Game.WILD: "00,01w"
     }[color] + {
         Game.DRAW_TWO: "D2",
