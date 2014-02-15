@@ -65,7 +65,7 @@ def remember_profile(client, target, origin, text):
 
 
 @service.command(r"who am [Ii]\??$", mention=True)
-@service.command(r"who(?: is|'s| the .* is) (?P<who>\S+)\??$", mention=True)
+@service.command(r"who(?: is|'s| the .* is) (?P<who>\S+?)\??$", mention=True)
 @coroutine
 def get_profile(client, target, origin, who=None):
     """
