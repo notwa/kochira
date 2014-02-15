@@ -69,27 +69,17 @@ def compute(client, target, origin, query, who=None):
         return
 
     result_node, = result_node
+
     inp = " ".join(result_node.xpath("pod[@id='Input']/subpod[1]/plaintext/text()")).strip()
+
     primary = re.sub(
         r"(?<!\\)\\:([0-9a-fA-F]{4})",
         lambda x: chr(int(x.group(1), 16)),
-        "\n".join(result_node.xpath("pod[@primary='true']/subpod[1]/plaintext/text()")).strip()
-    ).split("\n")
+        " / ".join(result_node.xpath("pod[@primary='true']/subpod[1]/plaintext/text()")).strip()
+    )
 
-    if len(primary) > 1:
-        client.message(target, "{origin}: {inp}".format(
-            origin=origin,
-            inp=inp
-        ))
-
-        for line in primary:
-            client.message(target, "{origin}: = {line}".format(
-                origin=origin,
-                line=line
-            ))
-    else:
-        client.message(target, "{origin}: {inp} = {primary}".format(
-            origin=origin,
-            inp=inp,
-            primary=primary[0]
-        ))
+    client.message(target, "{origin}: {inp} = {primary}".format(
+        origin=origin,
+        inp=inp,
+        primary=primary
+    ))
