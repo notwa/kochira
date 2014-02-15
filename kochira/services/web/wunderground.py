@@ -112,7 +112,7 @@ def weather(client, target, origin, where=None):
         origin=origin,
         place=place,
         weather=weather,
-        feelslike=" (feels like {feelslike}º {cf})".format(feelslike=feelslike, cf=_unitize("C", "F"))
+        feelslike=" (feels like {feelslike}° {cf})".format(feelslike=feelslike, cf=_unitize("C", "F"))
                   if feelslike != temp else "",
         temp=temp,
         cf=_unitize("C", "F"),
