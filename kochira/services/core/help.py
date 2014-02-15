@@ -81,7 +81,7 @@ class RequestHandler(RequestHandler):
 
 class IndexHandler(RequestHandler):
     def get(self):
-        services = [service for service, _ in self.application.bot.services.values()]
+        services = [bound.service for bound in self.application.bot.services.values()]
         services.sort(key=lambda s: s.name)
 
         self.render("help/index.html", services=services,
@@ -91,7 +91,7 @@ class IndexHandler(RequestHandler):
 class ServiceHelpHandler(RequestHandler):
     def get(self, service_name):
         try:
-            service, _ = self.application.bot.services[service_name]
+            service = self.application.bot.services[service_name].service
         except KeyError:
             raise HTTPError(404)
         self.render("help/service.html", service=service)

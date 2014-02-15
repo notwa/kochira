@@ -93,7 +93,7 @@ def add_timed_reminder(client, target, origin, who, duration, message):
     the channel, the reminder will play as soon as they return.
     """
 
-    now = datetime.utcnow()
+    now = datetime.now()
     t = parse_time(duration)
 
     if who.lower() == "me" and who not in client.channels[target]["users"]:

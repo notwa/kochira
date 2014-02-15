@@ -18,7 +18,7 @@ from .client import Client
 from .db import database
 from .scheduler import Scheduler
 from .util import Expando
-from .service import Service, Config as ServiceConfig
+from .service import Service, BoundService, Config as ServiceConfig
 from .userdata import UserDataKVPair
 
 from kochira import services
@@ -37,7 +37,7 @@ class ServiceConfigLoader(collections.Mapping):
         if name not in self.bot.services:
             config_factory = ServiceConfig
         else:
-            service, _ = self.bot.services[name]
+            service = self.bot.services[name].service
             config_factory = service.config_factory
 
         return config_factory
@@ -195,13 +195,12 @@ class Bot:
 
         # ensure that the service's shutdown routine is run
         if name in self.services:
-            service, _ = self.services[name]
+            service = self.services[name].service
             service.run_shutdown(self)
 
         # we create an expando storage first for bots to load any locals they
         # need
         service = None
-        storage = Expando()
 
         try:
             module = importlib.import_module(name)
@@ -213,7 +212,7 @@ class Bot:
                 raise RuntimeError("{} is not a valid service".format(name))
 
             service = module.service
-            self.services[service.name] = (service, storage)
+            self.services[service.name] = BoundService(service)
 
             service.run_setup(self)
         except:
@@ -233,7 +232,7 @@ class Bot:
         if name[0] == "." and name not in self.services:
             name = services.__name__ + name
 
-        service, _ = self.services[name]
+        service = self.services[name].service
         service.run_shutdown(self)
         del self.services[name]
 
@@ -243,8 +242,8 @@ class Bot:
         """
 
         return (hook for _, _, hook in heapq.merge(*[
-            service.hooks.get(hook, [])
-            for service, storage in list(self.services.values())
+            bound.service.hooks.get(hook, [])
+            for bound in list(self.services.values())
         ]))
 
     def run_hooks(self, hook, *args, **kwargs):

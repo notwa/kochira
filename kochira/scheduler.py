@@ -43,7 +43,8 @@ class Scheduler(threading.Thread):
                 # consistent view of all work that needs to be scheduled and
                 # nothing attempts to schedule while we're in the middle of
                 # processing tasks
-                for service, _ in self.bot.services.values():
+                for bound in self.bot.services.values():
+                    service = bound.service
                     for task in service.tasks:
                         k = (service.name, task.__name__)
 
@@ -93,7 +94,9 @@ class Scheduler(threading.Thread):
     def _cleanup_dead_queues(self):
         active_queue_names = set([])
 
-        for service, _ in self.bot.services.values():
+        for bound in self.bot.services.values():
+            service = bound.service
+
             for task in service.tasks:
                 k = (service.name, task.__name__)
                 active_queue_names.add(k)

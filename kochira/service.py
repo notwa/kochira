@@ -8,12 +8,20 @@ from pydle.async import coroutine, Future
 from .auth import has_permission
 from . import config
 
+from .util import Expando
+
 logger = logging.getLogger(__name__)
 
 
 class Config(config.Config):
     autoload = config.Field(doc="Autoload this service?", default=True)
     enabled = config.Field(doc="Enable this service?", default=True)
+
+
+class BoundService:
+    def __init__(self, service):
+        self.service = service
+        self.storage = Expando()
 
 
 class Service:
@@ -63,7 +71,7 @@ class Service:
             if not hasattr(f, "patterns"):
                 f.patterns = set([])
 
-            f.patterns.add((pattern, mention, contexts))
+            f.patterns.add((pattern, mention))
 
             @functools.wraps(f)
             @coroutine
@@ -213,8 +221,7 @@ class Service:
         """
         Get the disposable storage object.
         """
-        _, storage = bot.services[self.name]
-        return storage
+        return bot.services[self.name].storage
 
     def model(self, model):
         self.models.add(model)
