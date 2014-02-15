@@ -121,7 +121,7 @@ class PostReceiveHandler(RequestHandler):
                         continue
 
                     for line in get_log(head, "HEAD"):
-                        client.message(channel, "Update! {}".format(line))
+                        client.notice(channel, "Update! {}".format(line))
 
         head = rev_parse("HEAD")
 
