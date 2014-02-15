@@ -22,6 +22,7 @@ class BoundService:
     def __init__(self, service):
         self.service = service
         self.storage = Expando()
+        self.contexts = {}
 
 
 class Service:
@@ -76,11 +77,14 @@ class Service:
             @functools.wraps(f)
             @coroutine
             def _command_handler(client, target, origin, message):
-                # check for contexts
-                my_contexts = client.contexts.get(self.name, {}).get(target, set([]))
-                my_contexts |= client.contexts.get(self.name, {}).get(None, set([]))
-
                 if contexts is not None:
+                    # check for contexts
+                    bound = self.binding_for(client.bot)
+
+                    my_contexts = \
+                        bound.contexts.get(client.name, {}).get(target, set([])) | \
+                        bound.contexts.get(client.name, {}).get(None, set([]))
+
                     if not my_contexts & contexts:
                         return
 
@@ -192,11 +196,6 @@ class Service:
         # unschedule remaining work
         bot.scheduler.unschedule_service(self)
 
-        # clear service contexts
-        for client in bot.clients.values():
-            if self.name in client.contexts:
-                del client.contexts[self.name]
-
         if self.on_shutdown is not None:
             self.on_shutdown(bot)
 
@@ -221,25 +220,30 @@ class Service:
         """
         Get the disposable storage object.
         """
-        return bot.services[self.name].storage
+        return self.binding_for(bot).storage
+
+    def binding_for(self, bot):
+        """
+        Get the service binding.
+        """
+        return bot.services[self.name]
 
     def model(self, model):
         self.models.add(model)
         return model
 
     def add_context(self, client, context, target=None):
-        client.contexts \
-            .setdefault(self.name, {}) \
-            .setdefault(target, set([])) \
-            .add(context)
+        self.binding_for(client.bot).contexts \
+            .setdefault(client.name, {}) \
+            .setdefault(target, set([])).add(context)
 
     def has_context(self, client, context, target=None):
-        return context in client.contexts \
-            .get(self.name, {}) \
+        return context in self.binding_for(client.bot).contexts \
+            .get(client.name, {}) \
             .get(target, set([]))
 
     def remove_context(self, client, context, target=None):
-        client.contexts[self.name][target].remove(context)
+        self.binding_for(client.bot).contexts[client.name][target].remove(context)
 
 
 def background(f):

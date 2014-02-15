@@ -16,7 +16,7 @@ service = Service(__name__, __doc__)
 @service.setup
 def setup_contexts(bot):
     storage = service.storage_for(bot)
-    storage.contexts = {}
+    storage.games = {}
 
 
 class UnoStateError(Exception):
@@ -141,7 +141,7 @@ class Game:
         self.draw_pile.extend(hand)
         random.shuffle(self.draw_pile)
 
-        return self.started and len(self.players) <= 1
+        return not self.players or (self.started and len(self.players) <= 1)
 
     def play(self, card, target_color=None):
         color, rank = card
@@ -271,13 +271,13 @@ def send_hand(client, player, game):
 def do_game_over(client, target, prefix=""):
     storage = service.storage_for(client.bot)
 
-    game = storage.contexts[client.name, target]
+    game = storage.games[client.name, target]
 
     client.message(target, prefix + "Game over! Final results: {results}".format(
         results=", ".join("{} ({} cards)".format(k, len(v))
                           for k, v in game.scores())
     ))
-    del storage.contexts[client.name, target]
+    del storage.games[client.name, target]
     service.remove_context(client, "uno", target)
 
 
@@ -293,7 +293,7 @@ def start_uno(client, target, origin, set=None):
 
     k = (client.name, target)
 
-    if k in storage.contexts:
+    if k in storage.games:
         client.message(target, "{origin}: A game is already in progress.".format(
             origin=origin
         ))
@@ -311,7 +311,7 @@ def start_uno(client, target, origin, set=None):
 
     g = Game(set)
     g.join(origin)
-    storage.contexts[k] = g
+    storage.games[k] = g
 
     client.message(target, "{origin} has started a game of Uno! Send !join to join, and !deal to deal when ready!".format(
         origin=origin
@@ -328,7 +328,7 @@ def stop_uno(client, target, origin):
     Stop the Uno game in progress.
     """
     storage = service.storage_for(client.bot)
-    del storage.contexts[client.name, target]
+    del storage.games[client.name, target]
     service.remove_context(client, "uno", target)
     client.message(target, "{origin} has stopped the game.".format(
         origin=origin
@@ -343,7 +343,7 @@ def join_uno(client, target, origin):
     Join an Uno game in progress.
     """
     storage = service.storage_for(client.bot)
-    game = storage.contexts[client.name, target]
+    game = storage.games[client.name, target]
 
     if origin in game.players:
         client.message(target, "{origin}: You're already in the game.".format(
@@ -366,7 +366,7 @@ def deal_uno(client, target, origin):
     Deal cards to players in game.
     """
     storage = service.storage_for(client.bot)
-    game = storage.contexts[client.name, target]
+    game = storage.games[client.name, target]
 
     if origin not in game.players:
         client.message(target, "{origin}: You're not in this game.".format(
@@ -404,7 +404,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
     Play an Uno card for the in-progress game.
     """
     storage = service.storage_for(client.bot)
-    game = storage.contexts[client.name, target]
+    game = storage.games[client.name, target]
 
     if origin not in game.players:
         client.message(target, "{origin}: You're not in this game.".format(
@@ -510,7 +510,7 @@ def draw(client, target, origin):
     Draw a card from the pile.
     """
     storage = service.storage_for(client.bot)
-    game = storage.contexts[client.name, target]
+    game = storage.games[client.name, target]
 
     if origin not in game.players:
         client.message(target, "{origin}: You're not in this game.".format(
@@ -547,7 +547,7 @@ def pass_(client, target, origin):
     Pass, if a card has been drawn.
     """
     storage = service.storage_for(client.bot)
-    game = storage.contexts[client.name, target]
+    game = storage.games[client.name, target]
 
     if origin not in game.players:
         client.message(target, "{origin}: You're not in this game.".format(
@@ -584,7 +584,7 @@ def show_hand(client, target, origin):
     List cards in hand.
     """
     storage = service.storage_for(client.bot)
-    game = storage.contexts[client.name, target]
+    game = storage.games[client.name, target]
 
     if origin not in game.players:
         client.message(target, "{origin}: You're not in this game.".format(
@@ -603,7 +603,7 @@ def leave(client, target, origin):
     Leave the game, if you're participating.
     """
     storage = service.storage_for(client.bot)
-    game = storage.contexts[client.name, target]
+    game = storage.games[client.name, target]
 
     if origin not in game.players:
         client.message(target, "{origin}: You're not in this game.".format(

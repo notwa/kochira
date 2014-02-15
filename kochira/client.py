@@ -22,7 +22,6 @@ class Client(_Client):
         self._fd = None
 
         self.backlogs = {}
-        self.contexts = {}
         self.bot = bot
 
         self.name = name
