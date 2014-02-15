@@ -283,7 +283,7 @@ def now_playing(client, target, origin, who=None):
         album=(" - " + track["album"]) if track["album"] else "",
         tags=(" (" + ", ".join(track["tags"][:5]) + ")") if track["tags"] else "",
         playcount=track["user_playcount"],
-        s="s" if len(track["user_playcount"]) != 1 else "",
+        s="s" if track["user_playcount"] != 1 else "",
         loved="; loved" if track["user_loved"] else ""
     )
 
