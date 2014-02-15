@@ -253,6 +253,11 @@ def send_hand(client, player, game):
 @service.command(r"uno", mention=True)
 @service.command(r"!uno")
 def start_uno(client, target, origin):
+    """
+    Start game.
+
+    Start a game of Uno.
+    """
     storage = service.storage_for(client.bot)
 
     k = (client.name, target)
@@ -276,6 +281,11 @@ def start_uno(client, target, origin):
 
 @service.command(r"!stop", contexts={"uno"})
 def stop_uno(client, target, origin):
+    """
+    Stop game.
+
+    Stop the Uno game in progress.
+    """
     storage = service.storage_for(client.bot)
     del storage.contexts[client.name, target]
     service.remove_context(client, "uno", target)
@@ -286,6 +296,11 @@ def stop_uno(client, target, origin):
 
 @service.command(r"!join", contexts={"uno"})
 def join_uno(client, target, origin):
+    """
+    Join game.
+
+    Join an Uno game in progress.
+    """
     storage = service.storage_for(client.bot)
     game = storage.contexts[client.name, target]
 
@@ -304,6 +319,11 @@ def join_uno(client, target, origin):
 
 @service.command(r"!deal", contexts={"uno"})
 def deal_uno(client, target, origin):
+    """
+    Deal for game.
+
+    Deal cards to players in game.
+    """
     storage = service.storage_for(client.bot)
     game = storage.contexts[client.name, target]
 
@@ -337,6 +357,11 @@ def deal_uno(client, target, origin):
 
 @service.command(r"!play (?P<raw_card>\S+)(?: (?P<target_color>.))?", contexts={"uno"})
 def play_card(client, target, origin, raw_card, target_color=None):
+    """
+    Play card.
+
+    Play an Uno card for the in-progress game.
+    """
     storage = service.storage_for(client.bot)
     game = storage.contexts[client.name, target]
 
@@ -432,6 +457,11 @@ def play_card(client, target, origin, raw_card, target_color=None):
 
 @service.command(r"!draw", contexts={"uno"})
 def draw(client, target, origin):
+    """
+    Draw.
+
+    Draw a card from the pile.
+    """
     storage = service.storage_for(client.bot)
     game = storage.contexts[client.name, target]
 
@@ -464,6 +494,11 @@ def draw(client, target, origin):
 
 @service.command(r"!pass", contexts={"uno"})
 def pass_(client, target, origin):
+    """
+    Pass.
+
+    Pass, if a card has been drawn.
+    """
     storage = service.storage_for(client.bot)
     game = storage.contexts[client.name, target]
 
@@ -496,6 +531,11 @@ def pass_(client, target, origin):
 
 @service.command(r"!cards", contexts={"uno"})
 def list_cards(client, target, origin):
+    """
+    List cards.
+
+    List cards in hand.
+    """
     storage = service.storage_for(client.bot)
     game = storage.contexts[client.name, target]
 
