@@ -98,7 +98,7 @@ def list_badwords(client, target, origin):
     ))
 
 
-@service.hook("channel_message", priority=1)
+@service.hook("channel_message", priority=2500)
 def check_badwords(client, target, origin, message):
     config = service.config_for(client.bot, client.name, target)
 
