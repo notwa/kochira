@@ -48,7 +48,7 @@ def compute(client, target, origin, query):
 
     location = user_data.get("location", None)
     if location is not None:
-        params["latlong"] = "{lat:.10},{lng:.10}".format(**location)
+        params["latlong"] = "{lat},{lng}".format(**location)
 
     resp = requests.get("http://api.wolframalpha.com/v2/query",
         params=params,

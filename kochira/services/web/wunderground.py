@@ -74,7 +74,7 @@ def weather(client, target, origin, where=None):
         else:
             location = user_data["location"]
 
-    r = requests.get("http://api.wunderground.com/api/{api_key}/conditions/q/{lat:.10},{lng:.10}.json".format(
+    r = requests.get("http://api.wunderground.com/api/{api_key}/conditions/q/{lat},{lng}.json".format(
         api_key=config.api_key,
         **location
     )).json()
@@ -112,11 +112,12 @@ def weather(client, target, origin, where=None):
     precip = observation["precip_today_" + _unitize("metric", "in")]
     weather = observation["weather"]
 
-    client.message(target, "{origin}: Today's weather for {place} is: {weather}, {temp}º {cf} (feels like {feelslike}º {cf}), wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
+    client.message(target, "{origin}: Today's weather for {place} is: {weather}, {temp}º {cf}{feelslike}, wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
         origin=origin,
         place=place,
         weather=weather,
-        feelslike=feelslike,
+        feelslike=" (feels like {feelslike}º {cf})".format(feelslike, cf=_unitize("C", "F"))
+                  if feelslike != temp else "",
         temp=temp,
         cf=_unitize("C", "F"),
         wind_dir=wind_dir,

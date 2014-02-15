@@ -109,6 +109,9 @@ def nearby_search(client, target, origin, what, place=None, radius : int=None):
 
         location = results[0]["geometry"]["location"]
 
+    location["lat"] = float(location["lat"])
+    location["lng"] = float(location["lng"])
+
     results = requests.get(
         "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
         params={
