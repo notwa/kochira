@@ -30,6 +30,7 @@
                                               for pattern, mention in command.patterns))}}</pre>
 <dl class="dl-horizontal">
 {% if hasattr(command, "permissions") %}<dt>Requires permission</dt><dd>{{", ".join(command.permissions)}}</dd>{% end %}
+{% if hasattr(command, "contexts") %}<dt>Requires context</dt><dd>{{", ".join(command.contexts)}}</dd>{% end %}
 </dl>
 {% raw rst(get_long_doc(command.__doc__),
            settings_overrides={"initial_header_level": 4}) %}

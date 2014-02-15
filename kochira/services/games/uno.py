@@ -8,7 +8,7 @@ import random
 import itertools
 from collections import OrderedDict
 
-from kochira.service import Service
+from kochira.service import Service, requires_context
 
 service = Service(__name__, __doc__)
 
@@ -320,7 +320,8 @@ def start_uno(client, target, origin, set=None):
     service.add_context(client, "uno", target)
 
 
-@service.command(r"!stop", contexts={"uno"})
+@service.command(r"!stop")
+@requires_context("uno")
 def stop_uno(client, target, origin):
     """
     Stop game.
@@ -335,7 +336,8 @@ def stop_uno(client, target, origin):
     ))
 
 
-@service.command(r"!join", contexts={"uno"})
+@service.command(r"!join")
+@requires_context("uno")
 def join_uno(client, target, origin):
     """
     Join game.
@@ -358,7 +360,8 @@ def join_uno(client, target, origin):
     ))
 
 
-@service.command(r"!deal", contexts={"uno"})
+@service.command(r"!deal")
+@requires_context("uno")
 def deal_uno(client, target, origin):
     """
     Deal for game.
@@ -396,7 +399,8 @@ def deal_uno(client, target, origin):
         send_hand(client, player, game)
 
 
-@service.command(r"!play (?P<raw_card>\S+)(?: (?P<target_color>.))?", contexts={"uno"})
+@service.command(r"!play (?P<raw_card>\S+)(?: (?P<target_color>.))?")
+@requires_context("uno")
 def play_card(client, target, origin, raw_card, target_color=None):
     """
     Play card.
@@ -502,7 +506,8 @@ def play_card(client, target, origin, raw_card, target_color=None):
     send_hand(client, game.turn, game)
 
 
-@service.command(r"!draw", contexts={"uno"})
+@service.command(r"!draw")
+@requires_context("uno")
 def draw(client, target, origin):
     """
     Draw.
@@ -539,7 +544,8 @@ def draw(client, target, origin):
     client.message(target, "{origin} draws.".format(origin=origin))
 
 
-@service.command(r"!pass", contexts={"uno"})
+@service.command(r"!pass")
+@requires_context("uno")
 def pass_(client, target, origin):
     """
     Pass.
@@ -576,7 +582,8 @@ def pass_(client, target, origin):
     send_hand(client, game.turn, game)
 
 
-@service.command(r"!hand", contexts={"uno"})
+@service.command(r"!hand")
+@requires_context("uno")
 def show_hand(client, target, origin):
     """
     Show hand.
@@ -595,7 +602,8 @@ def show_hand(client, target, origin):
     send_hand(client, origin, game)
 
 
-@service.command(r"!leave", contexts={"uno"})
+@service.command(r"!leave")
+@requires_context("uno")
 def leave(client, target, origin):
     """
     Leave game.

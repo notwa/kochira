@@ -5,7 +5,7 @@ import bisect
 
 from pydle.async import coroutine, Future
 
-from .auth import has_permission
+from .auth import has_permission, requires_permission
 from . import config
 
 from .util import Expando
@@ -57,7 +57,7 @@ class Service:
         return _decorator
 
     def command(self, pattern, priority=0, mention=False, strip=True,
-                re_flags=re.I, eat=True, allow_private=True, contexts=None):
+                re_flags=re.I, eat=True, allow_private=True):
         """
         Register a command for use with the bot.
 
@@ -77,7 +77,8 @@ class Service:
             @functools.wraps(f)
             @coroutine
             def _command_handler(client, target, origin, message):
-                if contexts is not None:
+                contexts = getattr(f, "contexts", set([]))
+                if contexts:
                     # check for contexts
                     bound = self.binding_for(client.bot)
 
@@ -262,3 +263,17 @@ def background(f):
         return result
 
     return _inner
+
+
+def requires_context(context):
+    """
+    Require a context for the command.
+    """
+
+    def _decorator(f):
+        if not hasattr(f, "contexts"):
+            f.contexts = set([])
+        f.contexts.add(context)
+
+        return f
+    return _decorator
