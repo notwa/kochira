@@ -30,6 +30,49 @@ def geocode(address):
     ).json().get("results", [])
 
 
+@service.command(r"where is (?P<place>.+)\??", mention=True)
+@background
+@coroutine
+def get_location(client, target, origin, place):
+    """
+    Get location.
+
+    Get a location using geocoding.
+    """
+
+    who = None
+
+    user_data = yield UserData.lookup_default(client, place)
+    if "location" in user_data:
+        who = place
+        place = "{lat},{lng}".format(**user_data["location"])
+
+    results = geocode(place)
+
+    if not results:
+        client.message(target, "{origin}: I don't know where \"{place}\" is.".format(
+            origin=origin,
+            place=place
+        ))
+        return
+
+    result = results[0]
+
+    if who is not None:
+        fmt = "{origin}: {who} set their location to {formatted_address} ({lat:.10}, {lng:.10})."
+    else:
+        fmt = "{origin}: Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.10})."
+
+    client.message(target, fmt.format(
+        origin=origin,
+        who=who,
+        place=place,
+        formatted_address=result["formatted_address"],
+        lat=float(result["geometry"]["location"]["lat"]),
+        lng=float(result["geometry"]["location"]["lng"])
+    ))
+
+
 @service.command(r"my location is (?P<place>.+)", mention=True)
 @background
 @coroutine
