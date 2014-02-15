@@ -5,6 +5,7 @@ import bisect
 
 from pydle.async import coroutine, Future
 
+from .auth import has_permission
 from . import config
 
 logger = logging.getLogger(__name__)
@@ -66,7 +67,17 @@ class Service:
 
             @functools.wraps(f)
             @coroutine
-            def _command_handler(client, origin, target, message):
+            def _command_handler(client, target, origin, message):
+                permissions = getattr(f, "permissions", set([]))
+
+                hostmask = "{nickname}!{username}@{hostname}".format(
+                    nickname=origin,
+                    username=client.users[origin]["username"],
+                    hostname=client.users[origin]["hostname"]
+                )
+                if not all(has_permission(client, hostmask, permission, target) for permission in permissions):
+                    return
+
                 if strip:
                     message = message.strip()
 
@@ -90,7 +101,7 @@ class Service:
                     if k in f.__annotations__ and v is not None:
                         kwargs[k] = f.__annotations__[k](v)
 
-                r = f(client, origin, target, **kwargs)
+                r = f(client, target, origin, **kwargs)
 
                 if isinstance(r, Future):
                     r = yield r

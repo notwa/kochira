@@ -1,5 +1,4 @@
 import fnmatch
-import functools
 
 
 def acl_for(client, target=None):
@@ -31,15 +30,5 @@ def requires_permission(permission):
             f.permissions = set([])
         f.permissions.add(permission)
 
-        @functools.wraps(f)
-        def _inner(client, target, origin, *args, **kwargs):
-            hostmask = "{nickname}!{username}@{hostname}".format(
-                nickname=origin,
-                username=client.users[origin]["username"],
-                hostname=client.users[origin]["hostname"]
-            )
-            if not has_permission(client, hostmask, permission, target):
-                return
-            return f(client, target, origin, *args, **kwargs)
-        return _inner
+        return f
     return _decorator
