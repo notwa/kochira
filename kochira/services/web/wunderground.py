@@ -31,7 +31,7 @@ def geocode(address):
 
 
 @service.command(r"!weather(?: (?P<where>.+))?")
-@service.command(r"weather(?: for (?P<where>.+))?", mention=True)
+@service.command(r"weather(?: (?:for|in) (?P<where>.+))?", mention=True)
 @background
 @coroutine
 def weather(client, target, origin, where=None):
