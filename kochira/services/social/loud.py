@@ -34,11 +34,6 @@ def is_shout(text):
        len(text) >= 4 and \
        any(c for c in text if c in string.ascii_uppercase)
 
-@service.setup
-def initialize_model(bot):
-    storage = service.storage_for(bot)
-    storage.last_shout = None
-
 
 @service.command(r"who(?:'s| is| are|'re)(?: the loudest|loud)(?: .+)?\??$", mention=True)
 def loudest(client, target, origin):
@@ -80,16 +75,28 @@ def who_said_that(client, target, origin):
     Get information for who originally said the last shout.
     """
 
-    storage = service.storage_for(client.bot)
+    shouts = {line.strip(): i
+              for i, (who, line) in enumerate(client.backlogs[target])
+              if is_shout(line) and who == client.nickname}
 
-    if storage.last_shout is not None:
-        context = "{who} said that.".format(who=storage.last_shout.who)
-    else:
-        context = "Er, nobody said that."
+    q = list(Shout.select() \
+        .where((Shout.message << list(shouts.keys())) if shouts else False))
 
-    client.message(target, "{origin}: {context}".format(
+    if not q:
+        client.message(target, "{origin}: Er, nobody said that.".format(
+            origin=origin
+        ))
+        return
+
+    q.sort(key=lambda shout: shouts[shout.message])
+
+    client.message(target, "{origin}: {shouts}.".format(
         origin=origin,
-        context=context
+        shouts="; ".join("{who} from {network} said \"{what}\"".format(
+            who=shout.who,
+            network=shout.network,
+            what=shout.message
+        ) for shout in q)
     ))
 
 
