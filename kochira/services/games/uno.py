@@ -45,11 +45,12 @@ class Game:
 
     SPECIAL_RANKS = {10, 11, 12, 13}
 
-    def __init__(self, pile=None):
+    def __init__(self, channel, pile=None):
         self.draw_pile = list(pile or Game.SETS["standard"])
         random.shuffle(self.draw_pile)
 
         self.started = False
+        self.channel = channel
         self.players = OrderedDict()
 
     def _draw(self):
@@ -269,7 +270,7 @@ def send_summary(client, target, game, prefix=""):
 
 
 def send_hand(client, player, game):
-    client.notice(player, "Your hand: {hand}".format(
+    client.notice(player, "[{}] Uno: Your hand: {hand}".format(game.channel,
         hand=" ".join(show_card_irc(card) for card in game.players[player])
     ))
 
@@ -314,7 +315,7 @@ def start_uno(client, target, origin, set=None):
             ))
             return
 
-    g = Game(set)
+    g = Game(target, set)
     g.join(origin)
     storage.games[k] = g
 
@@ -531,7 +532,7 @@ def draw(client, target, origin):
             return
         raise
 
-    client.notice(origin, "You drew: {}".format(show_card_irc(card)))
+    client.notice(origin, "[{}] Uno: You drew: {}".format(game.channel, show_card_irc(card)))
     client.message(target, "{origin} draws.".format(origin=origin))
 
 
@@ -577,9 +578,9 @@ def pass_(client, target, origin):
 
     if must_draw > 0:
         suffix = " and had to draw {} cards".format(must_draw)
-        client.notice(origin,
-                      "You drew: {}".format(" ".join(show_card_irc(card)
-                                            for card in game.players[origin][-must_draw:])))
+        client.notice(origin, "[{}] Uno: You drew: {}"
+                            .format(game.channel, " ".join(show_card_irc(card)
+                            for card in game.players[origin][-must_draw:])))
 
     send_summary(client, target, game, "{origin} passed{suffix}. ".format(
         origin=origin,
