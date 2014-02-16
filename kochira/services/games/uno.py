@@ -253,8 +253,9 @@ def show_card_irc(card):
 
 
 def send_summary(client, target, game, prefix=""):
-    client.message(target, prefix + "It's now {turn}'s turn. Players: {players}; Top card ({count} left): {top}".format(
+    client.message(target, "{turn}: {prefix}It's your turn. Players: {players}; Top card ({count} left): {top}".format(
         turn=game.turn,
+        prefix=prefix,
         players=", ".join("{} ({} cards)".format(k, len(v))
                           for k, v in game.scores()),
         count=len(game.draw_pile),
@@ -492,12 +493,12 @@ def play_card(client, target, origin, raw_card, target_color=None):
         prefix = "Order reversed! "
     elif rank == Game.DRAW_TWO:
         cards_drawn = game.players[usual_turn][-2:]
-        prefix = "Draw two! "
+        prefix = "{} draws two! ".format(usual_turn)
     elif rank == Game.DRAW_FOUR:
         cards_drawn = game.players[usual_turn][-4:]
-        prefix = "Draw four! "
+        prefix = "{} draws four! ".format(usual_turn)
     elif rank == Game.SKIP:
-        prefix = "Skip! "
+        prefix = "{} is skipped! ".format(usual_turn)
 
     if cards_drawn is not None:
         client.notice(usual_turn, "You drew: {}".format(" ".join(show_card_irc(card) for card in cards_drawn)))
