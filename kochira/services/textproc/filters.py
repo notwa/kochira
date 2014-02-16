@@ -31,6 +31,8 @@ def benisify(s):
         lambda s: re.sub(r'\bc', 'g', s),
         lambda s: re.sub(r'\bis\b', 'are', s),
         lambda s: re.sub(r'c+(?![eiy])', 'g', s),
+        lambda s: re.sub(r'know', 'no', s),
+        lambda s: re.sub(r'kn', 'n', s),
         lambda s: re.sub(r'[qk]', 'g', s),
         lambda s: re.sub(r'([?!.]|$)+', lambda x: (x.group(0) * random.randint(2, 5)) + " " + "".join((":" * random.randint(1, 2)) + ("D" * random.randint(1, 4)) for _ in range(random.randint(2, 5))), s),
     ], s)
