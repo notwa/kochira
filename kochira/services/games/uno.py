@@ -43,6 +43,8 @@ class Game:
     DRAW_FOUR = 13
     WILD_RANK = 14
 
+    SPECIAL_RANKS = {10, 11, 12, 13}
+
     def __init__(self, pile=None):
         self.draw_pile = list(pile or Game.SETS["standard"])
         random.shuffle(self.draw_pile)
@@ -120,11 +122,13 @@ class Game:
         return card
 
     def turn_pass(self):
-        if not self.has_drawn:
+        if not self.has_drawn and self.must_draw == 0:
             raise UnoStateError(UnoStateError.MUST_DRAW_FIRST)
 
+        self.players[self.turn].extend([self._draw() for _ in range(self.must_draw)])
+
         self._advance()
-        self.has_drawn = False
+        self.must_draw = 0
 
     def join(self, player):
         hand = []
@@ -151,6 +155,9 @@ class Game:
         if card not in self.players[self.turn]:
             raise UnoStateError(UnoStateError.NOT_IN_HAND)
 
+        if self.must_draw > 0 and rank not in Game.SPECIAL_RANKS:
+            raise UnoStateError(UnoStateError.CARD_NOT_COMPATIBLE)
+
         if color == Game.WILD:
             if target_color not in (Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW):
                 raise ValueError("must specify a valid target color")
@@ -170,22 +177,17 @@ class Game:
         if not self.players[self.turn]:
             return True
 
-        self._advance()
-
         # now handle special cards
         if rank == Game.DRAW_TWO:
-            self.players[self.turn].extend([self._draw() for _ in range(2)])
-            self._advance()
+            self.must_draw += 2
         elif rank == Game.SKIP:
             self._advance()
         elif rank == Game.REVERSE:
             self.direction = -self.direction
-            # advance twice to properly switch direction
-            self._advance()
-            self._advance()
         elif rank == Game.DRAW_FOUR:
-            self.players[self.turn].extend([self._draw() for _ in range(4)])
-            self._advance()
+            self.must_draw += 4
+
+        self._advance()
 
         return False
 
@@ -205,7 +207,7 @@ class Game:
         self.turns = list(self.players.keys())
         self._turn_index = 0
         self.direction = 1
-        self.has_drawn = False
+        self.must_draw = 0
 
         self.top = self._draw()
 
@@ -255,10 +257,11 @@ def show_scores(game):
                      for k, v in game.scores())
 
 def send_summary(client, target, game, prefix=""):
-    client.message(target, "{turn}: {prefix}It's your turn. Top card ({count} left): {top}".format(
+    client.message(target, "{turn}: {prefix}It's your turn.{stack} Top card ({count} left): {top}".format(
         turn=game.turn,
         prefix=prefix,
         count=len(game.draw_pile),
+        stack=" Stack a special card or pass and draw {}.".format(game.must_draw) if game.must_draw > 0 else "",
         top=show_card_irc(game.top)
     ))
 
@@ -486,21 +489,14 @@ def play_card(client, target, origin, raw_card, target_color=None):
 
     prefix = ""
 
-    cards_drawn = None
-
     if rank == Game.REVERSE:
         prefix = "Order reversed! "
     elif rank == Game.DRAW_TWO:
-        cards_drawn = game.players[usual_turn][-2:]
-        prefix = "{} draws two! ".format(usual_turn)
+        prefix = "Draw two! "
     elif rank == Game.DRAW_FOUR:
-        cards_drawn = game.players[usual_turn][-4:]
-        prefix = "{} draws four! ".format(usual_turn)
+        prefix = "Draw four! "
     elif rank == Game.SKIP:
-        prefix = "{} is skipped! ".format(usual_turn)
-
-    if cards_drawn is not None:
-        client.notice(usual_turn, "You drew: {}".format(" ".join(show_card_irc(card) for card in cards_drawn)))
+        prefix = "{} was skipped! ".format(usual_turn)
 
     send_summary(client, target, game, prefix)
     send_hand(client, game.turn, game)
@@ -567,6 +563,8 @@ def pass_(client, target, origin):
         ))
         return
 
+    must_draw = game.must_draw
+
     try:
         card = game.turn_pass()
     except UnoStateError as e:
@@ -578,7 +576,18 @@ def pass_(client, target, origin):
         ))
         return
 
-    send_summary(client, target, game, "{} passes. ".format(origin))
+    suffix = ""
+
+    if must_draw > 0:
+        suffix = " and had to draw {} cards".format(must_draw)
+        client.notice(origin,
+                      "You drew: {}".format(" ".join(show_card_irc(card)
+                                            for card in game.players[origin][-must_draw:])))
+
+    send_summary(client, target, game, "{origin} passed{suffix}. ".format(
+        origin=origin,
+        suffix=suffix
+    ))
     send_hand(client, game.turn, game)
 
 
