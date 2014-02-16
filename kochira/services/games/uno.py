@@ -236,8 +236,7 @@ Game.SETS = {
         [(Game.WILD, Game.DRAW_FOUR)] * 8,
     "bland":
         [(color, 0) for color in [Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW]] +
-        [card for card in itertools.product([Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW], range(1, 10))] * 2 +
-        [(Game.WILD, Game.WILD_RANK)] * 4,
+        [card for card in itertools.product([Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW], range(1, 10))] * 2
 }
 
 
