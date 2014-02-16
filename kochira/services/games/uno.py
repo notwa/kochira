@@ -45,12 +45,11 @@ class Game:
 
     SPECIAL_RANKS = {10, 11, 12, 13}
 
-    def __init__(self, channel, pile=None):
+    def __init__(self, pile=None):
         self.draw_pile = list(pile or Game.SETS["standard"])
         random.shuffle(self.draw_pile)
 
         self.started = False
-        self.channel = channel
         self.players = OrderedDict()
 
     def _draw(self):
@@ -269,8 +268,8 @@ def send_summary(client, target, game, prefix=""):
     ))
 
 
-def send_hand(client, player, game):
-    client.notice(player, "[{}] Uno: Your hand: {hand}".format(game.channel,
+def send_hand(client, target, player, game):
+    client.notice(player, "[{}] Uno: Your hand: {hand}".format(target,
         hand=" ".join(show_card_irc(card) for card in game.players[player])
     ))
 
@@ -315,7 +314,7 @@ def start_uno(client, target, origin, set=None):
             ))
             return
 
-    g = Game(target, set)
+    g = Game(set)
     g.join(origin)
     storage.games[k] = g
 
@@ -397,7 +396,7 @@ def deal_uno(client, target, origin):
 
     send_summary(client, target, game)
     for player in game.players.keys():
-        send_hand(client, player, game)
+        send_hand(client, target, player, game)
 
 
 @service.command(r"!play (?P<raw_card>\S+)(?: (?P<target_color>.))?")
@@ -493,7 +492,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
         prefix = "{} was skipped! ".format(usual_turn)
 
     send_summary(client, target, game, prefix)
-    send_hand(client, game.turn, game)
+    send_hand(client, target, game.turn, game)
 
 
 @service.command(r"!draw")
@@ -532,7 +531,7 @@ def draw(client, target, origin):
             return
         raise
 
-    client.notice(origin, "[{}] Uno: You drew: {}".format(game.channel, show_card_irc(card)))
+    client.notice(origin, "[{}] Uno: You drew: {}".format(target, show_card_irc(card)))
     client.message(target, "{origin} draws.".format(origin=origin))
 
 
@@ -579,14 +578,14 @@ def pass_(client, target, origin):
     if must_draw > 0:
         suffix = " and had to draw {} cards".format(must_draw)
         client.notice(origin, "[{}] Uno: You drew: {}"
-                            .format(game.channel, " ".join(show_card_irc(card)
+                            .format(target, " ".join(show_card_irc(card)
                             for card in game.players[origin][-must_draw:])))
 
     send_summary(client, target, game, "{origin} passed{suffix}. ".format(
         origin=origin,
         suffix=suffix
     ))
-    send_hand(client, game.turn, game)
+    send_hand(client, target, game.turn, game)
 
 
 @service.command(r"!hand")
@@ -606,7 +605,7 @@ def show_hand(client, target, origin):
         ))
         return
 
-    send_hand(client, origin, game)
+    send_hand(client, target, origin, game)
 
 
 @service.command(r"!scores")
