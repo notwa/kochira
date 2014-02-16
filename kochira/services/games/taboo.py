@@ -364,11 +364,37 @@ def do_advance(bot, client, target, game):
         word=game.card.title
     ))
 
+    game.advance()
     if do_draw(client, target):
         return
 
-    game.advance()
     send_summary(client, target)
+
+
+@service.command(r"!pass")
+@requires_context("taboo")
+def pass_taboo(client, target, origin):
+    """
+    Pass.
+
+    Pass on this card.
+    """
+    storage = service.storage_for(client.bot)
+    game = storage.games[client.name, target]
+
+    if origin not in game.players:
+        client.message(target, "{origin}: You're not in this game.".format(
+            origin=origin
+        ))
+        return
+
+    if origin != game.turn:
+        client.message(target, "{origin}: It's not your turn.".format(
+            origin=origin
+        ))
+        return
+
+    do_draw(client, target)
 
 
 def do_draw(client, target):
@@ -409,7 +435,7 @@ def do_guess(client, target, origin, message):
     if origin == game.turn:
         maybe_taboo = game.submit_clue(message)
         if maybe_taboo is not None:
-            client.message(target, "{origin}: BZZT! You said \"{taboo}\". The word was \"{title}\".".format(
+            client.message(target, "{origin}: BZZT! You said \"{taboo}\". The word was \"{title}\". Next word!".format(
                 origin=origin,
                 taboo=maybe_taboo,
                 title=card.title
@@ -417,7 +443,7 @@ def do_guess(client, target, origin, message):
             do_draw(client, target)
     elif origin in game.guessers:
         if game.submit_guess(message):
-            client.message(target, "{origin}: Ding-ding! The word was \"{title}\". 1 point for team {n}.".format(
+            client.message(target, "{origin}: Ding-ding! The word was \"{title}\". Point for team {n}. Next word!".format(
                 origin=origin,
                 title=card.title,
                 n=game.team + 1
