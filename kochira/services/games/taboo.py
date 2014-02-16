@@ -276,7 +276,7 @@ def show_scores(game):
     team2 = ", ".join(list(game.players)[1::2])
 
     scores = [(team1, game.teams[0]), (team2, game.teams[1])]
-    scores.sort(key=lambda x: x[1])
+    scores.sort(key=lambda x: -x[1])
 
     return "; ".join("{}: {}".format(k, v) for k, v in scores)
 
@@ -359,8 +359,9 @@ def start_taboo(client, target, origin):
 
 @service.task
 def do_advance(bot, client, target, game):
-    client.message(target, "{turn}: Time is up!".format(
-        turn=game.turn
+    client.message(target, "{turn}: Time is up! The word was \"{word}\".".format(
+        turn=game.turn,
+        word=game.card.title
     ))
 
     if do_draw(client, target):
