@@ -129,6 +129,7 @@ class Game:
 
         self._advance()
         self.must_draw = 0
+        self.has_drawn = False
 
     def join(self, player):
         hand = []
