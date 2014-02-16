@@ -47,7 +47,6 @@ class Game:
         self.draw_pile = list(pile or Game.SETS["standard"])
         random.shuffle(self.draw_pile)
 
-        self.discard_pile = []
         self.started = False
         self.players = OrderedDict()
 
@@ -147,9 +146,7 @@ class Game:
 
     def play(self, card, target_color=None):
         color, rank = card
-
-        top_card = self.top
-        top_color, top_rank = top_card
+        top_color, top_rank = self.top
 
         if card not in self.players[self.turn]:
             raise UnoStateError(UnoStateError.NOT_IN_HAND)
@@ -158,13 +155,13 @@ class Game:
             if target_color not in (Game.RED, Game.GREEN, Game.BLUE, Game.YELLOW):
                 raise ValueError("must specify a valid target color")
             self.players[self.turn].remove(card)
-            self.discard_pile.append((target_color, rank))
+            self.top = (target_color, rank)
         elif top_color == color or top_color == Game.WILD:
             self.players[self.turn].remove(card)
-            self.discard_pile.append(card)
+            self.top = card
         elif top_rank == rank:
             self.players[self.turn].remove(card)
-            self.discard_pile.append(card)
+            self.top = card
         else:
             raise UnoStateError(UnoStateError.CARD_NOT_COMPATIBLE)
 
@@ -200,10 +197,6 @@ class Game:
     def next_turn(self):
         return list(self.players.keys())[self._next_turn_index()]
 
-    @property
-    def top(self):
-        return self.discard_pile[-1]
-
     def start(self):
         if len(self.players) < 2:
             raise ValueError("need at least two players")
@@ -214,7 +207,7 @@ class Game:
         self.direction = 1
         self.has_drawn = False
 
-        self.discard_pile.append(self._draw())
+        self.top = self._draw()
 
     def scores(self):
         return sorted(self.players.items(), key=lambda x: len(x[1]))
