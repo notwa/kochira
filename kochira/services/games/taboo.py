@@ -49,7 +49,7 @@ class TabooStateError(Exception):
 
 
 class Game:
-    TURN_DURATION = 30
+    TURN_DURATION = 60
 
     def __init__(self):
         q = Taboo.select().order_by(peewee.fn.Random())
