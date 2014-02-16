@@ -450,7 +450,6 @@ def play_card(client, target, origin, raw_card, target_color=None):
     last_turn = game.turn
     usual_turn = game.next_turn
 
-    prefix = ""
     try:
         game_over = game.play(card, {
             "r": Game.RED,
@@ -459,10 +458,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
             "y": Game.YELLOW
         }.get(target_color))
     except UnoStateError as e:
-        if e.code == UnoStateError.NO_MORE_DRAWS:
-            prefix = "Looks like the pile ran out! "
-            game_over = True
-        elif e.code == UnoStateError.CARD_NOT_COMPATIBLE:
+        if e.code == UnoStateError.CARD_NOT_COMPATIBLE:
             client.message(target, "{origin}: You can't play that card right now.".format(
                 origin=origin
             ))
@@ -479,7 +475,7 @@ def play_card(client, target, origin, raw_card, target_color=None):
         return
 
     if game_over:
-        do_game_over(client, target, prefix)
+        do_game_over(client, target)
         return
 
     if len(game.players[last_turn]) == 1:
@@ -528,13 +524,15 @@ def draw(client, target, origin):
     try:
         card = game.turn_draw()
     except UnoStateError as e:
-        if e.code != UnoStateError.HAS_ALREADY_DRAWN:
-            raise
-
-        client.message(target, "{origin}: You've already drawn.".format(
-            origin=origin
-        ))
-        return
+        if e.code == UnoStateError.HAS_ALREADY_DRAWN:
+            client.message(target, "{origin}: You've already drawn.".format(
+                origin=origin
+            ))
+            return
+        elif e.code == UnoStateError.NO_MORE_DRAWS:
+            do_game_over(client, target, "Looks like the pile ran out! ")
+            return
+        raise
 
     client.notice(origin, "You drew: {}".format(show_card_irc(card)))
     client.message(target, "{origin} draws.".format(origin=origin))
@@ -568,13 +566,15 @@ def pass_(client, target, origin):
     try:
         card = game.turn_pass()
     except UnoStateError as e:
-        if e.code != UnoStateError.MUST_DRAW_FIRST:
-            raise
-
-        client.message(target, "{origin}: You need to draw first.".format(
-            origin=origin
-        ))
-        return
+        if e.code == UnoStateError.MUST_DRAW_FIRST:
+            client.message(target, "{origin}: You need to draw first.".format(
+                origin=origin
+            ))
+            return
+        elif e.code == UnoStateError.NO_MORE_DRAWS:
+            do_game_over(client, target, "Looks like the pile ran out! ")
+            return
+        raise
 
     suffix = ""
 
