@@ -141,6 +141,8 @@ class Game:
         self.draw_pile.extend(hand)
         random.shuffle(self.draw_pile)
 
+        self._turn_index %= len(self.players)
+
         return not self.players or (self.started and len(self.players) <= 1)
 
     def play(self, card, target_color=None):
@@ -650,3 +652,6 @@ def leave(client, target, origin):
     client.message(target, "{origin} left the game. Their cards were shuffled back into the pile.".format(
         origin=origin
     ))
+
+    if game.started:
+        send_summary(client, target, game)
