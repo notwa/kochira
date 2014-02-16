@@ -92,7 +92,7 @@ def who_said_that(client, target, origin):
 
     client.message(target, "{origin}: {shouts}.".format(
         origin=origin,
-        shouts="; ".join("{who} from {network} said \"{what}\"".format(
+        shouts=", ".join("{who} from {network} said \"{what}\"".format(
             who=shout.who,
             network=shout.network,
             what=shout.message
