@@ -332,12 +332,7 @@ def stop_uno(client, target, origin):
 
     Stop the Uno game in progress.
     """
-    storage = service.storage_for(client.bot)
-    del storage.games[client.name, target]
-    service.remove_context(client, "uno", target)
-    client.message(target, "{origin} has stopped the game.".format(
-        origin=origin
-    ))
+    do_game_over(client, target)
 
 
 @service.command(r"!join")
