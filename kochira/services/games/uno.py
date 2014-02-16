@@ -145,7 +145,8 @@ class Game:
         self.draw_pile.extend(hand)
         random.shuffle(self.draw_pile)
 
-        self._turn_index %= len(self.players)
+        if self.players:
+            self._turn_index %= len(self.players)
 
         return not self.players or (self.started and len(self.players) <= 1)
 
