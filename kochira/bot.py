@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Future
 
 import collections
 import functools
@@ -11,7 +11,7 @@ from peewee import SqliteDatabase
 import signal
 import yaml
 
-from pydle.async import EventLoop
+from pydle.async import EventLoop, coroutine
 
 from . import config
 from .client import Client
@@ -159,7 +159,7 @@ class Bot:
 
     def _connect_to_db(self):
         db_name = self.config.core.database
-        database.initialize(SqliteDatabase(db_name, threadlocals=True))
+        database.initialize(SqliteDatabase(db_name, check_same_thread=False))
         logger.info("Opened database connection: %s", db_name)
         UserDataKVPair.create_table(True)
 
@@ -179,7 +179,27 @@ class Bot:
                     pass # it gets logged
 
     def defer_from_thread(self, fn, *args, **kwargs):
-        self.event_loop.schedule(functools.partial(fn, *args, **kwargs))
+        fut = Future()
+
+        @coroutine
+        def _callback():
+            try:
+                r = fn(*args, **kwargs)
+            except Exception as e:
+                fut.set_exception(e)
+            else:
+                if isinstance(r, Future):
+                    try:
+                        r = yield r
+                    except Exception as e:
+                        fut.set_exception(e)
+                    else:
+                        fut.set_result(r)
+                else:
+                    fut.set_result(r)
+
+        self.event_loop.schedule(_callback)
+        return fut
 
     def load_service(self, name, reload=False):
         """
