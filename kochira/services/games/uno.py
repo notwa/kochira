@@ -621,7 +621,7 @@ def show_hand(client, target, origin):
         ))
         return
 
-    client.message("Standings: {scores}".format(scores=show_scores(game)))
+    client.message(target, "Standings: {scores}".format(scores=show_scores(game)))
 
 
 @service.command(r"!leave")
