@@ -270,7 +270,7 @@ def send_summary(client, target, game, prefix=""):
 
 
 def send_hand(client, player, game):
-    client.notice(player, "{} [uno] Your hand: {hand}".format(game.channel,
+    client.notice(player, "[{}] Uno: Your hand: {hand}".format(game.channel,
         hand=" ".join(show_card_irc(card) for card in game.players[player])
     ))
 
@@ -532,7 +532,7 @@ def draw(client, target, origin):
             return
         raise
 
-    client.notice(origin, "{} [uno] You drew: {}".format(game.channel, show_card_irc(card)))
+    client.notice(origin, "[{}] Uno: You drew: {}".format(game.channel, show_card_irc(card)))
     client.message(target, "{origin} draws.".format(origin=origin))
 
 
@@ -578,7 +578,7 @@ def pass_(client, target, origin):
 
     if must_draw > 0:
         suffix = " and had to draw {} cards".format(must_draw)
-        client.notice(origin, "{} [uno] You drew: {}"
+        client.notice(origin, "[{}] Uno: You drew: {}"
                             .format(game.channel, " ".join(show_card_irc(card)
                             for card in game.players[origin][-must_draw:])))
 
