@@ -34,6 +34,13 @@ def compute(client, target, origin, query, who=None):
 
     if who is not None:
         user_data = yield UserData.lookup_default(client, who)
+
+        if "location" not in user_data:
+            client.message(target, "{origin}: I don't have location information for {who}.".format(
+                origin=origin,
+                who=who
+            ))
+            return
     else:
         try:
             user_data = yield UserData.lookup(client, origin)
