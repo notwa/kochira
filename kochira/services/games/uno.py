@@ -252,12 +252,14 @@ def show_card_irc(card):
     }.get(rank, str(rank)) + "\x03"
 
 
+def show_scores(game):
+    return ", ".join("{} ({} cards)".format(k, len(v))
+                     for k, v in game.scores())
+
 def send_summary(client, target, game, prefix=""):
-    client.message(target, "{turn}: {prefix}It's your turn. Players: {players}; Top card ({count} left): {top}".format(
+    client.message(target, "{turn}: {prefix}It's your turn. Top card ({count} left): {top}".format(
         turn=game.turn,
         prefix=prefix,
-        players=", ".join("{} ({} cards)".format(k, len(v))
-                          for k, v in game.scores()),
         count=len(game.draw_pile),
         top=show_card_irc(game.top)
     ))
@@ -275,8 +277,7 @@ def do_game_over(client, target, prefix=""):
     game = storage.games[client.name, target]
 
     client.message(target, prefix + "Game over! Final results: {results}".format(
-        results=", ".join("{} ({} cards)".format(k, len(v))
-                          for k, v in game.scores())
+        results=show_scores(game)
     ))
     del storage.games[client.name, target]
     service.remove_context(client, "uno", target)
@@ -601,6 +602,26 @@ def show_hand(client, target, origin):
         return
 
     send_hand(client, origin, game)
+
+
+@service.command(r"!scores")
+@requires_context("uno")
+def show_hand(client, target, origin):
+    """
+    Show scores.
+
+    Show scores for all players.
+    """
+    storage = service.storage_for(client.bot)
+    game = storage.games[client.name, target]
+
+    if origin not in game.players:
+        client.message(target, "{origin}: You're not in this game.".format(
+            origin=origin
+        ))
+        return
+
+    client.message("Standings: {scores}".format(scores=show_scores(game)))
 
 
 @service.command(r"!leave")
