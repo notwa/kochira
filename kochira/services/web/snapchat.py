@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from pysnap import Snapchat, MEDIA_VIDEO_NOAUDIO, MEDIA_VIDEO
 
 from kochira import config
-from kochira.service import Service, Config
+from kochira.service import Service, Config, background
 
 service = Service(__name__, __doc__)
 
@@ -70,6 +70,7 @@ def make_snapchat(bot):
 
 
 @service.task
+@background
 def poll_for_updates(bot):
     config = service.config_for(bot)
     storage = service.storage_for(bot)

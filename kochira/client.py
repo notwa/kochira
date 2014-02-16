@@ -30,6 +30,10 @@ class Client(_Client):
     def config(self):
         return self.bot.config.clients[self.name]
 
+    @property
+    def executor(self):
+        return self.bot.executor
+
     @classmethod
     def from_config(cls, bot, name, config):
         client = cls(bot, name, config.nickname,

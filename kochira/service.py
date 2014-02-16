@@ -256,8 +256,8 @@ def background(f):
 
     @functools.wraps(f)
     @coroutine
-    def _inner(client, *args, **kwargs):
-        result = yield client.bot.executor.submit(f, client, *args, **kwargs)
+    def _inner(thing, *args, **kwargs):
+        result = yield thing.executor.submit(f, thing, *args, **kwargs)
         if isinstance(result, Future):
             result = yield result
         return result

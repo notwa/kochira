@@ -1,153 +1,87 @@
 import threading
 import logging
-import time
+from pydle.async import Future
 
 logger = logging.getLogger(__name__)
 
 
-class Work(object):
-    """
-    A piece of work for the scheduler. Contains a deadline indicating to the
-    scheduler how long to wait until the task needs to be executed.
-    """
-
-    def __init__(self, deadline, repeat=None, args=None, kwargs=None):
-        self.deadline = deadline
-        self.repeat = repeat
-        self.args = args if args is not None else []
-        self.kwargs = kwargs if kwargs is not None else {}
-
-    def reset_repeating_deadline(self):
-        self.deadline += self.repeat.total_seconds()
-
-
-class Scheduler(threading.Thread):
-    daemon = True
-
+class Scheduler:
     def __init__(self, bot):
         self.bot = bot
-        self.work = {}
-        self.work_lock = threading.RLock()
 
-        super().__init__()
+        self.timeouts = {}
+        self.periods = {}
 
-    def run(self):
-        self.last_tick = time.time()
+        self._next_period_id = 0
 
-        while True:
-            current = time.time()
-            dt = current - self.last_tick
+    def _error_handler(self, future):
+        exc = future.exception()
+        if exc is not None:
+            logging.error("Background task error", exc_info=exc)
 
-            with self.work_lock:
-                # we hold a massive scheduler lock here so that we have a
-                # consistent view of all work that needs to be scheduled and
-                # nothing attempts to schedule while we're in the middle of
-                # processing tasks
-                for bound in self.bot.services.values():
-                    service = bound.service
-                    for task in service.tasks:
-                        k = (service.name, task.__name__)
-
-                        if k not in self.work:
-                            continue
-
-                        remaining_work = []
-
-                        for work in self.work[k]:
-                            work.deadline -= dt
-
-                            if work.deadline <= 0:
-                                # task needs to run now
-                                logger.debug("Submitting task %s.%s to executor (late by %.2fs)",
-                                    service.name,
-                                    task.__name__,
-                                    -work.deadline
-                                )
-
-                                future = self.bot.executor.submit(task, self.bot,
-                                                                  *work.args,
-                                                                  **work.kwargs)
-
-                                @future.add_done_callback
-                                def on_complete(future):
-                                    exc = future.exception()
-                                    if exc is not None:
-                                        logger.error("Task error", exc_info=exc)
-
-                                if work.repeat is not None:
-                                    work.reset_repeating_deadline()
-
-                            if work.deadline > 0:
-                                # deadline may have been reset
-                                remaining_work.append(work)
-
-                        if remaining_work:
-                            self.work[k] = remaining_work
-                        else:
-                            del self.work[k]
-
-            self.last_tick = current
-            self._cleanup_dead_queues()
-
-            time.sleep(0.1)
-
-    def _cleanup_dead_queues(self):
-        active_queue_names = set([])
-
-        for bound in self.bot.services.values():
-            service = bound.service
-
-            for task in service.tasks:
-                k = (service.name, task.__name__)
-                active_queue_names.add(k)
-
-        with self.work_lock:
-            for k in set(self.work) - active_queue_names:
-                logger.info("Removing dead queue for %s.%s", k[0], k[1])
-                del self.work[k]
-
-    def _schedule_work(self, task, work):
-        logger.info("Scheduling task %s.%s in %s seconds (repeat: %s)",
-                    task.service.name, task.__name__, work.deadline,
-                    work.repeat)
-
-        with self.work_lock:
-            self.work \
-                .setdefault((task.service.name, task.__name__), []) \
-                .append(work)
-
-        return work
-
-    def schedule_after(self, time, task, *args, **kwargs):
+    def schedule_after(self, _time, _task, *_args, **_kwargs):
         """
         Schedule a task to run after a given amount of time.
         """
-        return self._schedule_work(task,
-                                   Work(time.total_seconds(),
-                                        None, args, kwargs))
+        logger.info("Scheduling %s.%s in %s", _task.service.name, _task.__name__, _time)
 
-    def schedule_every(self, interval, task, *args, **kwargs):
+        timeout = None
+
+        def _handler():
+            # ghetto-ass code for removing the timeout on completion
+            nonlocal timeout
+            r = _task(self.bot, *_args, **_kwargs)
+
+            if isinstance(r, Future):
+                r.add_done_callback(self._error_handler)
+
+            self.timeouts[_task.service.name].remove(timeout)
+
+        timeout = self.bot.event_loop.schedule_in(_time, _handler)
+
+        self.timeouts.setdefault(_task.service.name, set([])).add(timeout)
+        return (_task.service.name, timeout)
+
+    def schedule_every(self, _interval, _task, *_args, **_kwargs):
         """
-        Schedule a task to run every given interval.
+        Schedule a task to run at every given interval.
         """
-        return self._schedule_work(task,
-                                   Work(interval.total_seconds(), interval,
-                                        args, kwargs))
+        logger.info("Scheduling %s.%s every %s", _task.service.name, _task.__name__, _interval)
 
-    def unschedule_task(self, task):
-        logger.info("Unscheduling all work for task %s.%s",
-                    task.service.name, task.__name__)
+        period_id = self._next_period_id
+        self._next_period_id += 1
 
-        with self.work_lock:
-            for service_name, task_name in list(self.work.keys()):
-                if service_name == task.service.name and \
-                   task_name == task.__name__:
-                    del self.work[service_name, task_name]
+        def _handler():
+            if period_id not in self.periods.get(_task.service.name, set([])):
+                return False
+            r = _task(self.bot, *_args, **_kwargs)
+
+            if isinstance(r, Future):
+                r.add_done_callback(self._error_handler)
+
+            return True
+
+        self.bot.event_loop.schedule_periodically(_interval, _handler)
+        self.periods.setdefault(_task.service.name, set([])).add(period_id)
+        return (_task.service.name, period_id)
+
+    def unschedule_timeout(self, timeout):
+        service_name, timeout = timeout
+        self.bot.event_loop.unschedule(timeout)
+        self.timeouts[service_name].remove(timeout)
+
+    def unschedule_period(self, period):
+        service_name, period_id = period
+        self.periods[service_name].remove(period_id)
 
     def unschedule_service(self, service):
-        logger.info("Unscheduling all work for service %s", service.name)
+        logger.info("Unscheduling all tasks for service %s", service.name)
 
-        with self.work_lock:
-            for service_name, task_name in list(self.work.keys()):
-                if service_name == service.name:
-                    del self.work[service_name, task_name]
+        if service.name in self.timeouts:
+            for timeout in list(self.timeouts[service.name]):
+                self.unschedule_timeout((service.name, timeout))
+
+            del self.timeouts[service.name]
+
+        if service.name in self.periods:
+            del self.periods[service.name]

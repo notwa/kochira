@@ -136,7 +136,6 @@ class Bot:
     def run(self):
         self.executor = ThreadPoolExecutor(self.config.core.max_workers or multiprocessing.cpu_count())
         self.scheduler = Scheduler(self)
-        self.scheduler.start()
 
         signal.signal(signal.SIGHUP, self._handle_sighup)
 
@@ -232,9 +231,13 @@ class Bot:
         if name[0] == "." and name not in self.services:
             name = services.__name__ + name
 
-        service = self.services[name].service
-        service.run_shutdown(self)
-        del self.services[name]
+        try:
+            service = self.services[name].service
+            service.run_shutdown(self)
+            del self.services[name]
+        except:
+            logger.error("Couldn't unload service %s", name, exc_info=True)
+            raise
 
     def get_hooks(self, hook):
         """
