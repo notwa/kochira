@@ -44,7 +44,7 @@ def weather(client, target, origin, where=None):
 
     if where is None:
         try:
-            user_data = yield UserData.lookup(client, origin)
+            user_data = yield client.bot.defer_from_thread(UserData.lookup, client, origin)
         except UserData.DoesNotExist:
             user_data = {}
 
@@ -55,7 +55,7 @@ def weather(client, target, origin, where=None):
             return
         location = user_data["location"]
     else:
-        user_data = yield UserData.lookup_default(client, where)
+        user_data = yield client.bot.defer_from_thread(UserData.lookup_default, client, where)
         location = user_data.get("location")
 
         if location is None:

@@ -1,7 +1,7 @@
 import json
 import peewee
 import collections
-from .db import Model
+from .db import Model, database
 
 from pydle.async import coroutine
 
@@ -31,9 +31,18 @@ class UserDataKVPair(Model):
 
 
 class UserData(collections.MutableMapping):
-    def __init__(self, network, account):
+    def __init__(self, bot, network, account):
+        self.bot = bot
         self.network = network
         self.account = account
+        self.refresh()
+
+    def refresh(self):
+        self._fields = {}
+        self._dirty = set([])
+
+        for kv in self._all_kv_pairs_query():
+            self._fields[kv.key] = kv.value
 
     def _all_kv_pairs_query(self):
         return UserDataKVPair.select().where(UserDataKVPair.account == self.account,
@@ -52,35 +61,40 @@ class UserData(collections.MutableMapping):
                                   UserDataKVPair.key == key)
 
     def __getitem__(self, key):
-        try:
-            kv_pair = self._get_kv_pair(key)
-        except UserDataKVPair.DoesNotExist:
-            raise KeyError(key)
-        else:
-            return kv_pair.value
+        return self._fields[key]
 
     def __setitem__(self, key, value):
-        try:
-            kv_pair = self._get_kv_pair(key)
-        except UserDataKVPair.DoesNotExist:
-            kv_pair = self._make_kv_pair(key, value)
-        else:
-            kv_pair.value = value
-        kv_pair.save()
+        self._fields[key] = value
+        self._dirty.add(key)
 
     def __delitem__(self, key):
-        try:
-            kv_pair = self._get_kv_pair(key)
-        except UserDataKVPair.DoesNotExist:
-            raise KeyError(key)
-        else:
-            kv_pair.delete_instance()
+        del self._fields[key]
+        self._dirty.add(key)
 
     def __iter__(self):
-        return (kv_pair.key for kv_pair in self._all_kv_pairs_query())
+        return iter(self._fields)
 
     def __len__(self):
-        return self._all_kv_pairs_query().count()
+        return len(self._fields)
+
+    def save(self):
+        with database.transaction():
+            while self._dirty:
+                k = self._dirty.pop()
+
+                if k not in self._fields:
+                    self._get_kv_pair(k).delete_instance()
+                    continue
+
+                v = self._fields[k]
+
+                try:
+                    kv = self._get_kv_pair(k)
+                except UserDataKVPair.DoesNotExist:
+                    kv = self._make_kv_pair(k, v)
+                else:
+                    kv.value = v
+                kv.save()
 
 
     class DoesNotExist(Exception): pass
@@ -104,7 +118,7 @@ class UserData(collections.MutableMapping):
         if account is None:
             raise cls.DoesNotExist
 
-        return cls(client.network, account)
+        return cls(client.bot, client.network, account)
 
     @classmethod
     @coroutine
@@ -112,7 +126,7 @@ class UserData(collections.MutableMapping):
         try:
             r = yield cls.lookup(client, nickname)
         except cls.DoesNotExist:
-            return cls(client.network, nickname)
+            return cls(client.bot, client.network, nickname)
         else:
             return r
 

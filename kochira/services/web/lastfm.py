@@ -170,6 +170,7 @@ def setup_user(client, target, origin, lfm_username):
         return
 
     user_data["lastfm_user"] = lfm_username
+    user_data.save()
 
     client.message(target, "{origin}: You have been associated with the Last.fm username {user}.".format(
         origin=origin,
@@ -225,8 +226,8 @@ def compare_users(client, target, origin, user2, user1=None):
     if user1 is None:
         user1 = origin
 
-    lfm1 = yield get_lfm_username(client, user1)
-    lfm2 = yield get_lfm_username(client, user2)
+    lfm1 = yield client.bot.defer_from_thread(get_lfm_username, client, user1)
+    lfm2 = yield client.bot.defer_from_thread(get_lfm_username, client, user2)
 
     comparison = get_compare_users(config.api_key, lfm1, lfm2)
 

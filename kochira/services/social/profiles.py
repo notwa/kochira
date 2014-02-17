@@ -34,6 +34,7 @@ def forget_profile(client, target, origin):
         return
 
     del user_data["profile"]
+    user_data.save()
 
     client.message(target, "{origin}: Okay, I won't remember you anymore.".format(
         origin=origin
@@ -58,6 +59,7 @@ def remember_profile(client, target, origin, text):
         return
 
     user_data["profile"] = text
+    user_data.save()
 
     client.message(target, "{origin}: Okay, I'll remember you.".format(
         origin=origin

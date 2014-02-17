@@ -1,4 +1,6 @@
-from peewee import Proxy, Model
+import threading
+
+from peewee import Proxy, Model, SqliteDatabase
 
 database = Proxy()
 

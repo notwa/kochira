@@ -33,7 +33,7 @@ def compute(client, target, origin, query, who=None):
     """
 
     if who is not None:
-        user_data = yield UserData.lookup_default(client, who)
+        user_data = yield client.bot.defer_from_thread(UserData.lookup_default, client, who)
 
         if "location" not in user_data:
             client.message(target, "{origin}: I don't have location information for {who}.".format(
@@ -43,7 +43,7 @@ def compute(client, target, origin, query, who=None):
             return
     else:
         try:
-            user_data = yield UserData.lookup(client, origin)
+            user_data = yield client.bot.defer_from_thread(UserData.lookup, client, origin)
         except UserData.DoesNotExist:
             user_data = {}
 

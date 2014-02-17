@@ -66,6 +66,7 @@ def add_karma(client, target, origin, who):
 
     user_data.setdefault("karma", 0)
     user_data["karma"] += 1
+    user_data.save()
 
     storage.granters[origin, client.network] = now
 

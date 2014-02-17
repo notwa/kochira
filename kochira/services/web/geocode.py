@@ -42,7 +42,7 @@ def get_location(client, target, origin, place):
 
     who = None
 
-    user_data = yield UserData.lookup_default(client, place)
+    user_data = yield client.bot.defer_from_thread(UserData.lookup_default, client, place)
 
     if "location" in user_data:
         location = user_data["location"]
@@ -91,7 +91,7 @@ def set_location(client, target, origin, place):
     """
 
     try:
-        user_data = yield UserData.lookup(client, origin)
+        user_data = yield client.bot.defer_from_thread(UserData.lookup, client, origin)
     except UserData.DoesNotExist:
         client.message(target, "{origin}: You need to be authenticated to set your location.".format(
             origin=origin,
@@ -117,6 +117,8 @@ def set_location(client, target, origin, place):
 
     user_data["location"] = location
 
+    client.bot.defer_from_thread(user_data.save)
+
     client.message(target, "{origin}: Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).".format(
         origin=origin,
         **location
@@ -140,7 +142,7 @@ def nearby_search(client, target, origin, what, place=None, radius : int=None):
 
     if place is None:
         try:
-            user_data = yield UserData.lookup(client, origin)
+            user_data = yield client.bot.defer_from_thread(UserData.lookup, client, origin)
         except UserData.DoesNotExist:
             location = None
         else:

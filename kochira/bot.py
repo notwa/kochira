@@ -159,7 +159,7 @@ class Bot:
 
     def _connect_to_db(self):
         db_name = self.config.core.database
-        database.initialize(SqliteDatabase(db_name, check_same_thread=False))
+        database.initialize(SqliteDatabase(db_name, check_same_thread=True))
         logger.info("Opened database connection: %s", db_name)
         UserDataKVPair.create_table(True)
 
