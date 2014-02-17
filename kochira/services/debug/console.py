@@ -21,8 +21,7 @@ def setup_console(bot):
     storage.console = code.InteractiveConsole({"bot": bot})
 
 
-@service.command(r">>> (?P<code>.+)$", priority=3000)
-@service.command(r"eval (?P<code>.+)$", mention=True, priority=3000)
+@service.command(r">>>(?: (?P<code>.+))?", priority=3000)
 @requires_permission("admin")
 def eval_code(client, target, origin, code):
     """
