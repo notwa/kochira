@@ -186,7 +186,7 @@ class Game:
         # now handle special cards
         if rank == Game.DRAW_TWO:
             self.must_draw += 2
-        elif rank == Game.SKIP:
+        elif rank == Game.SKIP and self.must_draw == 0:
             self._advance()
         elif rank == Game.REVERSE:
             self.direction = -self.direction
