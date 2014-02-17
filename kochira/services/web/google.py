@@ -5,7 +5,6 @@ Run queries on Google and return results.
 """
 
 import requests
-from urllib.parse import unquote
 from html.parser import HTMLParser
 
 from kochira.service import Service, background
@@ -59,7 +58,7 @@ def search(client, target, origin, term, num: int=None):
     client.message(target, "{origin}: {title}: {url} ({num} of {total})".format(
         origin=origin,
         title=html_parser.unescape(results[num]["titleNoFormatting"]),
-        url=unquote(results[num]["url"]),
+        url=results[num]["unescapedUrl"],
         num=num + 1,
         total=total
     ))

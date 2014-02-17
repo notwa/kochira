@@ -5,7 +5,6 @@ Find image results
 """
 
 import requests
-from urllib.parse import unquote
 
 from kochira.service import Service, background
 
@@ -56,7 +55,7 @@ def image(client, target, origin, term, num: int=None):
 
     client.message(target, "{origin}: {url} ({num} of {total})".format(
         origin=origin,
-        url=results[num]["unescaped_url"],
+        url=results[num]["unescapedUrl"],
         num=num + 1,
         total=total
     ))
