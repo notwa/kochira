@@ -28,6 +28,7 @@ class UnoStateError(Exception):
     NOT_IN_HAND = 2
     CARD_NOT_COMPATIBLE = 3
     NO_MORE_DRAWS = 4
+    MUST_STACK = 5
 
 
 class Game:
@@ -115,6 +116,9 @@ class Game:
     def turn_draw(self):
         if self.has_drawn:
             raise UnoStateError(UnoStateError.HAS_ALREADY_DRAWN)
+
+        if self.must_draw > 0:
+            raise UnoStateError(UnoStateError.MUST_STACK)
 
         card = self._draw()
         self.players[self.turn].append(card)
@@ -528,6 +532,11 @@ def draw(client, target, origin):
             return
         elif e.code == UnoStateError.NO_MORE_DRAWS:
             do_game_over(client, target, "Looks like the pile ran out! ")
+            return
+        elif e.code == UnoStateError.MUST_STACK:
+            client.message(target, "{origin}: You need to stack a card.".format(
+                origin=origin
+            ))
             return
         raise
 
