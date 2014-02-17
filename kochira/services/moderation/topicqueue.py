@@ -38,7 +38,7 @@ def topic(client, target, origin, topic):
 
     parts.insert(0, topic)
 
-    while len(config.topic_separator.join(parts)) > client._topic_length_limit:
+    while len(config.topic_separator.join(parts).encode("utf-8")) > client._topic_length_limit:
         parts.pop()
 
     client.topic(target, config.topic_separator.join(parts))
