@@ -4,11 +4,12 @@ Administration services.
 This service allows administrators to manage various aspects of the bot.
 """
 
-from io import StringIO
 import os
 import signal
 import subprocess
 import sys
+
+service = Service(__name__, __doc__)
 
 
 @service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True, priority=3000)
