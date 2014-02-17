@@ -31,6 +31,8 @@ def eval_code(client, target, origin, code):
     bot internals.
     """
 
+    code = code or ""
+
     storage = service.storage_for(client.bot)
 
     stdout = StringIO()
