@@ -1,5 +1,4 @@
 pydle
-apsw
 peewee
 pyyaml
 requests
