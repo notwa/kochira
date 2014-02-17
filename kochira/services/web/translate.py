@@ -110,11 +110,12 @@ def translate(client, target, origin, term, to_lang=None, from_lang=None):
     r = perform_translation(term, sl, tl)
 
     trans = " ".join(x["trans"] for x in r["sentences"])
-    src_tlit = " ".join(x["src_translit"] for x in r["sentences"])
-    tlit = " ".join(x["translit"] for x in r["sentences"])
+
+    src_tlit = " ".join(x["src_translit"] for x in r["sentences"]).strip()
+    tlit = " ".join(x["translit"] for x in r["sentences"]).strip()
 
     if src_tlit:
-        trans = " (" + src_tlit + ")" + trans
+        trans = "(" + src_tlit + ") " + trans
 
     if tlit:
         trans += " (" + tlit + ")"
