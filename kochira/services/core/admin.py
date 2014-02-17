@@ -10,17 +10,6 @@ import signal
 import subprocess
 import sys
 
-from kochira.auth import requires_permission
-from kochira.service import Service
-
-service = Service(__name__, __doc__)
-
-
-@service.setup
-def setup_eval_locals(bot):
-    storage = service.storage_for(bot)
-    storage.eval_globals = {"bot": bot}
-
 
 @service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True, priority=3000)
 @requires_permission("admin")
@@ -108,45 +97,6 @@ def reload_services(client, target, origin):
         )
     else:
         client.message(target, "All services reloaded!")
-
-
-@service.command(r">>> (?P<code>.+)$", priority=3000)
-@service.command(r"eval (?P<code>.+)$", mention=True, priority=3000)
-@requires_permission("admin")
-def eval_code(client, target, origin, code):
-    """
-    Evaluate code.
-
-    Evaluate code inside the bot. The local ``bot`` is provided for access to
-    bot internals.
-    """
-
-    storage = service.storage_for(client.bot)
-
-    buf = StringIO()
-    sys.stdout = buf
-
-    try:
-        my_locals = {}
-        exec(compile(code, "<irc>", "single"),
-             storage.eval_globals, my_locals)
-        storage.eval_globals.update(my_locals)
-    except BaseException as e:
-        client.message(target, "<<! {name}: {info}".format(
-            name=e.__class__.__name__,
-            info=str(e)
-        ))
-        return
-    finally:
-        sys.stdout = sys.__stdout__
-
-    output = buf.getvalue().rstrip("\n")
-
-    if output:
-        for line in output.split("\n"):
-            client.message(target, "<<< {}".format(line))
-    else:
-        client.message(target, "(no result)")
 
 
 @service.command(r"rehash$", mention=True, priority=3000)
