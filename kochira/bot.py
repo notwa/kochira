@@ -15,7 +15,7 @@ from pydle.async import EventLoop, coroutine
 
 from . import config
 from .client import Client
-from .db import database
+from .db import database, APSWDatabase
 from .scheduler import Scheduler
 from .util import Expando
 from .service import Service, BoundService, Config as ServiceConfig
@@ -159,7 +159,7 @@ class Bot:
 
     def _connect_to_db(self):
         db_name = self.config.core.database
-        database.initialize(SqliteDatabase(db_name, check_same_thread=False))
+        database.initialize(APSWDatabase(db_name))
         logger.info("Opened database connection: %s", db_name)
         UserDataKVPair.create_table(True)
 
