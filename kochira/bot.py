@@ -138,9 +138,16 @@ class Bot:
         self.scheduler = Scheduler(self)
 
         signal.signal(signal.SIGHUP, self._handle_sighup)
+        signal.signal(signal.SIGTERM, self._handle_sigterm)
+        signal.signal(signal.SIGINT, self._handle_sigterm)
 
         self._load_services()
         self._connect_to_irc()
+
+    def stop(self):
+        self.event_loop.stop()
+        for service in list(self.services.keys()):
+            self.unload_service(service)
 
     def connect(self, name):
         client = Client.from_config(self, name,
@@ -299,3 +306,7 @@ class Bot:
             logger.error("Could not rehash configuration", exc_info=e)
 
         self.run_hooks("sighup", self)
+
+    def _handle_sigterm(self, signum, frame):
+        logger.info("Received termination signal; unloading all services")
+        self.stop()
