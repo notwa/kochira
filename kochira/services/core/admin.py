@@ -9,6 +9,9 @@ import signal
 import subprocess
 import sys
 
+from kochira.auth import requires_permission
+from kochira.service import Service
+
 service = Service(__name__, __doc__)
 
 
