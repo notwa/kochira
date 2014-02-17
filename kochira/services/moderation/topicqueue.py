@@ -8,8 +8,6 @@ from kochira import config
 from kochira.auth import requires_permission
 from kochira.service import Service, Config
 
-from pydle.features.rfc1459.protocol import TOPIC_LENGTH_LIMIT
-
 
 service = Service(__name__, __doc__)
 
@@ -40,7 +38,7 @@ def topic(client, target, origin, topic):
 
     parts.insert(0, topic)
 
-    while len(config.topic_separator.join(parts)) > TOPIC_LENGTH_LIMIT:
+    while len(config.topic_separator.join(parts)) > client._topic_length_limit:
         parts.pop()
 
     client.topic(target, config.topic_separator.join(parts))
