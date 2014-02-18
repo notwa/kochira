@@ -41,6 +41,8 @@ def eval_code(client, target, origin, code):
     sys.stdout = stdout
     sys.stderr = stderr
 
+    err = None
+
     try:
         r = storage.console.push(code)
     except BaseException as e:
@@ -50,7 +52,9 @@ def eval_code(client, target, origin, code):
         sys.stderr = sys.__stderr__
 
     out = stdout.getvalue().rstrip("\n")
-    err = stderr.getvalue().rstrip("\n")
+
+    if err is None:
+        err = stderr.getvalue().rstrip("\n")
 
     if out:
         for line in out.split("\n"):
