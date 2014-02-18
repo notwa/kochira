@@ -492,8 +492,10 @@ def play_card(client, target, origin, raw_card, target_color=None):
         prefix = "Draw two! "
     elif rank == Game.DRAW_FOUR:
         prefix = "Draw four! "
-    elif rank == Game.SKIP:
+    elif rank == Game.SKIP and game.must_draw == 0:
         prefix = "{} was skipped! ".format(usual_turn)
+    elif rank == Game.SKIP:
+        prefix = "{} passed the stack on! ".format(last_turn)
 
     send_summary(client, target, game, prefix)
     send_hand(client, target, game.turn, game)
