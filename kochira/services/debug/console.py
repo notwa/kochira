@@ -47,6 +47,7 @@ def eval_code(client, target, origin, code):
         r = storage.console.push(code)
     except BaseException as e:
         err = "{}: {}".format(e.__class__.__qualname__, e)
+        storage.console.resetbuffer()
     finally:
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
