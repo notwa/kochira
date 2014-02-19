@@ -20,7 +20,8 @@ class Scheduler:
     def _error_handler(self, future):
         exc = future.exception()
         if exc is not None:
-            logging.error("Background task error", exc_info=exc)
+            logging.error("Background task error",
+                          exc_info=(exc.__class__, exc, exc.__traceback__))
 
     def schedule_after(self, _time, _task, *_args, **_kwargs):
         """

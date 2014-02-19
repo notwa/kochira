@@ -252,7 +252,7 @@ class Bot:
 
             service.run_setup(self)
         except:
-            logger.error("Couldn't load service %s", name, exc_info=True)
+            logger.error("Couldn't load service %s", name)
             if service is not None:
                 del self.services[service.name]
             raise
@@ -273,7 +273,7 @@ class Bot:
             service.run_shutdown(self)
             del self.services[name]
         except:
-            logger.error("Couldn't unload service %s", name, exc_info=True)
+            logger.exception("Couldn't unload service %s", name)
             raise
 
     def get_hooks(self, hook):
@@ -300,7 +300,7 @@ class Bot:
                 if r is Service.EAT:
                     return Service.EAT
             except BaseException:
-                logger.error("Hook processing failed", exc_info=True)
+                logger.exception("Hook processing failed")
 
     def rehash(self):
         """
@@ -331,7 +331,7 @@ class Bot:
         try:
             self.rehash()
         except Exception as e:
-            logger.error("Could not rehash configuration", exc_info=e)
+            logger.exception("Could not rehash configuration")
 
         self.run_hooks("sighup")
 

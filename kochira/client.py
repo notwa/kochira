@@ -160,7 +160,7 @@ class Client(_Client):
                         logging.debug("EAT suppressed further hooks.")
                         return Service.EAT
                 except BaseException:
-                    logger.error("Hook processing failed", exc_info=True)
+                    logger.exception("Hook processing failed")
 
         fut = _coro()
         @fut.add_done_callback
