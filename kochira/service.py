@@ -25,6 +25,26 @@ class BoundService:
         self.contexts = {}
 
 
+class HookContext:
+    def __init__(self, service, bot, client=None, target=None, origin=None):
+        self.service = service
+        self.bot = bot
+        self.client = client
+        self.target = target
+        self.origin = origin
+
+    @property
+    def config(self):
+        if self.client is None:
+            return self.config_for(self.bot)
+
+        return self.service.config_for(self.bot, self.client.name, self.target)
+
+    @property
+    def storage(self):
+        return self.service.storage_for(self.bot)
+
+
 class Service:
     """
     A service provides the bot with additional facilities.
@@ -32,7 +52,7 @@ class Service:
 
     EAT = object()
 
-    def __init__(self, name, doc=None):
+    def __init__(self, name, doc=None, *, legacy=True):
         self.name = name
         self.doc = doc
         self.hooks = {}
@@ -43,6 +63,10 @@ class Service:
         self.on_setup = None
         self.on_shutdown = None
         self.logger = logging.getLogger(self.name)
+        self.legacy = legacy
+
+        if legacy:
+            self.logger.warning("%s is running in legacy mode!", self.name)
 
     def hook(self, hook, priority=0):
         """
@@ -76,15 +100,17 @@ class Service:
 
             @functools.wraps(f)
             @coroutine
-            def _command_handler(client, target, origin, message):
+            def _command_handler(ctx, target, origin, message):
                 contexts = getattr(f, "contexts", set([]))
                 if contexts:
                     # check for contexts
-                    bound = self.binding_for(client.bot)
+                    bound = self.binding_for(ctx.bot)
 
                     my_contexts = \
-                        bound.contexts.get(client.name, {}).get(target, set([])) | \
-                        bound.contexts.get(client.name, {}).get(None, set([]))
+                        bound.contexts.get(ctx.client.name, {}) \
+                            .get(target, set([])) | \
+                        bound.contexts.get(ctx.client.name, {}) \
+                            .get(None, set([]))
 
                     if not my_contexts & contexts:
                         return
@@ -94,10 +120,12 @@ class Service:
 
                 hostmask = "{nickname}!{username}@{hostname}".format(
                     nickname=origin,
-                    username=client.users[origin]["username"],
-                    hostname=client.users[origin]["hostname"]
+                    username=ctx.client.users[origin]["username"],
+                    hostname=ctx.client.users[origin]["hostname"]
                 )
-                if not all(has_permission(client, hostmask, permission, target) for permission in permissions):
+                if not all(has_permission(ctx.client, hostmask, permission,
+                                          target)
+                           for permission in permissions):
                     return
 
                 if strip:
@@ -108,7 +136,7 @@ class Service:
                     first, _, rest = message.partition(" ")
                     first = first.rstrip(",:")
 
-                    if first.lower() != client.nickname.lower():
+                    if first.lower() != ctx.client.nickname.lower():
                         return
 
                     message = rest
@@ -123,7 +151,12 @@ class Service:
                     if k in f.__annotations__ and v is not None:
                         kwargs[k] = f.__annotations__[k](v)
 
-                r = f(client, target, origin, **kwargs)
+                # XXX: legacy hook compatibility code
+                if self.legacy:
+                    r = f(ctx.client, target, origin, **kwargs)
+                else:
+                # end legacy code
+                    r = f(ctx, **kwargs)
 
                 if isinstance(r, Future):
                     r = yield r
@@ -138,8 +171,10 @@ class Service:
 
             if allow_private:
                 self.hook("private_message", priority=priority)(
-                    lambda client, origin, message: _command_handler(client, origin, origin, message)
-                )
+                    lambda client, origin, message: _command_handler(client,
+                                                                     origin,
+                                                                     origin,
+                                                                     message))
 
             self.commands.add(f)
             return f
@@ -186,19 +221,33 @@ class Service:
         Run all setup functions for the service.
         """
         self._autocreate_models()
+
+        ctx = HookContext(self, bot)
+
         if self.on_setup is not None:
-            self.on_setup(bot)
+            # XXX: legacy hook compatibility code
+            if self.legacy:
+                self.on_setup(ctx.bot)
+            else:
+            # end legacy code
+                self.on_setup(ctx)
 
     def run_shutdown(self, bot):
         """
         Run all shutdown functions for the service.
         """
-
         # unschedule remaining work
         bot.scheduler.unschedule_service(self)
 
+        ctx = HookContext(self, bot)
+
         if self.on_shutdown is not None:
-            self.on_shutdown(bot)
+            # XXX: legacy hook compatibility code
+            if self.legacy:
+                self.on_shutdown(ctx.bot)
+            else:
+            # end legacy code
+                self.on_shutdown(ctx)
 
     def config_for(self, bot, client_name=None, channel=None):
         """
