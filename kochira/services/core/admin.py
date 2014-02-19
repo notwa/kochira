@@ -12,12 +12,12 @@ import sys
 from kochira.auth import requires_permission
 from kochira.service import Service
 
-service = Service(__name__, __doc__, legacy=False)
+service = Service(__name__, __doc__)
 
 
 @service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True, priority=3000)
 @requires_permission("admin")
-def load_service(ctx, r, service_name):
+def load_service(client, target, origin, r, service_name):
     """
     Load service.
 
@@ -26,12 +26,12 @@ def load_service(ctx, r, service_name):
     """
 
     try:
-        ctx.bot.load_service(service_name, r is not None)
+        client.bot.load_service(service_name, r is not None)
     except Exception as e:
-        ctx.client.message(ctx.target, "Sorry, couldn't load the service \"{name}\".".format(
+        client.message(target, "Sorry, couldn't load the service \"{name}\".".format(
             name=service_name
         ))
-        ctx.client.message(ctx.target, "↳ {name}: {info}".format(
+        client.message(target, "↳ {name}: {info}".format(
             name=e.__class__.__name__,
             info=str(e)
         ))
@@ -42,12 +42,12 @@ def load_service(ctx, r, service_name):
     else:
         message = "Loaded service \"{name}\".".format(name=service_name)
 
-    ctx.client.message(ctx.target, message)
+    client.message(target, message)
 
 
 @service.command(r"unload service (?P<service_name>\S+)$", mention=True, priority=3000)
 @requires_permission("admin")
-def unload_service(ctx, service_name):
+def unload_service(client, target, origin, service_name):
     """
     Unload service.
 
@@ -55,57 +55,57 @@ def unload_service(ctx, service_name):
     """
 
     try:
-        ctx.bot.unload_service(service_name)
+        client.bot.unload_service(service_name)
     except Exception as e:
-        ctx.client.message(ctx.target, "Sorry, couldn't unload the service \"{name}\".".format(
+        client.message(target, "Sorry, couldn't unload the service \"{name}\".".format(
             name=service_name
         ))
-        ctx.client.message(ctx.target, "↳ {name}: {info}".format(
+        client.message(target, "↳ {name}: {info}".format(
             name=e.__class__.__name__,
             info=str(e)
         ))
         return
 
-    ctx.client.message(ctx.target, "Unloaded service \"{name}\".".format(name=service_name))
+    client.message(target, "Unloaded service \"{name}\".".format(name=service_name))
 
 
 @service.command(r"what services are(?: you)? running\??$", mention=True, priority=3000)
 @service.command(r"(?:list )?services$", mention=True, priority=3000)
 @requires_permission("admin")
-def list_services(ctx):
+def list_services(client, target, origin):
     """
     List services.
 
     List all running services.
     """
 
-    ctx.client.message(ctx.target, "I am running: {services}".format(
-        services=", ".join(ctx.bot.services))
+    client.message(target, "I am running: {services}".format(
+        services=", ".join(client.bot.services))
     )
 
 
 @service.command(r"reload(?: all)? services$", mention=True, priority=3000)
 @requires_permission("admin")
-def reload_services(ctx):
+def reload_services(client, target, origin):
     failed_services = []
 
-    for service_name in list(ctx.bot.services.keys()):
+    for service_name in list(client.bot.services.keys()):
         try:
-            ctx.bot.load_service(service_name, True)
+            client.bot.load_service(service_name, True)
         except:
             failed_services.append(service_name)
 
     if failed_services:
-        ctx.client.message(ctx.target, "I couldn't reload the following services: {failed_services}".format(
+        client.message(target, "I couldn't reload the following services: {failed_services}".format(
             failed_services=", ".join(failed_services))
         )
     else:
-        ctx.client.message(ctx.target, "All services reloaded!")
+        client.message(target, "All services reloaded!")
 
 
 @service.command(r"rehash$", mention=True, priority=3000)
 @requires_permission("admin")
-def rehash(ctx):
+def rehash(client, target, origin):
     """
     Rehash configuration.
 
@@ -113,21 +113,21 @@ def rehash(ctx):
     """
 
     try:
-        ctx.bot.rehash()
+        client.bot.rehash()
     except BaseException as e:
-        ctx.client.message(ctx.target, "Sorry, couldn't rehash.")
-        ctx.client.message(ctx.target, "↳ {name}: {info}".format(
+        client.message(target, "Sorry, couldn't rehash.")
+        client.message(target, "↳ {name}: {info}".format(
             name=e.__class__.__name__,
             info=str(e)
         ))
         return
 
-    ctx.client.message(ctx.target, "Configuration rehashed.")
+    client.message(target, "Configuration rehashed.")
 
 
 @service.command(r"re(?:start|boot)$", mention=True, priority=3000)
 @requires_permission("admin")
-def restart(ctx):
+def restart(client, target, origin):
     """
     Restart.
 
@@ -135,8 +135,8 @@ def restart(ctx):
     space.
     """
 
-    for ctx.client in list(ctx.bot.ctx.clients.values()):
-        ctx.client.quit("Restarting...")
+    for client in list(client.bot.clients.values()):
+        client.quit("Restarting...")
 
     # The following code is ported from Tornado.
     # http://www.tornadoweb.org/en/branch2.4/_modules/tornado/autoreload.html

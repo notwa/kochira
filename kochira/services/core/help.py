@@ -9,7 +9,7 @@ from kochira.service import Service, Config
 from docutils.core import publish_parts
 from tornado.web import RequestHandler, Application, HTTPError, UIModule
 
-service = Service(__name__, __doc__, legacy=False)
+service = Service(__name__, __doc__)
 
 @service.config
 class Config(Config):
@@ -115,7 +115,7 @@ def make_application(settings):
 
 
 @service.hook("services.net.webserver")
-def webserver_config(ctx):
+def webserver_config(bot):
     return {
         "name": "help",
         "title": "Help",
@@ -127,19 +127,21 @@ def webserver_config(ctx):
 @service.command(r"!commands")
 @service.command(r"!help")
 @service.command(r"help(?: me)?!?$", mention=True)
-def help(ctx):
+def help(client, target, origin):
     """
     Help.
 
     Links the user to the web help service, if available.
     """
 
-    if "kochira.services.net.webserver" not in ctx.bot.services:
-        ctx.client.message(ctx.target, "{origin}: Help currently unavailable.".format(
-            origin=ctx.origin
+    config = service.config_for(client.bot, client.name, target)
+
+    if "kochira.services.net.webserver" not in client.bot.services:
+        client.message(target, "{origin}: Help currently unavailable.".format(
+            origin=origin
         ))
     else:
-        ctx.client.message(ctx.target, "{origin}: My help is available at {url}".format(
-            origin=ctx.origin,
-            url=ctx.config.url
+        client.message(target, "{origin}: My help is available at {url}".format(
+            origin=origin,
+            url=config.url
         ))

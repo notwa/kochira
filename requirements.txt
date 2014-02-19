@@ -9,6 +9,7 @@ whoosh
 pillow
 humanize
 BeautifulSoup4
+pyzmq
 pure-sasl
 docutils
 tornado

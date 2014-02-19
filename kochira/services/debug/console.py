@@ -12,17 +12,18 @@ from io import StringIO
 from kochira.auth import requires_permission
 from kochira.service import Service
 
-service = Service(__name__, __doc__, legacy=False)
+service = Service(__name__, __doc__)
 
 
 @service.setup
-def setup_console(ctx):
-    ctx.storage.console = code.InteractiveConsole({"bot": ctx.bot})
+def setup_console(bot):
+    storage = service.storage_for(bot)
+    storage.console = code.InteractiveConsole({"bot": bot})
 
 
 @service.command(r">>>(?: (?P<code>.+))?", priority=3000)
 @requires_permission("admin")
-def eval_code(ctx, code):
+def eval_code(client, target, origin, code):
     """
     Evaluate code.
 
@@ -31,6 +32,8 @@ def eval_code(ctx, code):
     """
 
     code = code or ""
+
+    storage = service.storage_for(client.bot)
 
     stdout = StringIO()
     stderr = StringIO()
@@ -41,10 +44,10 @@ def eval_code(ctx, code):
     err = None
 
     try:
-        r = ctx.storage.console.push(code)
+        r = storage.console.push(code)
     except BaseException as e:
         err = "{}: {}".format(e.__class__.__qualname__, e)
-        ctx.storage.console.resetbuffer()
+        storage.console.resetbuffer()
     finally:
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
@@ -56,8 +59,8 @@ def eval_code(ctx, code):
 
     if out:
         for line in out.split("\n"):
-            ctx.client.message(ctx.target, "<<< {}".format(line))
+            client.message(target, "<<< {}".format(line))
     elif err:
-        ctx.client.message(ctx.target, "<<! {}".format(err.split("\n")[-1]))
+        client.message(target, "<<! {}".format(err.split("\n")[-1]))
     elif not r:
-        ctx.client.message(ctx.target, "(no result)")
+        client.message(target, "(no result)")
