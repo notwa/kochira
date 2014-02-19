@@ -1,7 +1,9 @@
 import functools
 import re
 import logging
+import locale
 import bisect
+import gettext
 import os
 
 from pydle.async import coroutine, Future
@@ -34,6 +36,8 @@ class HookContext:
         self.target = target
         self.origin = origin
 
+        self._load_locale()
+
     @property
     def config(self):
         if self.client is None:
@@ -60,13 +64,37 @@ class HookContext:
     def remove_context(self, context):
         self.service.remove_context(self.client, context, self.target)
 
+    @property
+    def locale(self):
+        locale = self.bot.config.core.locale
+
+        if self.client is not None:
+            client_config = self.bot.config.clients[self.client.name]
+            locale = locale or client_config.locale
+
+            if self.target is not None and self.target in client_config.channels:
+                locale = locale or client_config.channels[self.target].locale
+
+        return locale
+
+    def _load_locale(self):
+        lang, _ = locale.getdefaultlocale()
+        languages = [self.locale, lang]
+
+        try:
+            self.t = gettext.translation("kochira",
+                                         self.bot.config.core.locale_path,
+                                         languages=languages)
+        except IOError:
+            self.t = gettext.NullTranslations()
+
     def gettext(self, string):
-        return self.bot.t.gettext(string)
+        return self.t.gettext(string)
 
     _ = gettext
 
     def ngettext(self, sing, plur, n):
-        return self.bot.t.ngettext(sing, plur, n)
+        return self.t.ngettext(sing, plur, n)
 
 
 class Service:

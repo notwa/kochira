@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor, Future
 
 import collections
 import functools
-import gettext
 import imp
 import importlib
 import locale
@@ -100,6 +99,7 @@ def _config_class_factory(bot):
                 password = config.Field(doc="Password for the channel, if any.", default=None)
                 services = config.Field(doc="Mapping of per-channel service settings.", type=service_config_loader)
                 acl = config.Field(doc="Mapping of per-channel access control lists.", type=config.Mapping(config.Many(str, is_set=True)))
+                locale = config.Field(doc="Per-channel locale.", default=None)
 
             tls = config.Field(doc="TLS settings.", type=TLS, default=TLS())
             sasl = config.Field(doc="SASL settings.", type=SASL, default=SASL())
@@ -107,6 +107,7 @@ def _config_class_factory(bot):
             channels = config.Field(doc="Mapping of channel settings.", type=config.Mapping(Channel))
             services = config.Field(doc="Mapping of per-client service settings.", type=service_config_loader)
             acl = config.Field(doc="Mapping of per-client access control lists.", type=config.Mapping(config.Many(str, is_set=True)))
+            locale = config.Field(doc="Per-network locale.", default=None)
 
         class Core(config.Config):
             database = config.Field(doc="Database file to use", default="kochira.db")
@@ -252,7 +253,7 @@ class Bot:
 
             service.run_setup(self)
         except:
-            logger.error("Couldn't load service %s", name)
+            logger.exception("Couldn't load service %s", name)
             if service is not None:
                 del self.services[service.name]
             raise
@@ -309,21 +310,6 @@ class Bot:
 
         with open(self.config_file, "r") as f:
             self.config = self.config_class(yaml.load(f))
-
-        self._reload_locale()
-
-    def _reload_locale(self):
-        lang, _ = locale.getdefaultlocale()
-        languages = [self.config.core.locale, lang]
-
-        try:
-            self.t = gettext.translation("kochira",
-                                         self.config.core.locale_path,
-                                         languages=languages)
-        except IOError:
-            logging.warn("Couldn't find any locales matching %s on path %s",
-                         languages, self.config.core.locale_path)
-            self.t = gettext.NullTranslations()
 
     def _handle_sighup(self, signum, frame):
         logger.info("Received SIGHUP; running SIGHUP hooks and rehashing")
