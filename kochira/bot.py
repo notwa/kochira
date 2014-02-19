@@ -310,6 +310,9 @@ class Bot:
         with open(self.config_file, "r") as f:
             self.config = self.config_class(yaml.load(f))
 
+        self._reload_locale()
+
+    def _reload_locale(self):
         lang, _ = locale.getdefaultlocale()
         languages = [self.config.core.locale, lang]
 
