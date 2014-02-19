@@ -136,6 +136,8 @@ class Bot:
         self.config_class = _config_class_factory(self)
         self.config_file = config_file
 
+        self.stopping = False
+
         self.rehash()
         self._connect_to_db()
 
@@ -144,13 +146,17 @@ class Bot:
         self.scheduler = Scheduler(self)
 
         signal.signal(signal.SIGHUP, self._handle_sighup)
-        signal.signal(signal.SIGTERM, self._handle_sigterm)
-        signal.signal(signal.SIGINT, self._handle_sigterm)
 
         self._load_services()
         self._connect_to_irc()
 
+        signal.signal(signal.SIGTERM, self._handle_sigterm)
+        signal.signal(signal.SIGINT, self._handle_sigterm)
+
+        self.event_loop.run()
+
     def stop(self):
+        self.stopping = True
         self.event_loop.stop()
         for service in list(self.services.keys()):
             self.unload_service(service)
@@ -180,8 +186,6 @@ class Bot:
         for name, config in self.config.clients.items():
             if config.autoconnect:
                 self.connect(name)
-
-        self.event_loop.run()
 
     def _load_services(self):
         for service, config in self.config.services.items():
@@ -329,5 +333,8 @@ class Bot:
         self.run_hooks("sighup")
 
     def _handle_sigterm(self, signum, frame):
+        if self.stopping:
+            raise KeyboardInterrupt
+
         logger.info("Received termination signal; unloading all services")
         self.stop()
