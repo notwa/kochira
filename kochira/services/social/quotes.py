@@ -246,7 +246,7 @@ class IndexHandler(RequestHandler):
         query = self.get_argument("q", "")
 
         if query:
-            q = _find_quotes(self.application.bot, query)
+            q = _find_quotes(self.application.ctx.bot, query)
         else:
             q = Quote.select()
 
