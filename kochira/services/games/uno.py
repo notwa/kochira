@@ -500,7 +500,7 @@ def draw(ctx):
             return
         raise
 
-    ctx.client.notice(ctx.origin, "[{}] Uno: You drew: {}".format(target, show_card_irc(card)))
+    ctx.client.notice(ctx.origin, "[{}] Uno: You drew: {}".format(ctx.target, show_card_irc(card)))
     ctx.message("{origin} draws.".format(origin=ctx.origin))
 
 
@@ -540,7 +540,7 @@ def pass_(ctx):
     if must_draw > 0:
         suffix = " and had to draw {} cards".format(must_draw)
         ctx.client.notice(ctx.origin, "[{}] Uno: You drew: {}"
-                                      .format(target, " ".join(show_card_irc(card)
+                                      .format(ctx.target, " ".join(show_card_irc(card)
                                       for card in game.players[origin][-must_draw:])))
 
     send_summary(ctx, game, "{origin} passed{suffix}. ".format(
@@ -564,7 +564,7 @@ def show_hand(ctx):
         ctx.respond("You're not in this game.")
         return
 
-    send_hand(ctx, game)
+    send_hand(ctx, game.turn, game)
 
 
 @service.command(r"!scores")
