@@ -10,26 +10,26 @@ import time
 from kochira.service import Service
 
 OPTIONS = [
-    "It is certain",
-    "It is decidedly so",
-    "Without a doubt",
-    "Yes, definitely",
-    "You may rely on it",
-    "As I see it, yes",
-    "Most likely",
-    "Outlook good",
-    "Yes",
-    "Signs point to yes",
-    "Reply hazy, try again",
-    "Ask again later",
-    "Better not tell you now",
-    "Cannot predict now",
-    "Concentrate and ask again",
-    "Don't count on it",
-    "My reply is no",
-    "My sources say no",
-    "Outlook not so good",
-    "Very doubtful"
+    lambda ctx: ctx._("It is certain"),
+    lambda ctx: ctx._("It is decidedly so"),
+    lambda ctx: ctx._("Without a doubt"),
+    lambda ctx: ctx._("Yes, definitely"),
+    lambda ctx: ctx._("You may rely on it"),
+    lambda ctx: ctx._("As I see it, yes"),
+    lambda ctx: ctx._("Most likely"),
+    lambda ctx: ctx._("Outlook good"),
+    lambda ctx: ctx._("Yes"),
+    lambda ctx: ctx._("Signs point to yes"),
+    lambda ctx: ctx._("Reply hazy, try again"),
+    lambda ctx: ctx._("Ask again later"),
+    lambda ctx: ctx._("Better not tell you now"),
+    lambda ctx: ctx._("Cannot predict now"),
+    lambda ctx: ctx._("Concentrate and ask again"),
+    lambda ctx: ctx._("Don't count on it"),
+    lambda ctx: ctx._("My reply is no"),
+    lambda ctx: ctx._("My sources say no"),
+    lambda ctx: ctx._("Outlook not so good"),
+    lambda ctx: ctx._("Very doubtful")
 ]
 
 service = Service(__name__, __doc__)
@@ -43,7 +43,7 @@ def ask_8ball(ctx, question):
     If you don't know what an 8ball does just Google it.
     """
 
-    ctx.respond("The Magic 8-Ball says: {prediction}".format(
+    ctx.respond(ctx._("The Magic 8-Ball says: {prediction}").format(
         prediction=OPTIONS[(binascii.crc32(question.lower().encode("utf-8")) +
-                           int(time.time() // (60 * 60 * 24))) % len(OPTIONS)]
+                           int(time.time() // (60 * 60 * 24))) % len(OPTIONS)](ctx)
     ))

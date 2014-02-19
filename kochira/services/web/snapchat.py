@@ -91,7 +91,7 @@ def poll_for_updates(ctx):
             else:
                 link = ulim["data"]["link"]
         else:
-            link = "(could not convert video)"
+            link = ctx._("(could not convert video)")
 
         for client_name, client in ctx.bot.clients.items():
             for channel in client.channels:
@@ -102,7 +102,7 @@ def poll_for_updates(ctx):
 
                 client.message(
                     channel,
-                    "New snap from {sender}! {link} ({dt})".format(
+                    ctx._("New snap from {sender}! {link} ({dt})").format(
                         sender=sender,
                         link=link,
                         dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"] / 1000.0))

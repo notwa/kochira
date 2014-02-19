@@ -36,7 +36,7 @@ def search(ctx, term, num: int=None):
     results = r.get("responseData", {}).get("results", [])
 
     if not results:
-        ctx.respond("Couldn't find anything matching \"{term}\".".format(term=term))
+        ctx.respond(ctx._("Couldn't find anything matching \"{term}\".").format(term=term))
         return
 
     if num is None:
@@ -46,10 +46,10 @@ def search(ctx, term, num: int=None):
     total = len(results)
 
     if num >= total or num < 0:
-        ctx.respond("Can't find anything matching \"{term}\".".format(term=term))
+        ctx.respond(ctx._("Couldn't find anything matching \"{term}\".").format(term=term))
         return
 
-    ctx.respond("{title}: {url} ({num} of {total})".format(
+    ctx.respond(ctx._("{title}: {url} ({num} of {total})").format(
         title=html_parser.unescape(results[num]["titleNoFormatting"]),
         url=results[num]["unescapedUrl"],
         num=num + 1,

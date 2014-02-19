@@ -36,14 +36,14 @@ def add_ignore(ctx, hostmask):
 
     if Ignore.select().where(Ignore.hostmask == hostmask,
                              Ignore.network == ctx.client.name).exists():
-        ctx.respond("I'm already ignoring {hostmask}.".format(
+        ctx.respond(ctx._("I'm already ignoring {hostmask}.").format(
             hostmask=hostmask
         ))
         return
 
     Ignore.create(hostmask=hostmask, network=ctx.client.name).save()
 
-    ctx.respond("Okay, now ignoring everything from {hostmask}.".format(
+    ctx.respond(ctx._("Okay, now ignoring everything from {hostmask}.").format(
         hostmask=hostmask
     ))
 
@@ -57,7 +57,7 @@ def list_ignores(ctx):
     List all ignores for the bot on the current network.
     """
 
-    ctx.respond("Ignores for {network}: {ignores}".format(
+    ctx.respond(ctx._("Ignores for {network}: {ignores}").format(
         network=ctx.client.name,
         ignores=", ".join(ignore.hostmask for ignore in
                           Ignore.select().where(Ignore.network == ctx.client.name))
@@ -76,12 +76,12 @@ def remove_ignore(ctx, hostmask):
 
     if Ignore.delete().where(Ignore.hostmask == hostmask,
                              Ignore.network == ctx.client.name).execute() == 0:
-        ctx.respond("I'm not ignoring {hostmask}.".format(
+        ctx.respond(ctx._("I'm not ignoring {hostmask}.").format(
             hostmask=hostmask
         ))
         return
 
-    ctx.respond("Okay, stopped ignoring everything from {hostmask}.".format(
+    ctx.respond(ctx._("Okay, stopped ignoring everything from {hostmask}.").format(
         hostmask=hostmask
     ))
 

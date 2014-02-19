@@ -133,7 +133,7 @@ def add_taboo(ctx, title, taboo1, taboo2, taboo3, taboo4, taboo5):
     command. YES, I KNOW WHAT ``str.split`` IS.)
     """
     if Taboo.select().where(Taboo.title == title).exists():
-        ctx.respond("That Taboo card already exists.")
+        ctx.respond(ctx._("That Taboo card already exists."))
         return
 
     taboo = Taboo.create(title=title.strip().lower(),
@@ -144,7 +144,7 @@ def add_taboo(ctx, title, taboo1, taboo2, taboo3, taboo4, taboo5):
                          taboo5=taboo5.strip().lower())
 
     taboo.save()
-    ctx.respond("Added Taboo card \"{title}\", with taboos: {taboos}.".format(
+    ctx.respond(ctx._("Added Taboo card \"{title}\", with taboos: {taboos}.").format(
         title=taboo.title,
         taboos=", ".join(taboo.taboos)
     ))
@@ -162,9 +162,9 @@ def remove_taboo(ctx, title):
     title = title.lower()
 
     if Taboo.delete().where(Taboo.title == title).execute() == 0:
-        ctx.respond("Can't find that Taboo card.")
+        ctx.respond(ctx._("Can't find that Taboo card."))
     else:
-        ctx.respond("Deleted Taboo card \"{title}\".".format(
+        ctx.respond(ctx._("Deleted Taboo card \"{title}\".").format(
             title=title
         ))
 
@@ -180,7 +180,7 @@ def request_taboo(ctx):
     k = (ctx.client.name, ctx.target)
 
     if k in ctx.storage.games:
-        ctx.respond("A game is already in progress.")
+        ctx.respond(ctx._("A game is already in progress."))
         return
 
     try:
@@ -189,14 +189,14 @@ def request_taboo(ctx):
         if e.code != TabooStateError.NO_MORE_CARDS:
             raise
 
-        ctx.respond("There are no Taboo cards.")
+        ctx.respond(ctx._("There are no Taboo cards."))
         return
 
     g.period = None
     g.join(ctx.origin)
     ctx.storage.games[k] = g
 
-    ctx.message("{origin} has started a game of Taboo! Send !join to join, and !start when ready!".format(
+    ctx.message(ctx._("{origin} has started a game of Taboo! Send !join to join, and !start when ready!").format(
         origin=ctx.origin
     ))
 
@@ -214,12 +214,12 @@ def join_taboo(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin in game.players:
-        ctx.respond("You're already in the game.")
+        ctx.respond(ctx._("You're already in the game."))
         return
 
     game.join(ctx.origin)
 
-    ctx.message("{origin} has joined the game!".format(origin=ctx.origin))
+    ctx.message(ctx._("{origin} has joined the game!").format(origin=ctx.origin))
 
 
 @service.command(r"!leave")
@@ -233,7 +233,7 @@ def leave(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     game_over = game.leave(ctx.origin)
@@ -242,7 +242,7 @@ def leave(ctx):
         do_game_over(ctx)
         return
 
-    ctx.message("{origin} left the game.".format(origin=ctx.origin))
+    ctx.message(ctx._("{origin} left the game.").format(origin=ctx.origin))
 
     if game.started:
         send_summary(ctx)
@@ -261,7 +261,9 @@ def show_scores(game):
 def send_summary(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
-    ctx.message("{turn}: It's your turn -- explain your word but don't say any of the taboos! {guessers} {isare} guessing. You have {time} seconds.".format(
+    ctx.message(ctx.ngettext("{turn}: It's your turn -- explain your word but don't say any of the taboos! {guessers} is guessing. You have {time} seconds.",
+                             "{turn}: It's your turn -- explain your word but don't say any of the taboos! {guessers} are guessing. You have {time} seconds.",
+                             len(game.guessers)).format(
         turn=game.turn,
         guessers=", ".join(game.guessers),
         time=Game.TURN_DURATION,
@@ -276,7 +278,7 @@ def do_game_over(ctx, prefix=""):
     if game.period is not None:
         ctx.bot.scheduler.unschedule_period(game.period)
 
-    ctx.message(prefix + "Game over! Final results: {results}".format(
+    ctx.message(prefix + ctx._("Game over! Final results: {results}").format(
         results=show_scores(game)
     ))
     del ctx.storage.games[ctx.client.name, ctx.target]
@@ -305,15 +307,15 @@ def start_taboo(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     if game.started:
-        ctx.respond("This game is already in progress.")
+        ctx.respond(ctx._("This game is already in progress."))
         return
 
     if len(game.players) < 4:
-        ctx.respond("There aren't enough players to play yet.")
+        ctx.respond(ctx._("There aren't enough players to play yet."))
         return
 
     game.start()
@@ -326,7 +328,7 @@ def start_taboo(ctx):
 
 @service.task
 def do_advance(ctx, game):
-    ctx.message("{turn}: Time is up! The word was \"{word}\".".format(
+    ctx.message(ctx._("{turn}: Time is up! The word was \"{word}\".").format(
         turn=game.turn,
         word=game.card.title
     ))
@@ -350,11 +352,11 @@ def pass_taboo(ctx):
     game = storage.games[client.name, target]
 
     if origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     if origin != game.turn:
-        ctx.respond("It's not your turn.")
+        ctx.respond(ctx._("It's not your turn."))
         return
 
     do_draw(client, target)
@@ -368,10 +370,10 @@ def do_draw(ctx):
     except TabooStateError as e:
         if e.code != TabooStateError.NO_MORE_CARDS:
             raise
-        do_game_over(ctx, "Looks like we ran out of cards! ")
+        do_game_over(ctx, ctx._("Looks like we ran out of cards! "))
         return True
 
-    ctx.client.notice(game.turn, "Title: {title}; Taboos: {taboos}".format(
+    ctx.client.notice(game.turn, ctx._("Title: {title}; Taboos: {taboos}").format(
         title=game.card.title,
         taboos=", ".join(game.card.taboos)
     ))
@@ -395,14 +397,14 @@ def do_guess(ctx, target, origin, message):
     if origin == game.turn:
         maybe_taboo = game.submit_clue(message)
         if maybe_taboo is not None:
-            ctx.respond("BZZT! You said \"{taboo}\". The word was \"{title}\". Next word!".format(
+            ctx.respond(ctx._("BZZT! You said \"{taboo}\". The word was \"{title}\". Next word!").format(
                 taboo=maybe_taboo,
                 title=card.title
             ))
             do_draw(ctx)
     elif origin in game.guessers:
         if game.submit_guess(message):
-            ctx.respond("Ding-ding! The word was \"{title}\". Point for team {n}. Next word!".format(
+            ctx.respond(ctx._("Ding-ding! The word was \"{title}\". Point for team {n}. Next word!").format(
                 title=card.title,
                 n=game.team + 1
             ))

@@ -32,93 +32,149 @@ class Seen(Model):
             (("who", "network"), True),
         )
 
-    def _format_join(self, show_channel):
-        return "joining {}".format(self.channel if show_channel else "a channel")
-
-    def _format_kill(self, show_channel):
-        msg = "killing {} from the network".format(self.target)
-        if self.message is not None:
-            msg += " with reason \"{}\"".format(self.message)
-        return msg
-
-    def _format_killed(self, show_channel):
-        msg = "being killed from the network by {}".format(self.target)
-        if self.message is not None:
-            msg += " with reason \"{}\"".format(self.message)
-        return msg
-
-    def _format_kick(self, show_channel):
-        msg = "kicking {} from {}".format(self.target if show_channel else "someone",
-                                          self.channel if show_channel else "a channel")
-        if show_channel and self.message is not None:
-            msg += " with reason \"{}\"".format(self.message)
-        return msg
-
-    def _format_kicked(self, show_channel):
-        msg = "being kicked by {} from {}".format(self.target if show_channel else "someone",
-                                                  self.channel if show_channel else "a channel")
-        if show_channel and self.message is not None:
-            msg += " with reason \"{}\"".format(self.message)
-        return msg
-
-    def _format_mode_change(self, show_channel):
+    def _format_join(self, ctx, show_channel):
         if not show_channel:
-            return "setting modes"
+            return ctx._("joining a channel")
         else:
-            return "setting modes {} on {}".format(self.message, self.channel)
+            return ctx._("joining {channel}").format(
+                channel=self.channel
+            )
 
-    def _format_channel_message(self, show_channel):
+    def _format_kill(self, ctx, show_channel):
+        if self.message is None:
+            return ctx._("killing {target} from the network").format(
+                target=self.target
+            )
+        else:
+            return ctx._("killing {target} from the network with reason \"{reason}\"").format(
+                target=self.target,
+                reason=self.reason
+            )
+
+    def _format_killed(self, ctx, show_channel):
+        if self.message is None:
+            return ctx._("being killed from the network by {target}").format(
+                target=self.target
+            )
+        else:
+            return ctx._("being killed from the network by {target} with reason \"{reason}\"").format(
+                target=self.target,
+                reason=self.reason
+            )
+
+    def _format_kick(self, ctx, show_channel):
         if not show_channel:
-            return "messaging a channel"
+            return ctx._("kicking from a channel")
         else:
-            return "telling {} \"{}\"".format(self.channel, self.message)
+            if self.message is None:
+                return ctx._("kicking {target} from {channel}").format(
+                    target=self.target,
+                    channel=self.channel
+                )
+            else:
+                return ctx._("kicking {target} from {channel} with reason \"{reason}\"").format(
+                    target=self.target,
+                    channel=self.channel,
+                    reason=self.message
+                )
 
-    def _format_nick_change(self, show_channel):
-        return "changing their nickname to {}".format(self.target)
-
-    def _format_nick_changed(self, show_channel):
-        return "changing their nickname from {}".format(self.target)
-
-    def _format_channel_notice(self, show_channel):
+    def _format_kicked(self, ctx, show_channel):
         if not show_channel:
-            return "noticing a channel"
+            return ctx._("being kicked from a channel")
         else:
-            return "noticing {} \"{}\"".format(self.channel, self.message)
+            if self.message is None:
+                return ctx._("being kicked by {target} from {channel}").format(
+                    target=self.target,
+                    channel=self.channel
+                )
+            else:
+                return ctx._("being kicked by {target} from {channel} with reason \"{reason}\"").format(
+                    target=self.target,
+                    channel=self.channel,
+                    reason=self.message
+                )
 
-    def _format_part(self, show_channel):
-        msg = "parting {}".format(self.channel if show_channel else "a channel")
-        if show_channel and self.message is not None:
-            msg += " with reason \"{}\"".format(self.message)
-        return msg
-
-    def _format_topic_change(self, show_channel):
+    def _format_mode_change(self, ctx, show_channel):
         if not show_channel:
-            return "changing a topic"
+            return ctx._("setting modes")
         else:
-            return "changing the topic for {} to \"{}\"".format(self.channel,
-                                                                self.message)
+            return ctx._("setting modes {modes} on {channel}").format(
+                modes=self.message,
+                channel=self.channel
+            )
 
-    def _format_quit(self, show_channel):
+    def _format_channel_message(self, ctx, show_channel):
+        if not show_channel:
+            return ctx._("messaging a channel")
+        else:
+            return ctx._("telling {channel} \"{message}\"").format(
+                channel=self.channel,
+                message=self.message
+            )
+
+    def _format_nick_change(self, ctx, show_channel):
+        return ctx._("changing their nickname to {nickname}").format(
+            nickname=self.target
+        )
+
+    def _format_nick_changed(self, ctx, show_channel):
+        return ctx._("changing their nickname from {nickname}").format(
+            self.target
+        )
+
+    def _format_channel_notice(self, ctx, show_channel):
+        if not show_channel:
+            return ctx._("noticing a channel")
+        else:
+            return ctx._("noticing {channel} \"{message}\"").format(
+                channel=self.channel,
+                message=self.message
+            )
+
+    def _format_part(self, ctx, show_channel):
+        if not show_channel:
+            return ctx._("parting a channel")
+        else:
+            if self.message is None:
+                return ctx._("parting {channel}").format(channel=self.channel)
+            else:
+                return ctx._("parting {channel} with reason \"{reason}\"").format(
+                    channel=self.channel,
+                    reason=self.message
+                )
+
+    def _format_topic_change(self, ctx, show_channel):
+        if not show_channel:
+            return ctx._("changing a topic")
+        else:
+            return ctx._("changing the topic for {channel} to \"{topic}\"").format(
+                channel=self.channel,
+                topic=self.message
+            )
+
+    def _format_quit(self, ctx, show_channel):
         msg = "quitting the network"
         if self.message is not None:
             msg += " with reason \"{}\"".format(self.message)
         return msg
 
-    def _format_ctcp_action(self, show_channel):
+    def _format_ctcp_action(self, ctx, show_channel):
         if not show_channel:
-            return "actioning a channel"
+            return ctx._("actioning a channel")
         else:
-            return "actioning {} with \"{}\"".format(self.channel,
-                                                     self.message)
+            return ctx._("actioning {channel} with \"{message}\"").format(
+                channel=self.channel,
+                message=self.message
+            )
 
-    def _format_unknown(self, show_channel):
+    def _format_unknown(self, ctx, show_channel):
         if show_channel:
-            return "in {}".format(self.channel)
+            return ctx._("in {channel}").format(channel=self.channel)
         else:
-            return "on this network"
+            return ctx._("on this network")
 
-    def format(self, show_channel):
-        return getattr(self, "_format_" + self.event, self._format_unknown)(show_channel)
+    def format(self, ctx, show_channel):
+        return getattr(self, "_format_" + self.event, self._format_unknown)(ctx, show_channel)
 
 
 def update_seen(client, event, who, channel=None, message=None, target=None):
@@ -218,14 +274,14 @@ def seen(ctx, who):
     try:
         seen = Seen.get(Seen.who == who_n, Seen.network == ctx.client.network)
     except Seen.DoesNotExist:
-        ctx.respond("I have never seen {who}.".format(
+        ctx.respond(ctx._("I have never seen {who}.").format(
             who=who
         ))
     else:
         show_channel = seen.channel == ctx.target or \
             not "s" in ctx.client.channels.get(seen.channel, {}).get("modes", {"s": True})
 
-        ctx.respond("I last saw {who} {when}, {what}.".format(
+        ctx.respond(ctx._("I last saw {who} {when}, {what}.").format(
             who=who,
             what=seen.format(show_channel),
             when=humanize.naturaltime(datetime.utcnow() - seen.ts)

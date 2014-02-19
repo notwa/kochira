@@ -2,8 +2,10 @@ from concurrent.futures import ThreadPoolExecutor, Future
 
 import collections
 import functools
+import gettext
 import imp
 import importlib
+import locale
 import heapq
 import logging
 import multiprocessing
@@ -63,6 +65,8 @@ class ServiceConfigLoader(collections.Mapping):
 
 
 def _config_class_factory(bot):
+    lang, _ = locale.getdefaultlocale()
+
     service_config_loader = functools.partial(ServiceConfigLoader, bot)
     service_config_loader.get_default = lambda: {}
 
@@ -109,6 +113,8 @@ def _config_class_factory(bot):
             max_backlog = config.Field(doc="Maximum backlog lines to store.", default=10)
             max_workers = config.Field(doc="Max thread pool workers.", default=0)
             version = config.Field(doc="CTCP VERSION reply.", default="kochira IRC bot")
+            locale_path = config.Field(doc="Path to locales.", default="/usr/share/locale")
+            locale = config.Field(doc="Locale to use.", default=lang)
 
         core = config.Field(doc="Core configuration settings.", type=Core)
         clients = config.Field(doc="Clients to connect.", type=config.Mapping(Network))
@@ -299,6 +305,18 @@ class Bot:
 
         with open(self.config_file, "r") as f:
             self.config = self.config_class(yaml.load(f))
+
+        lang, _ = locale.getdefaultlocale()
+        languages = [self.config.core.locale, lang]
+
+        try:
+            self.t = gettext.translation("kochira",
+                                         self.config.core.locale_path,
+                                         languages=languages)
+        except IOError:
+            logging.warn("Couldn't find any locales matching %s on path %s",
+                         languages, self.config.core.locale_path)
+            self.t = gettext.NullTranslations()
 
     def _handle_sighup(self, signum, frame):
         logger.info("Received SIGHUP; running SIGHUP hooks and rehashing")

@@ -28,7 +28,7 @@ def load_service(ctx, r, service_name):
     try:
         ctx.bot.load_service(service_name, r is not None)
     except Exception as e:
-        ctx.respond("Sorry, couldn't load the service \"{name}\".".format(
+        ctx.respond(ctx._("Sorry, couldn't load the service \"{name}\".").format(
             name=service_name
         ))
         ctx.respond("↳ {name}: {info}".format(
@@ -57,7 +57,7 @@ def unload_service(ctx, service_name):
     try:
         ctx.bot.unload_service(service_name)
     except Exception as e:
-        ctx.respond("Sorry, couldn't unload the service \"{name}\".".format(
+        ctx.respond(ctx._("Sorry, couldn't unload the service \"{name}\".").format(
             name=service_name
         ))
         ctx.respond("↳ {name}: {info}".format(
@@ -66,7 +66,7 @@ def unload_service(ctx, service_name):
         ))
         return
 
-    ctx.respond("Unloaded service \"{name}\".".format(name=service_name))
+    ctx.respond(ctx._("Unloaded service \"{name}\".").format(name=service_name))
 
 
 @service.command(r"what services are(?: you)? running\??$", mention=True, priority=3000)
@@ -79,7 +79,7 @@ def list_services(ctx):
     List all running services.
     """
 
-    ctx.respond("I am running: {services}".format(
+    ctx.respond(ctx._("I am running: {services}").format(
         services=", ".join(ctx.bot.services))
     )
 
@@ -96,11 +96,11 @@ def reload_services(ctx):
             failed_services.append(service_name)
 
     if failed_services:
-        ctx.respond("I couldn't reload the following services: {failed_services}".format(
+        ctx.respond(ctx._("I couldn't reload the following services: {failed_services}").format(
             failed_services=", ".join(failed_services))
         )
     else:
-        ctx.respond("All services reloaded!")
+        ctx.respond(ctx._("All services reloaded!"))
 
 
 @service.command(r"rehash$", mention=True, priority=3000)
@@ -115,14 +115,14 @@ def rehash(ctx):
     try:
         ctx.bot.rehash()
     except BaseException as e:
-        ctx.respond("Sorry, couldn't rehash.")
+        ctx.respond(ctx._("Sorry, couldn't rehash."))
         ctx.respond("↳ {name}: {info}".format(
             name=e.__class__.__name__,
             info=str(e)
         ))
         return
 
-    ctx.respond("Configuration rehashed.")
+    ctx.respond(ctx._("Configuration rehashed."))
 
 
 @service.command(r"re(?:start|boot)$", mention=True, priority=3000)
@@ -136,7 +136,7 @@ def restart(ctx):
     """
 
     for ctx.client in list(ctx.bot.ctx.clients.values()):
-        ctx.client.quit("Restarting...")
+        ctx.client.quit(ctx._("Restarting..."))
 
     # The following code is ported from Tornado.
     # http://www.tornadoweb.org/en/branch2.4/_modules/tornado/autoreload.html

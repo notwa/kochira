@@ -46,7 +46,7 @@ def get_location(ctx, place):
     if "location" in user_data:
         location = user_data["location"]
 
-        ctx.respond("{who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).".format(
+        ctx.respond(ctx._("{who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).").format(
             who=place,
             **location
         ))
@@ -55,15 +55,15 @@ def get_location(ctx, place):
     results = geocode(place)
 
     if not results:
-        ctx.respond("I don't know where \"{place}\" is.".format(place=place))
+        ctx.respond(ctx._("I don't know where \"{place}\" is.") .format(place=place))
         return
 
     result = results[0]
 
     if who is not None:
-        fmt = "{who} set their location to {formatted_address} ({lat:.10}, {lng:.10})."
+        fmt = ctx._("{who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).")
     else:
-        fmt = "Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.110})."
+        fmt = ctx._("Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.110}).")
     ctx.respond(fmt.format(
         who=who,
         place=place,
@@ -86,12 +86,12 @@ def set_location(ctx, place):
     try:
         user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
     except UserData.DoesNotExist:
-        ctx.respond("You need to be authenticated to set your location.")
+        ctx.respond(ctx._("You need to be authenticated to set your location."))
         return
 
     results = geocode(place)
     if not results:
-        ctx.respond("I don't know where \"{place}\" is.".format(place=place))
+        ctx.respond(ctx._("I don't know where \"{place}\" is.").format(place=place))
         return
 
     result = results[0]
@@ -104,7 +104,7 @@ def set_location(ctx, place):
     user_data["location"] = location
 
     ctx.bot.defer_from_thread(user_data.save)
-    ctx.respond("Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).".format(**location))
+    ctx.respond(ctx._("Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).").format(**location))
 
 
 @service.command(r"find (?P<what>.+?) near (?:me|(?P<place>.+))", mention=True)
@@ -129,13 +129,13 @@ def nearby_search(ctx, what, place=None, radius : int=None):
             location = user_data.get("location", None)
 
         if location is None:
-            ctx.respond("I don't know where you are.")
+            ctx.respond(ctx._("I don't know where you are."))
             return
     else:
         results = geocode(place)
 
         if not results:
-            ctx.respond("I don't know where \"{place}\" is.".format(place=place))
+            ctx.respond(ctx._("I don't know where \"{place}\" is.").format(place=place))
             return
 
         location = results[0]["geometry"]["location"]
@@ -152,11 +152,11 @@ def nearby_search(ctx, what, place=None, radius : int=None):
     ).json().get("results", [])
 
     if not results:
-        ctx.respond("Couldn't find anything.")
+        ctx.respond(ctx._("Couldn't find anything."))
         return
 
     result = results[0]
-    ctx.respond("{name}, {vicinity} ({types})".format(
+    ctx.respond(ctx._("{name}, {vicinity} ({types})").format(
         name=result["name"],
         vicinity=result["vicinity"],
         types=", ".join(result["types"])

@@ -69,7 +69,7 @@ def play_timed_reminder(ctx, reminder):
 
         if reminder.channel in client.channels:
             if reminder.who in client.channels[reminder.channel]["users"]:
-                client.message(reminder.channel, "{who}: {origin} wanted you to know: {message}".format(
+                client.message(reminder.channel, ctx._("{who}: {origin} wanted you to know: {message}").format(
                     who=reminder.who,
                     origin=reminder.origin,
                     message=reminder.message
@@ -100,13 +100,13 @@ def add_timed_reminder(ctx, who, duration, message):
         who = ctx.origin
 
     if t is None:
-        ctx.respond("Sorry, I don't understand that time.")
+        ctx.respond(ctx._("Sorry, I don't understand that time."))
         return
 
     dt = timedelta(seconds=int(math.ceil((parse_time(duration) - now).total_seconds())))
 
     if dt < timedelta(0):
-        ctx.respond("Uh, that's in the past.")
+        ctx.respond(ctx._("Uh, that's in the past."))
         return
 
     # persist reminder to the DB
@@ -117,7 +117,7 @@ def add_timed_reminder(ctx, who, duration, message):
                                duration=dt.total_seconds())
     reminder.save()
 
-    ctx.respond("Okay, I'll let {who} know in around {dt}.".format(
+    ctx.respond(ctx._("Okay, I'll let {who} know in around {dt}.").format(
         who=who,
         dt=humanize.naturaltime(-dt)
     ))
@@ -143,7 +143,7 @@ def add_reminder(ctx, who, message):
                     client_name=ctx.client.name, ts=datetime.utcnow(),
                     duration=None).save()
 
-    ctx.respond("Okay, I'll let {who} know.".format(
+    ctx.respond(ctx._("Okay, I'll let {who} know.").format(
         who=who
     ))
 
@@ -171,7 +171,7 @@ def play_reminder(client, target, origin):
         # TODO: display time
         dt = now - reminder.ts
 
-        client.message(target, "{who}, {origin} wanted you to know: {message}".format(
+        client.message(target, ctx._("{who}, {origin} wanted you to know: {message}").format(
             who=reminder.who,
             origin=reminder.origin,
             message=reminder.message

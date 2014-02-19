@@ -79,21 +79,21 @@ def update(ctx):
     Update the bot by pulling from the latest Git master.
     """
 
-    ctx.respond("Checking for updates...")
+    ctx.respond(ctx._("Checking for updates..."))
 
     try:
         head = rev_parse("HEAD")
 
         if not do_update(ctx.config.remote, ctx.config.branch):
-            ctx.respond("No updates.")
+            ctx.respond(ctx._("No updates."))
             return
 
         for line in get_log(head, "HEAD"):
             ctx.respond(line)
     except UpdateError as e:
-        ctx.respond("Update failed! " + str(e))
+        ctx.respond(ctx._("Update failed! {error}").format(error=e))
     else:
-        ctx.respond("Update finished!")
+        ctx.respond(ctx._("Update finished!"))
 
 
 class PostReceiveHandler(RequestHandler):
@@ -119,7 +119,9 @@ class PostReceiveHandler(RequestHandler):
                         continue
 
                     for line in get_log(head, "HEAD"):
-                        client.notice(channel, "Update! {}".format(line))
+                        client.notice(channel, ctx._("Update! {line}").format(
+                            line=line
+                        ))
 
         head = rev_parse("HEAD")
 

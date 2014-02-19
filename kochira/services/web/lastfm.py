@@ -164,13 +164,13 @@ def setup_user(ctx, lfm_username):
     try:
         user_data = yield UserData.lookup(ctx.client, ctx.origin)
     except UserData.DoesNotExist:
-        ctx.respond("You must be authenticated to set your Last.fm username.")
+        ctx.respond(ctx._("You must be logged in to set your Last.fm username."))
         return
 
     user_data["lastfm_user"] = lfm_username
     user_data.save()
 
-    ctx.respond("You have been associated with the Last.fm username {user}.".format(user=lfm_username))
+    ctx.respond(ctx._("You have been associated with the Last.fm username {user}.").format(user=lfm_username))
 
 
 @service.command(r"!lfm$")
@@ -186,14 +186,14 @@ def check_user(ctx):
     try:
         user_data = yield UserData.lookup(ctx.client, ctx.origin)
     except UserData.DoesNotExist:
-        ctx.respond("You must be authenticated to set your Last.fm username.")
+        ctx.respond(ctx._("You must be logged in to set your Last.fm username."))
         return
 
     if "lastfm_user" not in user_data:
-        ctx.respond("You don't have a Last.fm username associated with your nickname. Please use \"!lfm\" to associate one.")
+        ctx.respond(ctx._("You don't have a Last.fm username associated with your nickname. Please use \"!lfm\" to associate one."))
         return
 
-    ctx.respond("Your nickname is associated with {user}.".format(user=user_data["lastfm_user"]))
+    ctx.respond(ctx._("Your nickname is associated with {user}.").format(user=user_data["lastfm_user"]))
 
 
 @service.command(r"!tasteometer (?P<user1>\S+) (?P<user2>\S+)$")
@@ -217,10 +217,10 @@ def compare_users(ctx, user2, user1=None):
     comparison = get_compare_users(ctx.config.api_key, lfm1, lfm2)
 
     if comparison is None:
-        ctx.respond("Couldn't compare.")
+        ctx.respond(ctx._("Couldn't compare."))
         return
 
-    ctx.respond("{user1} ({lfm1}) and {user2} ({lfm2}) are {score:.2%} similar: {artists}".format(
+    ctx.respond(ctx._("{user1} ({lfm1}) and {user2} ({lfm2}) are {score:.2%} similar: {artists}").format(
         user1=user1,
         lfm1=lfm1,
         user2=user2,
@@ -249,31 +249,30 @@ def now_playing(ctx, who=None):
     track = get_user_now_playing(ctx.config.api_key, lfm)
 
     if track is None:
-        ctx.respond("{who} ({lfm}) has never scrobbled anything.".format(
+        ctx.respond(ctx._("{who} ({lfm}) has never scrobbled anything.").format(
             who=who,
             lfm=lfm
         ))
         return
 
-    track_descr = "{artist} - {name}{album}{tags} (played {playcount} time{s}{loved})".format(
+    track_descr = ctx._("{artist} - {name}{album}{tags} (played {playcount} time{s})").format(
         name=track["name"],
         artist=track["artist"],
         album=(" - " + track["album"]) if track["album"] else "",
         tags=(" (" + ", ".join(track["tags"][:5]) + ")") if track["tags"] else "",
         playcount=track["user_playcount"],
         s="s" if track["user_playcount"] != 1 else "",
-        loved="; loved" if track["user_loved"] else ""
     )
 
     if not track["now_playing"]:
-        ctx.respond("{who} ({lfm}) was playing{dt}: {descr}".format(
+        ctx.respond(ctx._("{who} ({lfm}) was playing about {dt}: {descr}").format(
             who=who,
             lfm=lfm,
-            dt=" about " + humanize.naturaltime(datetime.fromtimestamp(track["ts"])) if track["ts"] is not None else "",
+            dt=humanize.naturaltime(datetime.fromtimestamp(track["ts"])),
             descr=track_descr
         ))
     else:
-        ctx.respond("{who} ({lfm}) is playing: {descr}".format(
+        ctx.respond(ctx._("{who} ({lfm}) is playing: {descr}").format(
             who=who,
             lfm=lfm,
             descr=track_descr

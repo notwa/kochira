@@ -32,6 +32,6 @@ def add(ctx):
     a.number += 1
     a.save()
 
-    ctx.respond("Thanks, the number has been increased to {number}.".format(
+    ctx.respond(ctx._("Thanks, the number has been increased to {number}.").format(
         number=a.number
     ))

@@ -47,7 +47,7 @@ def weather(ctx, where=None):
             user_data = {}
 
         if "location" not in user_data:
-            ctx.respond("I don't have location data for you.")
+            ctx.respond(ctx._("I don't have location data for you."))
             return
         location = user_data["location"]
     else:
@@ -58,7 +58,7 @@ def weather(ctx, where=None):
             geocoded = geocode(where)
 
             if not geocoded:
-                ctx.respond("I don't know where \"{where}\" is.".format(where=where))
+                ctx.respond(ctx._("I don't know where \"{where}\" is.").format(where=where))
                 return
 
             location = geocoded[0]["geometry"]["location"]
@@ -69,13 +69,13 @@ def weather(ctx, where=None):
     )).json()
 
     if "error" in r:
-        ctx.respond("Sorry, there was an error: {type}: {description}".format(
+        ctx.respond(ctx._("Sorry, there was an error: {type}: {description}").format(
             **r["error"]
         ))
         return
 
     if "current_observation" not in r:
-        ctx.respond("Couldn't find weather for \"{where}\".".format(where=where))
+        ctx.respond(ctx._("Couldn't find weather for \"{where}\".").format(where=where))
         return
 
     observation = r["current_observation"]
@@ -97,11 +97,10 @@ def weather(ctx, where=None):
     precip = observation["precip_today_" + _unitize("metric", "in")]
     weather = observation["weather"]
 
-    ctx.respond("Today's weather for {place} is: {weather}, {temp}° {cf}{feelslike}, wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
+    ctx.respond(ctx._("Today's weather for {place} is: {weather}, {temp}° {cf} (feels like {feelslike}° {cf}), wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation").format(
         place=place,
         weather=weather,
-        feelslike=" (feels like {feelslike}° {cf})".format(feelslike=feelslike, cf=_unitize("C", "F"))
-                  if feelslike != temp else "",
+        feelslike=feelslike,
         temp=temp,
         cf=_unitize("C", "F"),
         wind_dir=wind_dir,

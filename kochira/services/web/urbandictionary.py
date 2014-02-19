@@ -27,7 +27,7 @@ def define(ctx, term, num: int=None):
     }).json()
 
     if r["result_type"] != "exact":
-        ctx.respond("I don't know what \"{term}\" means.".format(term=term))
+        ctx.respond(ctx._("I don't know what \"{term}\" means.").format(term=term))
         return
 
     if num is None:
@@ -38,10 +38,10 @@ def define(ctx, term, num: int=None):
     total = len(r["list"])
 
     if num >= total or num < 0:
-        ctx.respond("Can't find that definition of \"{term}\".".format(term=term))
+        ctx.respond(ctx._("Can't find that definition of \"{term}\".").format(term=term))
         return
 
-    ctx.respond("{term}: {definition} ({num} of {total})".format(
+    ctx.respond(ctx._("{term}: {definition} ({num} of {total})").format(
         term=term,
         definition=r["list"][num]["definition"].replace("\r", "").replace("\n", " "),
         num=num + 1,

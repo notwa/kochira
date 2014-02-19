@@ -68,7 +68,7 @@ def do_reply(ctx, target, origin, message):
                                         message)
 
         if mention:
-            ctx.respond("{message}".format(message=reply_message))
+            ctx.respond(reply_message)
         else:
             ctx.message(reply_message)
     elif message:

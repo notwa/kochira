@@ -28,13 +28,13 @@ def forget_profile(ctx):
         exists = "profile" in user_data
 
     if not exists:
-        ctx.respond("I don't know who you are.")
+        ctx.respond(ctx._("I don't know who you are."))
         return
 
     del user_data["profile"]
     user_data.save()
 
-    ctx.respond("Okay, I won't remember you anymore.")
+    ctx.respond(ctx._("Okay, I won't remember you anymore."))
 
 
 @service.command(r"[Ii](?: a|')m (?P<text>.+)$", mention=True)
@@ -49,13 +49,13 @@ def remember_profile(ctx, text):
     try:
         user_data = yield UserData.lookup(ctx.client, ctx.origin)
     except UserData.DoesNotExist:
-        ctx.respond("Please authenticate before you add a profile.")
+        ctx.respond(ctx._("Please authenticate before you add a profile."))
         return
 
     user_data["profile"] = text
     user_data.save()
 
-    ctx.respond("Okay, I'll remember you.")
+    ctx.respond(ctx._("Okay, I'll remember you."))
 
 
 @service.command(r"who am [Ii]\??$", mention=True)
@@ -73,12 +73,12 @@ def get_profile(ctx, who=None):
     user_data = yield UserData.lookup_default(ctx.client, who)
 
     if "profile" not in user_data:
-        ctx.respond("{who} hasn't told me who they are yet.".format(
+        ctx.respond(ctx._("{who} hasn't told me who they are yet.").format(
             who=who
         ))
         return
 
-    ctx.respond("{who} is {text}".format(
+    ctx.respond(ctx._("{who} is {text}").format(
         who=who,
         text=user_data["profile"]
     ))

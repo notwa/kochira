@@ -60,4 +60,4 @@ def eval_code(ctx, code):
     elif err:
         ctx.message("<<! {}".format(err.split("\n")[-1]))
     elif not r:
-        ctx.message("(no result)")
+        ctx.message(ctx._("(no result)"))

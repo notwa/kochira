@@ -53,13 +53,6 @@ class Quote(Model):
     ts = DateTimeField()
 
     @property
-    def as_text(self):
-        return "Quote {id}: {quote}".format(
-            id=self.id,
-            quote=self.quote
-        )
-
-    @property
     def quote_with_newlines(self):
         text = self.quote
         text = re.sub(r"(?:^| )(\[?(?:(?:(?:\d\d)?\d\d-\d\d-\d\d )?\d\d:\d\d(?::\d\d)?\]? )?(?:< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>|\* |-!-))", "\n\\1", text)
@@ -110,7 +103,7 @@ def add_quote(ctx, quote):
 
     quote = _add_quote(ctx.bot, ctx.client.network, ctx.target, ctx.origin, quote)
 
-    ctx.respond("Added quote {qid}.".format(
+    ctx.respond(ctx._("Added quote {qid}.").format(
         qid=quote.id
     ))
 
@@ -138,12 +131,12 @@ def delete_quote(ctx, qid: int):
         .where(Quote.id == qid,
                Quote.network == ctx.client.network,
                Quote.channel == ctx.target).exists():
-        ctx.respond("That's not a quote.")
+        ctx.respond(ctx._("That's not a quote."))
         return
 
     _delete_quote(ctx.bot, qid)
 
-    ctx.respond("Deleted quote {qid}.".format(
+    ctx.respond(ctx._("Deleted quote {qid}.").format(
         qid=qid
     ))
 
@@ -169,13 +162,14 @@ def read_quote(ctx, qid: int):
         .where(Quote.id == qid)
 
     if not q.exists():
-        ctx.respond("That's not a quote.")
+        ctx.respond(ctx._("That's not a quote."))
         return
 
     quote = q[0]
 
-    ctx.respond("{quote}".format(
-        quote=quote.as_text
+    ctx.respond(ctx._("Quote {id}: {text}").format(
+        id=quote.id,
+        text=quote.quote
     ))
 
 
@@ -199,13 +193,14 @@ def rand_quote(ctx, query=None):
         .limit(1)
 
     if not q.exists():
-        ctx.respond("Couldn't find any quotes.")
+        ctx.respond(ctx._("Couldn't find any quotes."))
         return
 
     quote = q[0]
 
-    ctx.respond("{quote}".format(
-        quote=quote.as_text
+    ctx.respond(ctx._("Quote {id}: {text}").format(
+        id=quote.id,
+        text=quote.quote
     ))
 
 
@@ -233,16 +228,17 @@ def find_quote(ctx, query):
     quotes = list(_find_quotes(ctx.bot, query))
 
     if not quotes:
-        ctx.respond("Couldn't find any quotes.")
+        ctx.respond(ctx._("Couldn't find any quotes."))
     elif len(quotes) == 1:
-        ctx.respond("{quote}".format(
-            quote=quotes[0].as_text
+        ctx.respond(ctx._("Quote {id}: {text}").format(
+            id=quotes[0].id,
+            text=quotes[0].text
         ))
     else:
         qids = [quote.id for quote in quotes]
         qids.sort()
 
-        ctx.respond("Found {num} quotes: {qids}".format(
+        ctx.respond(ctx._("Found {num} quotes: {qids}").format(
             num=len(qids),
             qids=", ".join(str(qid) for qid in qids)
         ))

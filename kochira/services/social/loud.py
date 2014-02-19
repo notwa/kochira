@@ -51,9 +51,9 @@ def loudest(ctx):
     ]
 
     if not loudest:
-        ctx.respond("Nobody has shouted yet.")
+        ctx.respond(ctx._("Nobody has shouted yet."))
     else:
-        ctx.respond("Loudest people: {loudest}.".format(
+        ctx.respond(ctx._("Loudest people: {loudest}.").format(
             loudest=", ".join("{who} from {network} ({count} shout{s})".format(
                 who=who,
                 network=network,
@@ -80,13 +80,13 @@ def who_said_that(ctx):
         .where((Shout.message << list(shouts.keys())) if shouts else False))
 
     if not q:
-        ctx.respond("Er, nobody said that.")
+        ctx.respond(ctx._("Er, nobody said that."))
         return
 
     q.sort(key=lambda shout: shouts[shout.message])
 
-    ctx.respond("{shouts}.".format(
-        shouts=", ".join("{who} from {network} said \"{what}\"".format(
+    ctx.respond(ctx._("{shouts}.").format(
+        shouts=", ".join(ctx._("{who} from {network} said \"{what}\"").format(
             who=shout.who,
             network=shout.network,
             what=shout.message
@@ -108,14 +108,18 @@ def how_many_shouts(ctx, who=None):
 
     if who is None:
         num = Shout.select().count()
-        ctx.respond("People have shouted {num} time{s}.".format(
+        ctx.respond(ctx.ngettext("People have shouted {num} time.",
+                                 "People have shouted {num} times.",
+                                 num).format(
             num=num,
             s="s" if num != 1 else ""
         ))
     else:
         num = Shout.select().where(Shout.who == who,
                                    Shout.network == ctx.client.network).count()
-        ctx.respond("{who} has shouted {num} time{s}.".format(
+        ctx.respond(ctx.ngettext("{who} has shouted {num} time.",
+                                 "{who} has shouted {num} times.",
+                                 num).format(
             who=who,
             num=num,
             s="s" if num != 1 else ""

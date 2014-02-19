@@ -36,7 +36,7 @@ def compute(ctx, query, who=None):
         user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, who)
 
         if "location" not in user_data:
-            ctx.respond("I don't have location information for {who}.".format(who=who))
+            ctx.respond(ctx._("I don't have location information for {who}.").format(who=who))
             return
     else:
         try:
@@ -64,7 +64,7 @@ def compute(ctx, query, who=None):
     result_node = tree.xpath("/queryresult[@success='true']")
 
     if not result_node:
-        ctx.respond("Couldn't compute that.")
+        ctx.respond(ctx._("Couldn't compute that."))
         return
 
     result_node, = result_node
@@ -78,4 +78,4 @@ def compute(ctx, query, who=None):
         "\n".join(result_node.xpath("pod[@primary='true']/subpod[1]/plaintext/text()")).strip()
     ).replace("\n", "; ")
 
-    ctx.respond("{out}".format(out=out))
+    ctx.respond(out)

@@ -51,12 +51,12 @@ def add_badword(ctx, word):
     if Badword.select().where(Badword.client_name == ctx.client.name,
                               Badword.channel == ctx.target,
                               Badword.word == word).exists():
-        ctx.respond("That's already a bad word.")
+        ctx.respond(ctx._("That's already a bad word."))
         return
 
     Badword.create(client_name=ctx.client.name, channel=ctx.target, word=word).save()
 
-    ctx.respond("Okay, whoever says that will be kicked.")
+    ctx.respond(ctx._("Okay, whoever says that will be kicked."))
 
 
 @service.command("(?P<word>.+) is not a bad word", mention=True, priority=2550)
@@ -70,10 +70,10 @@ def remove_badword(ctx, word):
     if Badword.delete().where(Badword.client_name == ctx.client.name,
                               Badword.channel == ctx.target,
                               Badword.word == word).execute() == 0:
-        ctx.respond("That's not a bad word.")
+        ctx.respond(ctx._("That's not a bad word."))
         return
 
-    ctx.respond("Okay, that's not a bad word anymore.")
+    ctx.respond(ctx._("Okay, that's not a bad word anymore."))
 
 
 @service.command("(?:list )?bad words", mention=True)
@@ -83,7 +83,7 @@ def list_badwords(ctx):
 
     List all bad words enforced.
     """
-    ctx.respond("The following are bad words: {badwords}".format(
+    ctx.respond(ctx._("The following are bad words: {badwords}").format(
         badwords=", ".join(badword.word if is_regex(badword.word) else "\"" + badword.word + "\""
                            for badword in Badword.select().where(Badword.client_name == ctx.client.name,
                                                                  Badword.channel == ctx.target).order_by(Badword.word))

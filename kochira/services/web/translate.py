@@ -49,7 +49,7 @@ def transliterate(ctx, term, from_lang=None):
         try:
             sl = LANGUAGES[from_lang.lower()]
         except KeyError:
-            ctx.respond("Sorry, I don't understand \"{lang}\".".format(lang=from_lang))
+            ctx.respond(ctx._("Sorry, I don't understand \"{lang}\".").format(lang=from_lang))
             return
 
     r = perform_translation(term, sl, sl)
@@ -57,10 +57,10 @@ def transliterate(ctx, term, from_lang=None):
     tlit = " ".join(x["src_translit"] for x in r["sentences"])
 
     if not tlit:
-        ctx.respond("There is no transliteration.")
+        ctx.respond(ctx._("There is no transliteration."))
         return
 
-    ctx.respond("{sentences}".format(sentences=tlit))
+    ctx.respond(tlit)
 
 
 @service.command(r"what is (?P<term>.+) in (?P<to_lang>.+)\??$", mention=True)
@@ -81,7 +81,7 @@ def translate(ctx, term, to_lang=None, from_lang=None):
         try:
             sl = LANGUAGES[from_lang.lower()]
         except KeyError:
-            ctx.respond("Sorry, I don't understand \"{lang}\".".format(lang=from_lang))
+            ctx.respond(ctx._("Sorry, I don't understand \"{lang}\".").format(lang=from_lang))
             return
 
     if to_lang is None:
@@ -90,7 +90,7 @@ def translate(ctx, term, to_lang=None, from_lang=None):
         try:
             tl = LANGUAGES[to_lang.lower()]
         except KeyError:
-            ctx.respond("Sorry, I don't understand \"{lang}\".".format(lang=to_lang))
+            ctx.respond(ctx._("Sorry, I don't understand \"{lang}\".").format(lang=to_lang))
             return
 
     r = perform_translation(term, sl, tl)
@@ -106,4 +106,4 @@ def translate(ctx, term, to_lang=None, from_lang=None):
     if tlit:
         trans += " (" + tlit + ")"
 
-    ctx.respond("{trans}".format(trans=trans))
+    ctx.respond(trans)

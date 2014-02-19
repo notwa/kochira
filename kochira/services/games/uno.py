@@ -258,21 +258,22 @@ def show_card_irc(card):
 
 
 def show_scores(game):
-    return ", ".join("{} ({} cards)".format(k, len(v))
+    return ", ".join(ctx._("{player} ({num} cards)").format(player=k, num=len(v))
                      for k, v in game.scores())
 
 def send_summary(ctx, game, prefix=""):
-    ctx.message("{turn}: {prefix}It's your turn.{stack} Top card ({count} left): {top}".format(
+    ctx.message(ctx._("{turn}: {prefix}It's your turn.{stack} Top card ({count} left): {top}").format(
         turn=game.turn,
         prefix=prefix,
         count=len(game.draw_pile),
-        stack=" Stack a special card or pass and draw {}.".format(game.must_draw) if game.must_draw > 0 else "",
+        stack=ctx._(" Stack a special card or pass and draw {}.").format(game.must_draw) if game.must_draw > 0 else "",
         top=show_card_irc(game.top)
     ))
 
 
 def send_hand(ctx, player, game):
-    ctx.client.notice(player, "[{}] Uno: Your hand: {hand}".format(ctx.target,
+    ctx.client.notice(player, ctx._("[{target}] Uno: Your hand: {hand}").format(
+        target=ctx.target,
         hand=" ".join(show_card_irc(card) for card in game.players[player])
     ))
 
@@ -280,7 +281,7 @@ def send_hand(ctx, player, game):
 def do_game_over(ctx, prefix=""):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
-    ctx.message(prefix + "Game over! Final results: {results}".format(
+    ctx.message(prefix + ctx._("Game over! Final results: {results}").format(
         results=show_scores(game)
     ))
     del ctx.storage.games[ctx.client.name, ctx.target]
@@ -299,14 +300,14 @@ def start_uno(ctx, set=None):
     k = (ctx.client.name, ctx.target)
 
     if k in ctx.storage.games:
-        ctx.respond("A game is already in progress.")
+        ctx.respond(ctx._("A game is already in progress."))
         return
 
     if set is not None:
         try:
             set = Game.SETS[set.lower()]
         except:
-            ctx.respond("I don't know what set \"{set}\" is.".format(
+            ctx.respond(ctx._("I don't know what set \"{set}\" is.").format(
                 origin=ctx.origin,
                 set=set
             ))
@@ -316,7 +317,7 @@ def start_uno(ctx, set=None):
     g.join(ctx.origin)
     ctx.storage.games[k] = g
 
-    ctx.message("{origin} has started a game of Uno! Send !join to join, and !deal to deal when ready!".format(
+    ctx.message(ctx._("{origin} has started a game of Uno! Send !join to join, and !deal to deal when ready!").format(
         origin=ctx.origin
     ))
 
@@ -345,12 +346,12 @@ def join_uno(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin in game.players:
-        ctx.respond("You're already in the game.")
+        ctx.respond(ctx._("You're already in the game."))
         return
 
     game.join(ctx.origin)
 
-    ctx.message("{origin} has joined the game!".format(
+    ctx.message(ctx._("{origin} has joined the game!").format(
         origin=ctx.origin
     ))
 
@@ -366,18 +367,18 @@ def deal_uno(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     if game.started:
-        ctx.respond("This game is already in progress.")
+        ctx.respond(ctx._("This game is already in progress."))
         return
 
     if len(game.players) < 2:
-        ctx.respond("There aren't enough players to deal yet.")
+        ctx.respond(ctx._("There aren't enough players to deal yet."))
         return
 
-    ctx.message("The game has started! Players: {players}".format(
+    ctx.message(ctx._("The game has started! Players: {players}").format(
         players=", ".join(game.players.keys())
     ))
     game.start()
@@ -398,27 +399,27 @@ def play_card(ctx, raw_card, target_color=None):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     if ctx.origin != game.turn:
-        ctx.respond("It's not your turn.")
+        ctx.respond(ctx._("It's not your turn."))
         return
 
     try:
         card = Game.read_card(raw_card)
     except ValueError:
-        ctx.respond("I don't know what card that is.")
+        ctx.respond(ctx._("I don't know what card that is."))
         return
 
     color, rank = card
 
     if target_color is not None and color != Game.WILD:
-        ctx.respond("This isn't a wild card, dumbass.")
+        ctx.respond(ctx._("That's not a wild card, dumbass."))
         return
 
     if target_color is None and color == Game.WILD:
-        ctx.respond("You need to give me a color to change to, e.g.: !play wd4 r")
+        ctx.respond(ctx._("You need to give me a color to change to, e.g.: !play wd4 r"))
         return
 
     last_turn = game.turn
@@ -433,13 +434,13 @@ def play_card(ctx, raw_card, target_color=None):
         }.get(target_color))
     except UnoStateError as e:
         if e.code == UnoStateError.CARD_NOT_COMPATIBLE:
-            ctx.respond("You can't play that card right now.")
+            ctx.respond(ctx._("You can't play that card right now."))
             return
         elif e.code == UnoStateError.NOT_IN_HAND:
-            ctx.respond("You don't have that card.")
+            ctx.respond(ctx._("You don't have that card."))
             return
     except ValueError:
-        ctx.respond("That's not a valid target color.")
+        ctx.respond(ctx._("That's not a valid target color."))
         return
 
     if game_over:
@@ -447,22 +448,22 @@ def play_card(ctx, raw_card, target_color=None):
         return
 
     if len(game.players[last_turn]) == 1:
-        ctx.message("{player} has UNO!".format(
+        ctx.message(ctx._("{player} has UNO!").format(
             player=last_turn
         ))
 
     prefix = ""
 
     if rank == Game.REVERSE:
-        prefix = "Order reversed! "
+        prefix = ctx._("Order reversed! ")
     elif rank == Game.DRAW_TWO:
-        prefix = "Draw two! "
+        prefix = ctx._("Draw two! ")
     elif rank == Game.DRAW_FOUR:
-        prefix = "Draw four! "
+        prefix = ctx._("Draw four! ")
     elif rank == Game.SKIP and game.must_draw == 0:
-        prefix = "{} was skipped! ".format(usual_turn)
+        prefix = ctx._("{player} was skipped! ").format(player=usual_turn)
     elif rank == Game.SKIP:
-        prefix = "{} passed the stack on! ".format(last_turn)
+        prefix = ctx._("{player} passed the stack on! ").format(player=last_turn)
 
     send_summary(ctx, game, prefix)
     send_hand(ctx, game.turn, game)
@@ -479,29 +480,29 @@ def draw(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     if ctx.origin != game.turn:
-        ctx.respond("It's not your turn.")
+        ctx.respond(ctx._("It's not your turn."))
         return
 
     try:
         card = game.turn_draw()
     except UnoStateError as e:
         if e.code == UnoStateError.HAS_ALREADY_DRAWN:
-            ctx.respond("You've already drawn.")
+            ctx.respond(ctx._("You've already drawn."))
             return
         elif e.code == UnoStateError.NO_MORE_DRAWS:
-            do_game_over(ctx, "Looks like the pile ran out! ")
+            do_game_over(ctx, ctx._("Looks like the pile ran out! "))
             return
         elif e.code == UnoStateError.MUST_STACK:
-            ctx.respond("You need to stack a card.")
+            ctx.respond(ctx._("You need to stack a card."))
             return
         raise
 
-    ctx.client.notice(ctx.origin, "[{}] Uno: You drew: {}".format(ctx.target, show_card_irc(card)))
-    ctx.message("{origin} draws.".format(origin=ctx.origin))
+    ctx.client.notice(ctx.origin, ctx._("[{target}] Uno: You drew: {card}").format(target=ctx.target, card=show_card_irc(card)))
+    ctx.message(ctx._("{origin} draws.").format(origin=ctx.origin))
 
 
 @service.command(r"!pass")
@@ -515,11 +516,11 @@ def pass_(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     if ctx.origin != game.turn:
-        ctx.respond("It's not your turn.")
+        ctx.respond(ctx._("It's not your turn."))
         return
 
     must_draw = game.must_draw
@@ -528,25 +529,30 @@ def pass_(ctx):
         card = game.turn_pass()
     except UnoStateError as e:
         if e.code == UnoStateError.MUST_DRAW_FIRST:
-            ctx.respond("You need to draw first.")
+            ctx.respond(ctx._("You need to draw first."))
             return
         elif e.code == UnoStateError.NO_MORE_DRAWS:
-            do_game_over(ctx, "Looks like the pile ran out! ")
+            do_game_over(ctx, ctx._("Looks like the pile ran out! "))
             return
         raise
 
     suffix = ""
 
     if must_draw > 0:
-        suffix = " and had to draw {} cards".format(must_draw)
-        ctx.client.notice(ctx.origin, "[{}] Uno: You drew: {}"
-                                      .format(ctx.target, " ".join(show_card_irc(card)
-                                      for card in game.players[ctx.origin][-must_draw:])))
+        ctx.client.notice(ctx.origin, ctx._("[{target}] Uno: You drew: {card}").format(
+            target=ctx.target,
+            cards=" ".join(show_card_irc(card)
+                           for card in game.players[ctx.origin][-must_draw:])))
 
-    send_summary(ctx, game, "{origin} passed{suffix}. ".format(
-        origin=ctx.origin,
-        suffix=suffix
-    ))
+    if must_draw > 0:
+        prefix = ctx._("{origin} passed and had to draw {num} cards.".format(
+            origin=ctx.origin,
+            num=must_draw
+        ))
+    else:
+        prefix = ctx._("{origin} passed.").format(origin=ctx.origin)
+
+    send_summary(ctx, game, prefix)
     send_hand(ctx, game.turn, game)
 
 
@@ -561,7 +567,7 @@ def show_hand(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     send_hand(ctx, ctx.origin, game)
@@ -578,10 +584,10 @@ def show_hand(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
-    ctx.message("Standings: {scores}".format(scores=show_scores(game)))
+    ctx.message(ctx._("Standings: {scores}").format(scores=show_scores(game)))
 
 
 @service.command(r"!leave")
@@ -595,7 +601,7 @@ def leave(ctx):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if ctx.origin not in game.players:
-        ctx.respond("You're not in this game.")
+        ctx.respond(ctx._("You're not in this game."))
         return
 
     game_over = game.leave(ctx.origin)
@@ -604,7 +610,7 @@ def leave(ctx):
         do_game_over(ctx)
         return
 
-    ctx.message("{origin} left the game. Their cards were shuffled back into the pile.".format(
+    ctx.message(ctx._("{origin} left the game. Their cards were shuffled back into the pile.").format(
         origin=ctx.origin
     ))
 

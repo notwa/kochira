@@ -135,8 +135,8 @@ def help(ctx):
     """
 
     if "kochira.services.net.webserver" not in ctx.bot.services:
-        ctx.respond("Help currently unavailable.")
+        ctx.respond(ctx._("Help currently unavailable."))
     else:
-        ctx.respond("My help is available at {url}".format(
+        ctx.respond(ctx._("My help is available at {url}").format(
             url=ctx.config.url
         ))

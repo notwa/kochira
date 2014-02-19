@@ -2,6 +2,9 @@ import functools
 import re
 import logging
 import bisect
+import gettext
+import os
+import locale
 
 from pydle.async import coroutine, Future
 
@@ -58,6 +61,15 @@ class HookContext:
 
     def remove_context(self, context):
         self.service.remove_context(self.client, context, self.target)
+
+    def gettext(self, string):
+        return self.bot.t.gettext(string)
+
+    _ = gettext
+
+    def ngettext(self, sing, plur, n):
+        return self.bot.t.ngettext(sing, plur, n)
+
 
 class Service:
     """

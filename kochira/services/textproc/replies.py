@@ -44,14 +44,14 @@ def remove_reply(ctx, what):
     """
 
     if not Reply.select().where(Reply.what == what).exists():
-        ctx.respond("I'm not replying to \"{what}\".".format(
+        ctx.respond(ctx._("I'm not replying to \"{what}\".").format(
             what=what
         ))
         return
 
     Reply.delete().where(Reply.what == what).execute()
 
-    ctx.respond("Okay, I won't reply to {what} anymore.".format(
+    ctx.respond(ctx._("Okay, I won't reply to {what} anymore.").format(
         what=what if is_regex(what) else "\"" + what + "\""
     ))
 
@@ -85,14 +85,14 @@ def add_reply(ctx, what, reply):
     """
 
     if Reply.select().where(Reply.what == what).exists():
-        ctx.respond("I'm already replying to {what}.".format(
+        ctx.respond(ctx._("I'm already replying to {what}.").format(
             what=what if is_regex(what) else "\"" + what + "\""
         ))
         return
 
     Reply.create(what=what, reply=reply).save()
 
-    ctx.respond("Okay, I'll reply to {what}.".format(
+    ctx.respond(ctx._("Okay, I'll reply to {what}.").format(
         what=what if is_regex(what) else "\"" + what + "\""
     ))
 
@@ -106,7 +106,7 @@ def list_replies(ctx):
     List all replies the bot has registered.
     """
 
-    ctx.respond("I reply to the following: {replies}".format(
+    ctx.respond(ctx._("I reply to the following: {replies}").format(
         replies=", ".join(reply.what if is_regex(reply.what) else "\"" + reply.what + "\""
                           for reply in Reply.select().order_by(Reply.what))
     ))
