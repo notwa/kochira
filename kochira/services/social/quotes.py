@@ -75,9 +75,7 @@ def initialize_model(ctx):
     ctx.storage.quote_qp = QueryParser("quote", schema=WHOOSH_SCHEMA)
 
 
-def _add_quote(bot, network, channel, origin, quote):
-    storage = service.storage_for(bot)
-
+def _add_quote(storage, network, channel, origin, quote):
     with database.transaction():
         quote = Quote.create(by=origin, quote=quote, channel=channel,
                              network=network, ts=datetime.utcnow())
@@ -101,16 +99,14 @@ def add_quote(ctx, quote):
     Add the given quote to the database.
     """
 
-    quote = _add_quote(ctx.bot, ctx.client.network, ctx.target, ctx.origin, quote)
+    quote = _add_quote(ctx.storage, ctx.client.network, ctx.target, ctx.origin, quote)
 
     ctx.respond(ctx._("Added quote {qid}.").format(
         qid=quote.id
     ))
 
 
-def _delete_quote(bot, qid):
-    storage = service.storage_for(bot)
-
+def _delete_quote(storage, qid):
     with database.transaction():
         Quote.delete().where(Quote.id == qid).execute()
         storage.index.delete_by_term("id", qid)
@@ -134,18 +130,11 @@ def delete_quote(ctx, qid: int):
         ctx.respond(ctx._("That's not a quote."))
         return
 
-    _delete_quote(ctx.bot, qid)
+    _delete_quote(ctx.storage, qid)
 
     ctx.respond(ctx._("Deleted quote {qid}.").format(
         qid=qid
     ))
-
-
-def _read_quote(bot, qid):
-    try:
-        return Quote.get(Quote.id == qid)
-    except Quote.DoesNotExist:
-        return None
 
 
 @service.command(r"what is quote (?P<qid>\d+)\??$", mention=True)
@@ -184,7 +173,7 @@ def rand_quote(ctx, query=None):
     """
 
     if query is not None:
-        q = _find_quotes(ctx.bot, query)
+        q = _find_quotes(ctx.storage, query)
     else:
         q = Quote.select()
 
@@ -204,9 +193,7 @@ def rand_quote(ctx, query=None):
     ))
 
 
-def _find_quotes(bot, query):
-    storage = service.storage_for(bot)
-
+def _find_quotes(storage, query):
     q = storage.quote_qp.parse(query)
 
     with storage.index.searcher() as searcher:

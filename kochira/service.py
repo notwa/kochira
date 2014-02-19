@@ -43,7 +43,7 @@ class HookContext:
 
     @property
     def storage(self):
-        return self.service.storage_for(self.bot)
+        return self.service.binding_for(self.bot).storage
 
     def message(self, message):
         self.client.message(self.target, message)
@@ -270,12 +270,6 @@ class Service:
                     config = config.combine(channel_config.services.get(self.name, self.config_factory()))
 
         return config
-
-    def storage_for(self, bot):
-        """
-        Get the disposable storage object.
-        """
-        return self.binding_for(bot).storage
 
     def binding_for(self, bot):
         """

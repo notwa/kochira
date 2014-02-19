@@ -348,8 +348,7 @@ def pass_taboo(ctx):
 
     Pass on this card.
     """
-    storage = service.storage_for(client.bot)
-    game = storage.games[client.name, target]
+    game = ctx.storage.games[client.name, target]
 
     if origin not in game.players:
         ctx.respond(ctx._("You're not in this game."))
