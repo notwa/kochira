@@ -2,9 +2,7 @@ import functools
 import re
 import logging
 import bisect
-import gettext
 import os
-import locale
 
 from pydle.async import coroutine, Future
 
