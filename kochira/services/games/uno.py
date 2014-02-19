@@ -541,7 +541,7 @@ def pass_(ctx):
         suffix = " and had to draw {} cards".format(must_draw)
         ctx.client.notice(ctx.origin, "[{}] Uno: You drew: {}"
                                       .format(ctx.target, " ".join(show_card_irc(card)
-                                      for card in game.players[origin][-must_draw:])))
+                                      for card in game.players[ctx.origin][-must_draw:])))
 
     send_summary(ctx, game, "{origin} passed{suffix}. ".format(
         origin=ctx.origin,
@@ -564,7 +564,7 @@ def show_hand(ctx):
         ctx.respond("You're not in this game.")
         return
 
-    send_hand(ctx, game.turn, game)
+    send_hand(ctx, ctx.origin, game)
 
 
 @service.command(r"!scores")
