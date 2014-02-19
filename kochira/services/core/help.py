@@ -81,17 +81,17 @@ class RequestHandler(RequestHandler):
 
 class IndexHandler(RequestHandler):
     def get(self):
-        services = [bound.service for bound in self.application.bot.services.values()]
+        services = [bound.service for bound in self.application.ctx.bot.services.values()]
         services.sort(key=lambda s: s.name)
 
         self.render("help/index.html", services=services,
-                    bot_config=self.application.bot.config_class)
+                    bot_config=self.application.ctx.bot.config_class)
 
 
 class ServiceHelpHandler(RequestHandler):
     def get(self, service_name):
         try:
-            service = self.application.bot.services[service_name].service
+            service = self.application.ctx.bot.services[service_name].service
         except KeyError:
             raise HTTPError(404)
         self.render("help/service.html", service=service)

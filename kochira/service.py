@@ -40,10 +40,17 @@ class HookContext:
 
     @property
     def config(self):
-        if self.client is None:
-            return self.service.config_for(self.bot)
+        config = self.bot.config.services.get(self.service.name, self.service.config_factory())
 
-        return self.service.config_for(self.bot, self.client.name, self.target)
+        if self.client is not None:
+            client_config = self.bot.config.clients[self.client.name]
+            config = config.combine(client_config.services.get(self.service.name, self.service.config_factory()))
+
+            if self.target is not None and self.target in client_config.channels:
+                channel_config = client_config.channels[self.target]
+                config = config.combine(channel_config.services.get(self.service.name, self.service.config_factory()))
+
+        return config
 
     @property
     def storage(self):
@@ -281,23 +288,6 @@ class Service:
 
         if self.on_shutdown is not None:
             self.on_shutdown(ctx)
-
-    def config_for(self, bot, client_name=None, channel=None):
-        """
-        Get the configuration settings.
-        """
-        config = bot.config.services.get(self.name, self.config_factory())
-
-        if client_name is not None:
-            client_config = bot.config.clients[client_name]
-            config = config.combine(client_config.services.get(self.name, self.config_factory()))
-
-            if channel is not None:
-                if channel in client_config.channels:
-                    channel_config = client_config.channels[channel]
-                    config = config.combine(channel_config.services.get(self.name, self.config_factory()))
-
-        return config
 
     def binding_for(self, bot):
         """

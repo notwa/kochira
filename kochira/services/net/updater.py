@@ -12,7 +12,7 @@ import subprocess
 
 from kochira import config
 from kochira.auth import requires_permission
-from kochira.service import Service, Config
+from kochira.service import Service, Config, HookContext
 
 from tornado.web import Application, RequestHandler, asynchronous, HTTPError
 
@@ -99,9 +99,7 @@ def update(ctx):
 class PostReceiveHandler(RequestHandler):
     @asynchronous
     def post(self):
-        config = service.config_for(self.application.bot)
-
-        if self.get_query_argument("key") != config.post_receive_key:
+        if self.get_query_argument("key") != self.application.config.post_receive_key:
             raise HTTPError(403)
 
         def _callback(future):
@@ -110,12 +108,11 @@ class PostReceiveHandler(RequestHandler):
                 raise future.exception()
             self.finish()
 
-            for client_name, client in self.application.bot.clients.items():
+            for client_name, client in self.application.ctx.bot.clients.items():
                 for channel in client.channels:
-                    config = service.config_for(self.application.bot,
-                                                client_name, channel)
+                    c_ctx = HookContext(service, self.application.ctx.bot, client.name, channel)
 
-                    if not config.announce:
+                    if not c_ctx.config.announce:
                         continue
 
                     for line in get_log(head, "HEAD"):

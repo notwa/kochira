@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from pysnap import Snapchat, MEDIA_VIDEO_NOAUDIO, MEDIA_VIDEO
 
 from kochira import config
-from kochira.service import Service, Config, background
+from kochira.service import Service, Config, background, HookContext
 
 service = Service(__name__, __doc__)
 
@@ -95,13 +95,12 @@ def poll_for_updates(ctx):
 
         for client_name, client in ctx.bot.clients.items():
             for channel in client.channels:
-                config = service.config_for(ctx.bot, client_name, channel)
+                c_ctx = HookContext(service, ctx.bot, client, channel)
 
-                if not config.announce:
+                if not c_ctx.config.announce:
                     continue
 
-                client.message(
-                    channel,
+                c_ctx.message(
                     ctx._("New snap from {sender}! {link} ({dt})").format(
                         sender=sender,
                         link=link,
