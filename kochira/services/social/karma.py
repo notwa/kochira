@@ -21,45 +21,36 @@ class Config(Config):
 
 
 @service.setup
-def initialize(bot):
-    storage = service.storage_for(bot)
-
-    storage.granters = {}
+def initialize(ctx):
+    ctx.storage.granters = {}
 
 
 @service.command(r"(?P<who>\S+)\+\+")
 @coroutine
-def add_karma(client, target, origin, who):
+def add_karma(ctx, who):
     """
     Add karma.
 
     Increment a user's karma.
     """
-    storage = service.storage_for(client.bot)
-    config = service.config_for(client.bot, client.name, target)
 
     now = datetime.utcnow()
 
-    if client.normalize(origin) == client.normalize(who):
-        client.message(target, "{origin}: You can't give yourself karma.".format(
-            origin=origin
-        ))
+    if ctx.client.normalize(ctx.origin) == ctx.client.normalize(who):
+        ctx.respond("You can't give yourself karma.")
         return
 
-    last_grant = storage.granters.get((origin, client.network),
-                                      datetime.fromtimestamp(0))
+    last_grant = ctx.storage.granters.get((ctx.origin, ctx.client.network),
+                                          datetime.fromtimestamp(0))
 
-    if now - last_grant <= timedelta(seconds=config.timeout):
-        client.message(target, "{origin}: Please wait a while before granting someone karma.".format(
-            origin=origin
-        ))
+    if now - last_grant <= timedelta(seconds=ctx.config.timeout):
+        ctx.respond("Please wait a while before granting someone karma.")
         return
 
     try:
-        user_data = yield UserData.lookup(client, who)
+        user_data = yield UserData.lookup(ctx.client, who)
     except UserData.DoesNotExist:
-        client.message(target, "{origin}: {who}'s account is not registered.".format(
-            origin=origin,
+        ctx.respond("{who}'s account is not registered.".format(
             who=who
         ))
         return
@@ -68,10 +59,9 @@ def add_karma(client, target, origin, who):
     user_data["karma"] += 1
     user_data.save()
 
-    storage.granters[origin, client.network] = now
+    ctx.storage.granters[ctx.origin, ctx.client.network] = now
 
-    client.message(target, "{origin}: {who} now has {n} karma.".format(
-        origin=origin,
+    ctx.respond("{who} now has {n} karma.".format(
         who=who,
         n=user_data["karma"]
     ))
@@ -80,18 +70,17 @@ def add_karma(client, target, origin, who):
 @service.command(r"!karma (?P<who>\S+)")
 @service.command(r"karma for (?P<who>\S+)", mention=True)
 @coroutine
-def get_karma(client, target, origin, who):
+def get_karma(ctx, who):
     """
     Get karma.
 
     Get the amount of karma for a user.
     """
 
-    user_data = yield UserData.lookup_default(client, who)
+    user_data = yield UserData.lookup_default(ctx.client, who)
     karma = user_data.get("karma", 0)
 
-    client.message(target, "{origin}: {who} has {n} karma.".format(
-        origin=origin,
+    ctx.respond("{who} has {n} karma.".format(
         who=who,
         n=karma
     ))

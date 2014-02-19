@@ -33,7 +33,7 @@ def geocode(address):
 @service.command(r"where is (?P<place>.+)\??", mention=True)
 @background
 @coroutine
-def get_location(client, target, origin, place):
+def get_location(ctx, place):
     """
     Get location.
 
@@ -41,14 +41,12 @@ def get_location(client, target, origin, place):
     """
 
     who = None
-
-    user_data = yield client.bot.defer_from_thread(UserData.lookup_default, client, place)
+    user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, place)
 
     if "location" in user_data:
         location = user_data["location"]
 
-        client.message(target, "{origin}: {who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).".format(
-            origin=origin,
+        ctx.respond("{who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).".format(
             who=place,
             **location
         ))
@@ -57,21 +55,16 @@ def get_location(client, target, origin, place):
     results = geocode(place)
 
     if not results:
-        client.message(target, "{origin}: I don't know where \"{place}\" is.".format(
-            origin=origin,
-            place=place
-        ))
+        ctx.respond("I don't know where \"{place}\" is.".format(place=place))
         return
 
     result = results[0]
 
     if who is not None:
-        fmt = "{origin}: {who} set their location to {formatted_address} ({lat:.10}, {lng:.10})."
+        fmt = "{who} set their location to {formatted_address} ({lat:.10}, {lng:.10})."
     else:
-        fmt = "{origin}: Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.10})."
-
-    client.message(target, fmt.format(
-        origin=origin,
+        fmt = "Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.110})."
+    ctx.respond(fmt.format(
         who=who,
         place=place,
         formatted_address=result["formatted_address"],
@@ -83,7 +76,7 @@ def get_location(client, target, origin, place):
 @service.command(r"my location is (?P<place>.+)", mention=True)
 @background
 @coroutine
-def set_location(client, target, origin, place):
+def set_location(ctx, place):
     """
     Set location.
 
@@ -91,24 +84,17 @@ def set_location(client, target, origin, place):
     """
 
     try:
-        user_data = yield client.bot.defer_from_thread(UserData.lookup, client, origin)
+        user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
     except UserData.DoesNotExist:
-        client.message(target, "{origin}: You need to be authenticated to set your location.".format(
-            origin=origin,
-        ))
+        ctx.respond("You need to be authenticated to set your location.")
         return
 
     results = geocode(place)
-
     if not results:
-        client.message(target, "{origin}: I don't know where \"{place}\" is.".format(
-            origin=origin,
-            place=place
-        ))
+        ctx.respond("I don't know where \"{place}\" is.".format(place=place))
         return
 
     result = results[0]
-
     location = {
         "lat": float(result["geometry"]["location"]["lat"]),
         "lng": float(result["geometry"]["location"]["lng"]),
@@ -117,19 +103,15 @@ def set_location(client, target, origin, place):
 
     user_data["location"] = location
 
-    client.bot.defer_from_thread(user_data.save)
-
-    client.message(target, "{origin}: Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).".format(
-        origin=origin,
-        **location
-    ))
+    ctx.bot.defer_from_thread(user_data.save)
+    ctx.respond("Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).".format(**location))
 
 
 @service.command(r"find (?P<what>.+?) near (?:me|(?P<place>.+))", mention=True)
 @service.command(r"find (?P<what>.+?) within (?P<radius>\d+) ?m of (?:me|(?P<place>.+))", mention=True)
 @background
 @coroutine
-def nearby_search(client, target, origin, what, place=None, radius : int=None):
+def nearby_search(ctx, what, place=None, radius : int=None):
     """
     Nearby search.
 
@@ -138,29 +120,22 @@ def nearby_search(client, target, origin, what, place=None, radius : int=None):
     if radius is None:
         radius = 1000
 
-    config = service.config_for(client.bot, client.name, target)
-
     if place is None:
         try:
-            user_data = yield client.bot.defer_from_thread(UserData.lookup, client, origin)
+            user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
         except UserData.DoesNotExist:
             location = None
         else:
             location = user_data.get("location", None)
 
         if location is None:
-            client.message(target, "{origin}: I don't know where you are.".format(
-                origin=origin,
-            ))
+            ctx.respond("I don't know where you are.")
             return
     else:
         results = geocode(place)
 
         if not results:
-            client.message(target, "{origin}: I don't know where \"{place}\" is.".format(
-                origin=origin,
-                place=place
-            ))
+            ctx.respond("I don't know where \"{place}\" is.".format(place=place))
             return
 
         location = results[0]["geometry"]["location"]
@@ -177,15 +152,11 @@ def nearby_search(client, target, origin, what, place=None, radius : int=None):
     ).json().get("results", [])
 
     if not results:
-        client.message(target, "{origin}: Couldn't find anything.".format(
-            origin=origin
-        ))
+        ctx.respond("Couldn't find anything.")
         return
 
     result = results[0]
-
-    client.message(target, "{origin}: {name}, {vicinity} ({types})".format(
-        origin=origin,
+    ctx.respond("{name}, {vicinity} ({types})".format(
         name=result["name"],
         vicinity=result["vicinity"],
         types=", ".join(result["types"])

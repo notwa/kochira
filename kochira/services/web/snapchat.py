@@ -57,31 +57,25 @@ def convert_to_gif(blob):
 
 
 @service.setup
-def make_snapchat(bot):
-    config = service.config_for(bot)
-    storage = service.storage_for(bot)
-
-    storage.snapchat = Snapchat()
-    if not storage.snapchat.login(config.username, config.password) \
+def make_snapchat(ctx):
+    ctx.storage.snapchat = Snapchat()
+    if not ctx.storage.snapchat.login(ctx.config.username, ctx.config.password) \
         .get("logged"):
         raise Exception("could not log into Snapchat")
 
-    bot.scheduler.schedule_every(timedelta(seconds=30), poll_for_updates)
+    ctx.bot.scheduler.schedule_every(timedelta(seconds=30), poll_for_updates)
 
 
 @service.task
 @background
-def poll_for_updates(bot):
-    config = service.config_for(bot)
-    storage = service.storage_for(bot)
-
+def poll_for_updates(ctx):
     has_snaps = False
 
-    for snap in reversed(storage.snapchat.get_snaps()):
+    for snap in reversed(ctx.storage.snapchat.get_snaps()):
         has_snaps = True
         sender = snap["sender"]
 
-        blob = storage.snapchat.get_blob(snap["id"])
+        blob = ctx.storage.snapchat.get_blob(snap["id"])
         if blob is None:
             continue
 
@@ -90,7 +84,7 @@ def poll_for_updates(bot):
 
         if blob is not None:
             ulim = requests.post("https://api.imgur.com/3/upload.json",
-                                 headers={"Authorization": "Client-ID " + config.imgur_clientid},
+                                 headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
                                  data={"image": blob}).json()
             if ulim["status"] != 200:
                 link = "(unavailable)"
@@ -99,9 +93,9 @@ def poll_for_updates(bot):
         else:
             link = "(could not convert video)"
 
-        for client_name, client in bot.clients.items():
+        for client_name, client in ctx.bot.clients.items():
             for channel in client.channels:
-                config = service.config_for(bot, client_name, channel)
+                config = service.config_for(ctx.bot, client_name, channel)
 
                 if not config.announce:
                     continue
@@ -115,9 +109,9 @@ def poll_for_updates(bot):
                     )
                 )
 
-        storage.snapchat.mark_viewed(snap["id"])
+        ctx.storage.snapchat.mark_viewed(snap["id"])
 
     if has_snaps:
-        storage.snapchat._request("clear", {
-            "username": storage.snapchat.username
+        ctx.storage.snapchat._request("clear", {
+            "username": ctx.storage.snapchat.username
         })

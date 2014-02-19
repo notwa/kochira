@@ -17,9 +17,8 @@ service = Service(__name__, __doc__)
 
 
 @service.setup
-def setup_contexts(bot):
-    storage = service.storage_for(bot)
-    storage.games = {}
+def setup_contexts(ctx):
+    ctx.storage.games = {}
 
 
 @service.model
@@ -126,7 +125,7 @@ class Game:
 @service.command(r"!taboo add (?P<title>[^:]+): (?P<taboo1>[^,]+), (?P<taboo2>[^,]+), (?P<taboo3>[^,]+), (?P<taboo4>[^,]+), (?P<taboo5>[^,]+)")
 @service.command(r"add taboo (?P<title>[^:]+): (?P<taboo1>[^,]+), (?P<taboo2>[^,]+), (?P<taboo3>[^,]+), (?P<taboo4>[^,]+), (?P<taboo5>[^,]+)", mention=True)
 @requires_permission("taboo")
-def add_taboo(client, target, origin, title, taboo1, taboo2, taboo3, taboo4, taboo5):
+def add_taboo(ctx, title, taboo1, taboo2, taboo3, taboo4, taboo5):
     """
     Add a Taboo card.
 
@@ -134,9 +133,7 @@ def add_taboo(client, target, origin, title, taboo1, taboo2, taboo3, taboo4, tab
     command. YES, I KNOW WHAT ``str.split`` IS.)
     """
     if Taboo.select().where(Taboo.title == title).exists():
-        client.message(target, "{origin}: That Taboo card already exists.".format(
-            origin=origin
-        ))
+        ctx.respond("That Taboo card already exists.")
         return
 
     taboo = Taboo.create(title=title.strip().lower(),
@@ -147,8 +144,7 @@ def add_taboo(client, target, origin, title, taboo1, taboo2, taboo3, taboo4, tab
                          taboo5=taboo5.strip().lower())
 
     taboo.save()
-    client.message(target, "{origin}: Added Taboo card \"{title}\", with taboos: {taboos}.".format(
-        origin=origin,
+    ctx.respond("Added Taboo card \"{title}\", with taboos: {taboos}.".format(
         title=taboo.title,
         taboos=", ".join(taboo.taboos)
     ))
@@ -157,7 +153,7 @@ def add_taboo(client, target, origin, title, taboo1, taboo2, taboo3, taboo4, tab
 @service.command(r"!taboo del (?P<title>.+)")
 @service.command(r"(?:remove|delete) taboo card (?P<title>.+)", mention=True)
 @requires_permission("taboo")
-def remove_taboo(client, target, origin, title):
+def remove_taboo(ctx, title):
     """
     Remove a Taboo card.
 
@@ -166,32 +162,25 @@ def remove_taboo(client, target, origin, title):
     title = title.lower()
 
     if Taboo.delete().where(Taboo.title == title).execute() == 0:
-        client.message(target, "{origin}: Can't find that Taboo card.".format(
-            origin=origin
-        ))
+        ctx.respond("Can't find that Taboo card.")
     else:
-        client.message(target, "{origin}: Deleted Taboo card \"{title}\".".format(
-            origin=origin,
+        ctx.respond("Deleted Taboo card \"{title}\".".format(
             title=title
         ))
 
 
 @service.command(r"!taboo")
 @service.command(r"taboo", mention=True)
-def request_taboo(client, target, origin):
+def request_taboo(ctx):
     """
     Request a game of Taboo.
 
     Initiate a game of Taboo.
     """
-    storage = service.storage_for(client.bot)
+    k = (ctx.client.name, ctx.target)
 
-    k = (client.name, target)
-
-    if k in storage.games:
-        client.message(target, "{origin}: A game is already in progress.".format(
-            origin=origin
-        ))
+    if k in ctx.storage.games:
+        ctx.respond("A game is already in progress.")
         return
 
     try:
@@ -200,75 +189,63 @@ def request_taboo(client, target, origin):
         if e.code != TabooStateError.NO_MORE_CARDS:
             raise
 
-        client.message(target, "{origin}: There are no Taboo cards.".format(
-            origin=origin
-        ))
+        ctx.respond("There are no Taboo cards.")
         return
 
     g.period = None
-    g.join(origin)
-    storage.games[k] = g
+    g.join(ctx.origin)
+    ctx.storage.games[k] = g
 
-    client.message(target, "{origin} has started a game of Taboo! Send !join to join, and !start when ready!".format(
-        origin=origin
+    ctx.message("{origin} has started a game of Taboo! Send !join to join, and !start when ready!".format(
+        origin=ctx.origin
     ))
 
-    service.add_context(client, "taboo", target)
+    ctx.add_context("taboo")
 
 
 @service.command(r"!join")
 @requires_context("taboo")
-def join_taboo(client, target, origin):
+def join_taboo(ctx):
     """
     Join game.
 
     Join a Taboo game in progress.
     """
-    storage = service.storage_for(client.bot)
-    game = storage.games[client.name, target]
+    game = ctx.storage.games[ctx.client.name, ctx.target]
 
-    if origin in game.players:
-        client.message(target, "{origin}: You're already in the game.".format(
-            origin=origin
-        ))
+    if ctx.origin in game.players:
+        ctx.respond("You're already in the game.")
         return
 
-    game.join(origin)
+    game.join(ctx.origin)
 
-    client.message(target, "{origin} has joined the game!".format(
-        origin=origin
-    ))
+    ctx.message("{origin} has joined the game!".format(origin=ctx.origin))
 
 
 @service.command(r"!leave")
 @requires_context("taboo")
-def leave(client, target, origin):
+def leave(ctx):
     """
     Leave game.
 
     Leave the game, if you're participating.
     """
-    storage = service.storage_for(client.bot)
-    game = storage.games[client.name, target]
+    game = ctx.storage.games[ctx.client.name, ctx.target]
 
-    if origin not in game.players:
-        client.message(target, "{origin}: You're not in this game.".format(
-            origin=origin
-        ))
+    if ctx.origin not in game.players:
+        ctx.respond("You're not in this game.")
         return
 
-    game_over = game.leave(origin)
+    game_over = game.leave(ctx.origin)
 
     if game_over:
-        do_game_over(client, target)
+        do_game_over(ctx)
         return
 
-    client.message(target, "{origin} left the game.".format(
-        origin=origin
-    ))
+    ctx.message("{origin} left the game.".format(origin=ctx.origin))
 
     if game.started:
-        send_summary(client, target)
+        send_summary(ctx)
 
 
 def show_scores(game):
@@ -281,11 +258,10 @@ def show_scores(game):
     return "; ".join("{}: {}".format(k, v) for k, v in scores)
 
 
-def send_summary(client, target):
-    storage = service.storage_for(client.bot)
-    game = storage.games[client.name, target]
+def send_summary(ctx):
+    game = ctx.storage.games[ctx.client.name, ctx.target]
 
-    client.message(target, "{turn}: It's your turn -- explain your word but don't say any of the taboos! {guessers} {isare} guessing. You have {time} seconds.".format(
+    ctx.message("{turn}: It's your turn -- explain your word but don't say any of the taboos! {guessers} {isare} guessing. You have {time} seconds.".format(
         turn=game.turn,
         guessers=", ".join(game.guessers),
         time=Game.TURN_DURATION,
@@ -293,87 +269,78 @@ def send_summary(client, target):
     ))
 
 
-def do_game_over(client, target, prefix=""):
-    storage = service.storage_for(client.bot)
-
-    game = storage.games[client.name, target]
+def do_game_over(ctx, prefix=""):
+    game = ctx.storage.games[ctx.client.name, ctx.target]
     game.stop()
 
     if game.period is not None:
-        client.bot.scheduler.unschedule_period(game.period)
+        ctx.bot.scheduler.unschedule_period(game.period)
 
-    client.message(target, prefix + "Game over! Final results: {results}".format(
+    ctx.message(prefix + "Game over! Final results: {results}".format(
         results=show_scores(game)
     ))
-    del storage.games[client.name, target]
-    service.remove_context(client, "taboo", target)
+    del ctx.storage.games[ctx.client.name, ctx.target]
+    ctx.remove_context("taboo")
 
 
 @service.command(r"!stop")
 @requires_context("taboo")
-def stop_taboo(client, target, origin):
+def stop_taboo(ctx):
     """
     Stop Taboo.
 
     Stop the Taboo game in progress.
     """
-    do_game_over(client, target)
+    do_game_over(ctx)
 
 
 @service.command(r"!start")
 @requires_context("taboo")
-def start_taboo(client, target, origin):
+def start_taboo(ctx):
     """
     Start Taboo.
 
     Start the Taboo game.
     """
-    storage = service.storage_for(client.bot)
-    game = storage.games[client.name, target]
+    game = ctx.storage.games[ctx.client.name, ctx.target]
 
-    if origin not in game.players:
-        client.message(target, "{origin}: You're not in this game.".format(
-            origin=origin
-        ))
+    if ctx.origin not in game.players:
+        ctx.respond("You're not in this game.")
         return
 
     if game.started:
-        client.message(target, "{origin}: This game is already in progress.".format(
-            origin=origin
-        ))
+        ctx.respond("This game is already in progress.")
         return
 
     if len(game.players) < 4:
-        client.message(target, "{origin}: There aren't enough players to play yet.".format(
-            origin=origin
-        ))
+        ctx.respond("There aren't enough players to play yet.")
         return
 
     game.start()
 
-    send_summary(client, target)
-    do_draw(client, target)
+    send_summary(ctx)
+    do_draw(ctx)
 
-    game.period = client.bot.scheduler.schedule_every(Game.TURN_DURATION, do_advance, client, target, game)
+    game.period = client.bot.scheduler.schedule_every(Game.TURN_DURATION, do_advance, ctx, game)
 
 
 @service.task
-def do_advance(bot, client, target, game):
-    client.message(target, "{turn}: Time is up! The word was \"{word}\".".format(
+def do_advance(ctx, game):
+    ctx.message("{turn}: Time is up! The word was \"{word}\".".format(
         turn=game.turn,
         word=game.card.title
     ))
 
     game.advance()
-    if do_draw(client, target):
+    if do_draw(ctx):
         return
 
-    send_summary(client, target)
+    send_summary(ctx)
 
 
 @service.command(r"!pass")
 @requires_context("taboo")
-def pass_taboo(client, target, origin):
+def pass_taboo(ctx):
     """
     Pass.
 
@@ -383,33 +350,28 @@ def pass_taboo(client, target, origin):
     game = storage.games[client.name, target]
 
     if origin not in game.players:
-        client.message(target, "{origin}: You're not in this game.".format(
-            origin=origin
-        ))
+        ctx.respond("You're not in this game.")
         return
 
     if origin != game.turn:
-        client.message(target, "{origin}: It's not your turn.".format(
-            origin=origin
-        ))
+        ctx.respond("It's not your turn.")
         return
 
     do_draw(client, target)
 
 
-def do_draw(client, target):
-    storage = service.storage_for(client.bot)
-    game = storage.games[client.name, target]
+def do_draw(ctx):
+    game = ctx.storage.games[ctx.client.name, ctx.target]
 
     try:
         game.draw()
     except TabooStateError as e:
         if e.code != TabooStateError.NO_MORE_CARDS:
             raise
-        do_game_over(client, target, "Looks like we ran out of cards! ")
+        do_game_over(ctx, "Looks like we ran out of cards! ")
         return True
 
-    client.notice(game.turn, "Title: {title}; Taboos: {taboos}".format(
+    ctx.client.notice(game.turn, "Title: {title}; Taboos: {taboos}".format(
         title=game.card.title,
         taboos=", ".join(game.card.taboos)
     ))
@@ -417,14 +379,12 @@ def do_draw(client, target):
 
 
 @service.hook("channel_message")
-def do_guess(client, target, origin, message):
-    if not service.has_context(client, "taboo", target):
+def do_guess(ctx, target, origin, message):
+    if not service.has_context(ctx.client, "taboo", ctx.target):
         # nobody is playing taboo.
         return
 
-    storage = service.storage_for(client.bot)
-
-    game = storage.games[client.name, target]
+    game = ctx.storage.games[ctx.client.name, ctx.target]
 
     if not game.started:
         # taboo hasn't started yet.
@@ -435,17 +395,15 @@ def do_guess(client, target, origin, message):
     if origin == game.turn:
         maybe_taboo = game.submit_clue(message)
         if maybe_taboo is not None:
-            client.message(target, "{origin}: BZZT! You said \"{taboo}\". The word was \"{title}\". Next word!".format(
-                origin=origin,
+            ctx.respond("BZZT! You said \"{taboo}\". The word was \"{title}\". Next word!".format(
                 taboo=maybe_taboo,
                 title=card.title
             ))
-            do_draw(client, target)
+            do_draw(ctx)
     elif origin in game.guessers:
         if game.submit_guess(message):
-            client.message(target, "{origin}: Ding-ding! The word was \"{title}\". Point for team {n}. Next word!".format(
-                origin=origin,
+            ctx.respond("Ding-ding! The word was \"{title}\". Point for team {n}. Next word!".format(
                 title=card.title,
                 n=game.team + 1
             ))
-            do_draw(client, target)
+            do_draw(ctx)

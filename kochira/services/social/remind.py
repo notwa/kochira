@@ -48,7 +48,7 @@ class Reminder(Model):
 
 
 @service.setup
-def initialize_model(bot):
+def reschedule_reminders(ctx):
     for reminder in Reminder.select() \
         .where(~(Reminder.duration >> None)):
         dt = (reminder.ts + timedelta(seconds=reminder.duration)) - datetime.utcnow()
@@ -57,19 +57,19 @@ def initialize_model(bot):
             reminder.delete_instance()
             continue
 
-        bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
+        ctx.bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
 
 
 @service.task
-def play_timed_reminder(bot, reminder):
+def play_timed_reminder(ctx, reminder):
     needs_archive = False
 
-    if reminder.client_name in bot.clients:
-        client = bot.clients[reminder.client_name]
+    if reminder.client_name in ctx.bot.clients:
+        client = ctx.bot.clients[reminder.client_name]
 
         if reminder.channel in client.channels:
             if reminder.who in client.channels[reminder.channel]["users"]:
-                client.message(reminder.channel, "{who}, {origin} wanted you to know: {message}".format(
+                client.message(reminder.channel, "{who}: {origin} wanted you to know: {message}".format(
                     who=reminder.who,
                     origin=reminder.origin,
                     message=reminder.message
@@ -85,7 +85,7 @@ def play_timed_reminder(bot, reminder):
 
 @service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to|that) (?P<message>.+) (?P<duration>(?:in|on|after) .+|tomorrow)$", mention=True, priority=1)
 @service.command(r"(?:remind|tell) (?P<who>\S+) (?P<duration>(?:in|on|after) .+|tomorrow) (?:about|to|that) (?P<message>.+)$", mention=True, priority=1)
-def add_timed_reminder(client, target, origin, who, duration, message):
+def add_timed_reminder(ctx, who, duration, message):
     """
     Add timed reminder.
 
@@ -96,43 +96,38 @@ def add_timed_reminder(client, target, origin, who, duration, message):
     now = datetime.now()
     t = parse_time(duration)
 
-    if who.lower() == "me" and who not in client.channels[target]["users"]:
-        who = origin
+    if who.lower() == "me" and who not in ctx.client.channels[target]["users"]:
+        who = ctx.origin
 
     if t is None:
-        client.message(target, "{origin}: Sorry, I don't understand that time.".format(
-            origin=origin
-        ))
+        ctx.respond("Sorry, I don't understand that time.")
         return
 
     dt = timedelta(seconds=int(math.ceil((parse_time(duration) - now).total_seconds())))
 
     if dt < timedelta(0):
-        client.message(target, "{origin}: Uh, that's in the past.".format(
-            origin=origin
-        ))
+        ctx.respond("Uh, that's in the past.")
         return
 
     # persist reminder to the DB
-    reminder = Reminder.create(who=who, who_n=client.normalize(who),
-                               channel=target, origin=origin,
-                               message=message, client_name=client.name,
+    reminder = Reminder.create(who=who, who_n=ctx.client.normalize(who),
+                               channel=ctx.target, origin=ctx.origin,
+                               message=message, client_name=ctx.client.name,
                                ts=datetime.utcnow(),
                                duration=dt.total_seconds())
     reminder.save()
 
-    client.message(target, "{origin}: Okay, I'll let {who} know in around {dt}.".format(
-        origin=origin,
+    ctx.respond("Okay, I'll let {who} know in around {dt}.".format(
         who=who,
         dt=humanize.naturaltime(-dt)
     ))
 
     # ... but also schedule it
-    client.bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
+    ctx.bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
 
 
 @service.command(r"(?:remind|tell) (?P<who>\S+)(?: about| to| that)? (?P<message>.+)$", mention=True)
-def add_reminder(client, target, origin, who, message):
+def add_reminder(ctx, who, message):
     """
     Add reminder.
 
@@ -140,28 +135,27 @@ def add_reminder(client, target, origin, who, message):
     the channel.
     """
 
-    if who.lower() == "me" and who not in client.channels[target]["users"]:
-        who = origin
+    if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
+        who = ctx.origin
 
-    Reminder.create(who=who, who_n=client.normalize(who),
-                    channel=target, origin=origin, message=message,
-                    client_name=client.name, ts=datetime.utcnow(),
+    Reminder.create(who=who, who_n=ctx.client.normalize(who),
+                    channel=ctx.target, origin=ctx.origin, message=message,
+                    client_name=ctx.client.name, ts=datetime.utcnow(),
                     duration=None).save()
 
-    client.message(target, "{origin}: Okay, I'll let {who} know.".format(
-        origin=origin,
+    ctx.respond("Okay, I'll let {who} know.".format(
         who=who
     ))
 
 
 @service.hook("channel_message")
-def play_reminder_on_message(client, target, origin, message):
-    play_reminder(client, target, origin)
+def play_reminder_on_message(ctx, target, origin, message):
+    play_reminder(ctx.client, ctx.target, ctx.origin)
 
 
 @service.hook("join")
-def play_reminder_on_join(client, channel, user):
-    play_reminder(client, channel, user)
+def play_reminder_on_join(ctx, channel, user):
+    play_reminder(ctx.client, channel, user)
 
 
 def play_reminder(client, target, origin):

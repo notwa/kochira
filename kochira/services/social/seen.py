@@ -144,90 +144,88 @@ def update_seen(client, event, who, channel=None, message=None, target=None):
 
 
 @service.hook("join", priority=5000)
-def on_join(client, target, origin):
-    update_seen(client, "join", origin, target)
+def on_join(ctx, target, origin):
+    update_seen(ctx.client, "join", origin, target)
 
 
 @service.hook("kill", priority=5000)
-def on_kill(client, target, by, message=None):
-    update_seen(client, "kill", target=target)
-    update_seen(client, "killed", target=by)
+def on_kill(ctx, target, by, message=None):
+    update_seen(ctx.client, "kill", target=target)
+    update_seen(ctx.client, "killed", target=by)
 
 
 @service.hook("kick", priority=5000)
-def on_kick(client, channel, target, by, message=None):
-    update_seen(client, "kick", by, channel, message, target=target)
-    update_seen(client, "kicked", target, channel, message, target=by)
+def on_kick(ctx, channel, target, by, message=None):
+    update_seen(ctx.client, "kick", by, channel, message, target=target)
+    update_seen(ctx.client, "kicked", target, channel, message, target=by)
 
 
 @service.hook("mode_change", priority=5000)
-def on_mode_change(client, channel, modes, by):
-    update_seen(client, "mode_change", by, channel, " ".join(modes))
+def on_mode_change(ctx, channel, modes, by):
+    update_seen(ctx.client, "mode_change", by, channel, " ".join(modes))
 
 
 @service.hook("channel_message", priority=5000)
-def on_channel_message(client, target, origin, message):
-    update_seen(client, "channel_message", origin, target, message)
+def on_channel_message(ctx, target, origin, message):
+    update_seen(ctx.client, "channel_message", origin, target, message)
 
 
 @service.hook("nick_change", priority=5000)
-def on_nick_change(client, old, new):
+def on_nick_change(ctx, old, new):
     if old == UNREGISTERED_NICKNAME:
         return
 
-    update_seen(client, "nick_change", old, None, target=new)
-    update_seen(client, "nick_changed", new, None, target=old)
+    update_seen(ctx.client, "nick_change", old, None, target=new)
+    update_seen(ctx.client, "nick_changed", new, None, target=old)
 
 
 @service.hook("channel_notice", priority=5000)
-def on_channel_notice(client, target, origin, message):
-    update_seen(client, "channel_notice", origin, target, message)
+def on_channel_notice(ctx, target, origin, message):
+    update_seen(ctx.client, "channel_notice", origin, target, message)
 
 
 @service.hook("part", priority=5000)
-def on_part(client, target, origin, message=None):
-    update_seen(client, "part", origin, target, message)
+def on_part(ctx, target, origin, message=None):
+    update_seen(ctx.client, "part", origin, target, message)
 
 
 @service.hook("topic_change", priority=5000)
-def on_topic_change(client, target, message, by):
-    update_seen(client, "topic", by, target, message)
+def on_topic_change(ctx, target, message, by):
+    update_seen(ctx.client, "topic", by, target, message)
 
 
 @service.hook("quit", priority=5000)
-def on_quit(client, origin, message=None):
-    update_seen(client, "quit", origin, None, message)
+def on_quit(ctx, origin, message=None):
+    update_seen(ctx.client, "quit", origin, None, message)
 
 
 @service.hook("ctcp_action", priority=5000)
-def on_ctcp_action(client, origin, target, message):
-    update_seen(client, "ctcp_action", origin, target, message)
+def on_ctcp_action(ctx, origin, target, message):
+    update_seen(ctx.client, "ctcp_action", origin, target, message)
 
 
 @service.command(r"!seen (?P<who>\S+)")
 @service.command(r"have you seen (?P<who>\S+)\??", mention=True)
 @service.command(r"when did you last see (?P<who>\S+)\??", mention=True)
-def seen(client, target, origin, who):
+def seen(ctx, who):
     """
     Have you seen?
 
     Check when a user was last seen.
     """
-    who_n = client.normalize(who)
+    who_n = ctx.client.normalize(who)
 
     try:
-        seen = Seen.get(Seen.who == who_n, Seen.network == client.network)
+        seen = Seen.get(Seen.who == who_n, Seen.network == ctx.client.network)
     except Seen.DoesNotExist:
-        client.message(target, "{origin}: I have never seen {who}.".format(
-            origin=origin,
+        ctx.respond("I have never seen {who}.".format(
             who=who
         ))
     else:
-        show_channel = seen.channel == target or \
-            not "s" in client.channels.get(seen.channel, {}).get("modes", {"s": True})
+        show_channel = seen.channel == ctx.target or \
+            not "s" in ctx.client.channels.get(seen.channel, {}).get("modes", {"s": True})
 
-        client.message(target, "{origin}: I last saw {who} {when}, {what}.".format(
-            origin=origin,
+        ctx.respond("I last saw {who} {when}, {what}.".format(
             who=who,
             what=seen.format(show_channel),
             when=humanize.naturaltime(datetime.utcnow() - seen.ts)

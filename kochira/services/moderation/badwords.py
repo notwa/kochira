@@ -41,76 +41,68 @@ class Config(Config):
 
 @service.command("(?P<word>.+) is a bad word", mention=True)
 @requires_permission("badword")
-def add_badword(client, target, origin, word):
+def add_badword(ctx, word):
     """
     Add a bad word.
 
     Next person to say the bad word will be kicked. Bad word can be delimited
     by forward slashes to act as a regular expression.
     """
-    if Badword.select().where(Badword.client_name == client.name,
-                              Badword.channel == target,
+    if Badword.select().where(Badword.client_name == ctx.client.name,
+                              Badword.channel == ctx.target,
                               Badword.word == word).exists():
-        client.message(target, "{origin}: That's already a bad word.".format(
-            origin=origin
-        ))
+        ctx.respond("That's already a bad word.")
         return
 
-    Badword.create(client_name=client.name, channel=target, word=word).save()
+    Badword.create(client_name=ctx.client.name, channel=ctx.target, word=word).save()
 
-    client.message(target, "{origin}: Okay, next person to say that gets kicked.".format(
-            origin=origin
-        ))
+    ctx.respond("Okay, whoever says that will be kicked.")
 
 
 @service.command("(?P<word>.+) is not a bad word", mention=True, priority=2550)
 @requires_permission("badword")
-def remove_badword(client, target, origin, word):
+def remove_badword(ctx, word):
     """
     Remove a bad word.
 
     Permits the word to be said freely on the channel.
     """
-    if Badword.delete().where(Badword.client_name == client.name,
-                              Badword.channel == target,
+    if Badword.delete().where(Badword.client_name == ctx.client.name,
+                              Badword.channel == ctx.target,
                               Badword.word == word).execute() == 0:
-        client.message(target, "{origin}: That's not a bad word.".format(
-            origin=origin
-        ))
-    else:
-        client.message(target, "{origin}: Okay, that's not a bad word anymore.".format(
-            origin=origin
-        ))
+        ctx.respond("That's not a bad word.")
+        return
+
+    ctx.respond("Okay, that's not a bad word anymore.")
 
 
 @service.command("(?:list )?bad words", mention=True)
-def list_badwords(client, target, origin):
+def list_badwords(ctx):
     """
     List bad words.
 
     List all bad words enforced.
     """
-    client.message(target, "{origin}: The following are bad words: {badwords}".format(
-        origin=origin,
+    ctx.respond("The following are bad words: {badwords}".format(
         badwords=", ".join(badword.word if is_regex(badword.word) else "\"" + badword.word + "\""
-                           for badword in Badword.select().where(Badword.client_name == client.name,
-                                                                 Badword.channel == target).order_by(Badword.word))
+                           for badword in Badword.select().where(Badword.client_name == ctx.client.name,
+                                                                 Badword.channel == ctx.target).order_by(Badword.word))
     ))
 
 
 @service.hook("channel_message", priority=2500)
-def check_badwords(client, target, origin, message):
-    config = service.config_for(client.bot, client.name, target)
-
+def check_badwords(ctx, target, origin, message):
     def _callback():
-        if config.chanserv_kick:
-            client.message("ChanServ", "KICK {target} {origin} {message}".format(
-                target=target, origin=origin, message=config.kick_message))
+        if ctx.config.chanserv_kick:
+            ctx.client.message("ChanServ", "KICK {target} {origin} {message}".format(
+                               target=ctx.target, origin=ctx.origin,
+                               message=ctx.config.kick_message))
         else:
-            client.rawmsg("KICK", target, origin, config.kick_message)
+            ctx.client.rawmsg("KICK", ctx.target, ctx.origin,
+                              ctx.config.kick_message)
 
-    for badword in Badword.select().where(Badword.client_name == client.name,
-                                          Badword.channel == target):
+    for badword in Badword.select().where(Badword.client_name == ctx.client.name,
+                                          Badword.channel == ctx.target):
         if is_regex(badword.word):
             expr = badword.word[1:-1]
         else:
@@ -118,17 +110,17 @@ def check_badwords(client, target, origin, message):
 
         if re.search(expr, message, re.I) is not None:
             op_modes = set(itertools.takewhile(lambda x: x != "v",
-                                               client._nickname_prefixes.values()))
+                                               ctx.client._nickname_prefixes.values()))
 
             ops = set([])
 
             for op_mode in op_modes:
-                ops.update(client.channels[target]["modes"].get(op_mode, []))
+                ops.update(ctx.client.channels[target]["modes"].get(op_mode, []))
 
-            if client.nickname not in ops and config.chanserv_op is not None:
-                client.message("ChanServ", config.chanserv_op.format(
-                    target=target, me=client.nickname))
-                client.bot.event_loop.schedule(_callback)
+            if ctx.client.nickname not in ops and ctx.config.chanserv_op is not None:
+                ctx.client.message("ChanServ", ctx.config.chanserv_op.format(
+                                   target=ctx.target, me=ctx.client.nickname))
+                ctx.bot.event_loop.schedule(_callback)
             else:
                 _callback()
             return Service.EAT

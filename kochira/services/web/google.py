@@ -17,7 +17,7 @@ html_parser = HTMLParser()
 @service.command(r"!g (?P<term>.+?)(?: (?P<num>\d+))?$")
 @service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
-def search(client, target, origin, term, num: int=None):
+def search(ctx, term, num: int=None):
     """
     Google.
 
@@ -36,10 +36,7 @@ def search(client, target, origin, term, num: int=None):
     results = r.get("responseData", {}).get("results", [])
 
     if not results:
-        client.message(target, "{origin}: Couldn't find anything matching \"{term}\".".format(
-            origin=origin,
-            term=term
-        ))
+        ctx.respond("Couldn't find anything matching \"{term}\".".format(term=term))
         return
 
     if num is None:
@@ -49,14 +46,10 @@ def search(client, target, origin, term, num: int=None):
     total = len(results)
 
     if num >= total or num < 0:
-        client.message(target, "{origin}: Can't find anything matching \"{term}\".".format(
-            origin=origin,
-            term=term
-        ))
+        ctx.respond("Can't find anything matching \"{term}\".".format(term=term))
         return
 
-    client.message(target, "{origin}: {title}: {url} ({num} of {total})".format(
-        origin=origin,
+    ctx.respond("{title}: {url} ({num} of {total})".format(
         title=html_parser.unescape(results[num]["titleNoFormatting"]),
         url=results[num]["unescapedUrl"],
         num=num + 1,

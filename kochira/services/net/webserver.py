@@ -8,7 +8,8 @@ server.
 from docutils.core import publish_parts
 
 from kochira import config
-from kochira.service import Service, Config
+from kochira.service import Service, Config, HookContext
+
 import os
 import subprocess
 
@@ -30,7 +31,7 @@ class Config(Config):
 
 def _get_application_confs(bot):
     for hook in bot.get_hooks("services.net.webserver"):
-        conf = hook(bot)
+        conf = hook(HookContext(hook.service, bot))
 
         if conf:
             yield conf
@@ -149,11 +150,8 @@ base_path = os.path.join(os.path.dirname(__file__), "webserver")
 
 
 @service.setup
-def setup_webserver(bot):
-    config = service.config_for(bot)
-    storage = service.storage_for(bot)
-
-    storage.application = Application([
+def setup_webserver(ctx):
+    ctx.storage.application = Application([
         (r"/", IndexHandler),
         (r"/(\S+)/(.*)", MainHandler),
         (r".*", NotFoundHandler)
@@ -168,22 +166,24 @@ def setup_webserver(bot):
             "Footer": FooterModule
         }
     )
-    storage.application.bot = bot
-    storage.application.name = None
+    ctx.storage.application.bot = ctx.bot
+    ctx.storage.application.name = None
 
-    @bot.event_loop.schedule
+    @ctx.bot.event_loop.schedule
     def _callback():
-        storage.http_server = HTTPServer(storage.application,
-                                         io_loop=bot.event_loop.io_loop)
-        storage.http_server.listen(config.port, config.address)
+        ctx.storage.http_server = HTTPServer(ctx.storage.application,
+                                             io_loop=ctx.bot.event_loop.io_loop)
+        ctx.storage.http_server.listen(ctx.config.port, ctx.config.address)
         service.logger.info("web server ready")
 
 
 @service.shutdown
-def shutdown_webserver(bot):
-    storage = service.storage_for(bot)
+def shutdown_webserver(ctx):
+    # we have to do this because the service will be unloaded on the next
+    # scheduler tick
+    storage = ctx.storage
 
-    @bot.event_loop.schedule
+    @ctx.bot.event_loop.schedule
     def _callback():
         storage.http_server.stop()
         service.logger.info("web server stopped")

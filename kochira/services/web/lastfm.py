@@ -154,7 +154,7 @@ def get_lfm_username(client, who):
 @service.command(r"!lfm (?P<lfm_username>\S+)$")
 @service.command(r"my last\.fm username is (?P<lfm_username>\S+)$", mention=True)
 @coroutine
-def setup_user(client, target, origin, lfm_username):
+def setup_user(ctx, lfm_username):
     """
     Set username.
 
@@ -162,26 +162,21 @@ def setup_user(client, target, origin, lfm_username):
     """
 
     try:
-        user_data = yield UserData.lookup(client, origin)
+        user_data = yield UserData.lookup(ctx.client, ctx.origin)
     except UserData.DoesNotExist:
-        client.message(target, "{origin}: You must be authenticated to set your Last.fm username.".format(
-            origin=origin
-        ))
+        ctx.respond("You must be authenticated to set your Last.fm username.")
         return
 
     user_data["lastfm_user"] = lfm_username
     user_data.save()
 
-    client.message(target, "{origin}: You have been associated with the Last.fm username {user}.".format(
-        origin=origin,
-        user=lfm_username
-    ))
+    ctx.respond("You have been associated with the Last.fm username {user}.".format(user=lfm_username))
 
 
 @service.command(r"!lfm$")
 @service.command(r"what is my last\.fm username\??$", mention=True)
 @coroutine
-def check_user(client, target, origin):
+def check_user(ctx):
     """
     Now playing.
 
@@ -189,23 +184,16 @@ def check_user(client, target, origin):
     """
 
     try:
-        user_data = yield UserData.lookup(client, origin)
+        user_data = yield UserData.lookup(ctx.client, ctx.origin)
     except UserData.DoesNotExist:
-        client.message(target, "{origin}: You must be authenticated to set your Last.fm username.".format(
-            origin=origin
-        ))
+        ctx.respond("You must be authenticated to set your Last.fm username.")
         return
 
     if "lastfm_user" not in user_data:
-        client.message(target, "{origin}: You don't have a Last.fm username associated with your nickname. Please use \"!lfm\" to associate one.".format(
-            origin=origin
-        ))
+        ctx.respond("You don't have a Last.fm username associated with your nickname. Please use \"!lfm\" to associate one.")
         return
 
-    client.message(target, "{origin}: Your nickname is associated with {user}.".format(
-        origin=origin,
-        user=user_data["lastfm_user"]
-    ))
+    ctx.respond("Your nickname is associated with {user}.".format(user=user_data["lastfm_user"]))
 
 
 @service.command(r"!tasteometer (?P<user1>\S+) (?P<user2>\S+)$")
@@ -214,31 +202,25 @@ def check_user(client, target, origin):
 @service.command(r"compare (?P<user1>\S+) and (?P<user2>\S+) on last\.fms$", mention=True)
 @background
 @coroutine
-def compare_users(client, target, origin, user2, user1=None):
+def compare_users(ctx, user2, user1=None):
     """
     Tasteometer.
 
     Compare the music tastes of two users.
     """
-
-    config = service.config_for(client.bot)
-
     if user1 is None:
-        user1 = origin
+        user1 = ctx.origin
 
-    lfm1 = yield client.bot.defer_from_thread(get_lfm_username, client, user1)
-    lfm2 = yield client.bot.defer_from_thread(get_lfm_username, client, user2)
+    lfm1 = yield ctx.bot.defer_from_thread(get_lfm_username, ctx.client, user1)
+    lfm2 = yield ctx.bot.defer_from_thread(get_lfm_username, ctx.client, user2)
 
-    comparison = get_compare_users(config.api_key, lfm1, lfm2)
+    comparison = get_compare_users(ctx.config.api_key, lfm1, lfm2)
 
     if comparison is None:
-        client.message(target, "{origin}: Couldn't compare.".format(
-            origin=origin
-        ))
+        ctx.respond("Couldn't compare.")
         return
 
-    client.message(target, "{origin}: {user1} ({lfm1}) and {user2} ({lfm2}) are {score:.2%} similar: {artists}".format(
-        origin=origin,
+    ctx.respond("{user1} ({lfm1}) and {user2} ({lfm2}) are {score:.2%} similar: {artists}".format(
         user1=user1,
         lfm1=lfm1,
         user2=user2,
@@ -254,25 +236,20 @@ def compare_users(client, target, origin, user2, user1=None):
 @service.command(r"what is (?P<who>\S+) playing\??$", mention=True)
 @background
 @coroutine
-def now_playing(client, target, origin, who=None):
+def now_playing(ctx, who=None):
     """
     Get username.
 
     Get your Last.fm username.
     """
-
-    config = service.config_for(client.bot)
-
     if who is None:
-        who = origin
+        who = ctx.origin
 
-    lfm = yield get_lfm_username(client, who)
-
-    track = get_user_now_playing(config.api_key, lfm)
+    lfm = yield get_lfm_username(ctx.client, who)
+    track = get_user_now_playing(ctx.config.api_key, lfm)
 
     if track is None:
-        client.message(target, "{origin}: {who} ({lfm}) has never scrobbled anything.".format(
-            origin=origin,
+        ctx.respond("{who} ({lfm}) has never scrobbled anything.".format(
             who=who,
             lfm=lfm
         ))
@@ -289,16 +266,14 @@ def now_playing(client, target, origin, who=None):
     )
 
     if not track["now_playing"]:
-        client.message(target, "{origin}: {who} ({lfm}) was playing{dt}: {descr}".format(
-            origin=origin,
+        ctx.respond("{who} ({lfm}) was playing{dt}: {descr}".format(
             who=who,
             lfm=lfm,
             dt=" about " + humanize.naturaltime(datetime.fromtimestamp(track["ts"])) if track["ts"] is not None else "",
             descr=track_descr
         ))
     else:
-        client.message(target, "{origin}: {who} ({lfm}) is playing: {descr}".format(
-            origin=origin,
+        ctx.respond("{who} ({lfm}) is playing: {descr}".format(
             who=who,
             lfm=lfm,
             descr=track_descr

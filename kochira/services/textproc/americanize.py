@@ -65,10 +65,10 @@ def compute_replacements(from_lang, to_lang, message):
 
 @service.hook("channel_message")
 @background
-def murrika(client, target, origin, message):
-    config = service.config_for(client.bot, client.name, target)
-
-    replacements = compute_replacements(config.from_lang, config.to_lang, message)
+def murrika(ctx, target, origin, message):
+    replacements = compute_replacements(ctx.config.from_lang,
+                                        ctx.config.to_lang,
+                                        message)
 
     if not replacements:
         return
@@ -77,7 +77,7 @@ def murrika(client, target, origin, message):
         message = re.sub(r"\b{}\b".format(re.escape(src)),
                          "\x1f" + tgt + "\x1f", message)
 
-    client.message(target, "<{origin}> {message}".format(
-        origin=origin,
+    ctx.message("<{origin}> {message}".format(
+        origin=ctx.origin,
         message=message
     ))

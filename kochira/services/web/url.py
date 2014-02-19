@@ -75,7 +75,7 @@ HANDLERS = {
 
 @service.hook("channel_message")
 @background
-def detect_urls(client, target, origin, message):
+def detect_urls(ctx, origin, target, message):
     found_info = {}
 
     urls = re.findall(r'http[s]?://[^\s<>"]+|www\.[^\s<>"]+', message)
@@ -102,9 +102,9 @@ def detect_urls(client, target, origin, message):
             info = found_info[url]
 
         if len(urls) == 1:
-            client.message(target, info)
+            ctx.message(info)
         else:
-            client.message(target, "{info} ({i} of {num})".format(
+            ctx.message("{info} ({i} of {num})".format(
                 i=i + 1,
                 num=len(urls),
                 info=info

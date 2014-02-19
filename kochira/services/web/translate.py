@@ -35,7 +35,7 @@ def perform_translation(term, sl, tl):
 
 @service.command(r"(?:transliterate|romanize) (?P<term>.+?)(?: from (?P<from_lang>.+?))?$", mention=True)
 @background
-def transliterate(client, target, origin, term, from_lang=None):
+def transliterate(ctx, term, from_lang=None):
     """
     Transliterate.
 
@@ -49,10 +49,7 @@ def transliterate(client, target, origin, term, from_lang=None):
         try:
             sl = LANGUAGES[from_lang.lower()]
         except KeyError:
-            client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
-                    origin=origin,
-                lang=from_lang
-            ))
+            ctx.respond("Sorry, I don't understand \"{lang}\".".format(lang=from_lang))
             return
 
     r = perform_translation(term, sl, sl)
@@ -60,21 +57,16 @@ def transliterate(client, target, origin, term, from_lang=None):
     tlit = " ".join(x["src_translit"] for x in r["sentences"])
 
     if not tlit:
-        client.message(target, "{origin}: There is no transliteration.".format(
-            origin=origin
-        ))
+        ctx.respond("There is no transliteration.")
         return
 
-    client.message(target, "{origin}: {sentences}".format(
-        origin=origin,
-        sentences=tlit
-    ))
+    ctx.respond("{sentences}".format(sentences=tlit))
 
 
 @service.command(r"what is (?P<term>.+) in (?P<to_lang>.+)\??$", mention=True)
 @service.command(r"(?:translate) (?P<term>.+?)(?: from (?P<from_lang>.+?))?(?: to (?P<to_lang>.+))?$", mention=True)
 @background
-def translate(client, target, origin, term, to_lang=None, from_lang=None):
+def translate(ctx, term, to_lang=None, from_lang=None):
     """
     Translate.
 
@@ -89,10 +81,7 @@ def translate(client, target, origin, term, to_lang=None, from_lang=None):
         try:
             sl = LANGUAGES[from_lang.lower()]
         except KeyError:
-            client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
-                origin=origin,
-                lang=from_lang
-            ))
+            ctx.respond("Sorry, I don't understand \"{lang}\".".format(lang=from_lang))
             return
 
     if to_lang is None:
@@ -101,10 +90,7 @@ def translate(client, target, origin, term, to_lang=None, from_lang=None):
         try:
             tl = LANGUAGES[to_lang.lower()]
         except KeyError:
-            client.message(target, "{origin}: Sorry, I don't understand \"{lang}\".".format(
-                origin=origin,
-                lang=to_lang
-            ))
+            ctx.respond("Sorry, I don't understand \"{lang}\".".format(lang=to_lang))
             return
 
     r = perform_translation(term, sl, tl)
@@ -120,7 +106,4 @@ def translate(client, target, origin, term, to_lang=None, from_lang=None):
     if tlit:
         trans += " (" + tlit + ")"
 
-    client.message(target, "{origin}: {trans}".format(
-        origin=origin,
-        trans=trans
-    ))
+    ctx.respond("{trans}".format(trans=trans))

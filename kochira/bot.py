@@ -18,7 +18,7 @@ from .client import Client
 from .db import database
 from .scheduler import Scheduler
 from .util import Expando
-from .service import Service, BoundService, Config as ServiceConfig
+from .service import Service, BoundService, HookContext, Config as ServiceConfig
 from .userdata import UserDataKVPair
 
 from kochira import services
@@ -282,8 +282,11 @@ class Bot:
         """
 
         for hook in self.get_hooks(hook):
+            ctx = HookContext(hook.service, self)
+
             try:
-                r = hook(*args, **kwargs)
+                r = hook(ctx, *args, **kwargs)
+
                 if r is Service.EAT:
                     return Service.EAT
             except BaseException:
@@ -305,7 +308,7 @@ class Bot:
         except Exception as e:
             logger.error("Could not rehash configuration", exc_info=e)
 
-        self.run_hooks("sighup", self)
+        self.run_hooks("sighup")
 
     def _handle_sigterm(self, signum, frame):
         logger.info("Received termination signal; unloading all services")

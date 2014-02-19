@@ -2,6 +2,9 @@ import threading
 import logging
 from pydle.async import Future
 
+from .service import HookContext
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,11 +29,13 @@ class Scheduler:
         logger.info("Scheduling %s.%s in %s", _task.service.name, _task.__name__, _time)
 
         timeout = None
+        ctx = HookContext(_task.service, self.bot)
 
         def _handler():
             # ghetto-ass code for removing the timeout on completion
             nonlocal timeout
-            r = _task(self.bot, *_args, **_kwargs)
+
+            r = _task(ctx, *_args, **_kwargs)
 
             if isinstance(r, Future):
                 r.add_done_callback(self._error_handler)
@@ -51,10 +56,13 @@ class Scheduler:
         period_id = self._next_period_id
         self._next_period_id += 1
 
+        ctx = HookContext(_task.service, self.bot)
+
         def _handler():
             if period_id not in self.periods.get(_task.service.name, set([])):
                 return False
-            r = _task(self.bot, *_args, **_kwargs)
+
+            r = _task(ctx, *_args, **_kwargs)
 
             if isinstance(r, Future):
                 r.add_done_callback(self._error_handler)

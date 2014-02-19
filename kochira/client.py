@@ -7,7 +7,7 @@ from pydle import Client as _Client
 from pydle.async import Future, coroutine
 from pydle.features.rfc1459.protocol import MESSAGE_LENGTH_LIMIT
 
-from .service import Service
+from .service import Service, HookContext
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +29,6 @@ class Client(_Client):
     @property
     def config(self):
         return self.bot.config.clients[self.name]
-
-    @property
-    def executor(self):
-        return self.bot.executor
 
     @classmethod
     def from_config(cls, bot, name, config):
@@ -87,7 +83,7 @@ class Client(_Client):
             self.bot.event_loop.io_loop.remove_timeout(self._reconnect_timeout)
             self._reconnect_timeout = None
 
-        self._run_hooks("disconnect", None, [expected])
+        self._run_hooks("disconnect", None, None, [expected])
 
         if not expected:
             self.connect(reconnect=True)
@@ -105,7 +101,7 @@ class Client(_Client):
         for name, channel in self.bot.config.clients[self.name].channels.items():
             self.join(name, password=channel.password)
 
-        self._run_hooks("connect", None)
+        self._run_hooks("connect", None, None)
 
     def _autotruncate(self, command, target, message, suffix="..."):
         hostmask = self._format_hostmask(self.nickname)
@@ -127,7 +123,7 @@ class Client(_Client):
         def _callback():
             super(Client, self).message(target, message)
             self._add_to_backlog(target, self.nickname, message)
-            self._run_hooks("own_message", target, [target, message])
+            self._run_hooks("own_message", target, self.nickname, [target, message])
 
     def notice(self, target, message):
         message = self._autotruncate("PRIVMSG", target, message)
@@ -135,32 +131,44 @@ class Client(_Client):
         @self.bot.defer_from_thread
         def _callback():
             super(Client, self).notice(target, message)
-            self._run_hooks("own_notice", target, [target, message])
+            self._run_hooks("own_notice", target, self.nickname, [target, message])
 
-    @coroutine
-    def _run_hooks(self, name, target, args=None, kwargs=None):
-        if args is None:
-            args = []
+    def _run_hooks(self, name, target, origin, args=None, kwargs=None):
+        @coroutine
+        def _coro():
+            nonlocal args, kwargs
 
-        if kwargs is None:
-            kwargs = {}
+            if args is None:
+                args = []
 
-        for hook in self.bot.get_hooks(name):
-            config = hook.service.config_for(self.bot, self.name, target)
+            if kwargs is None:
+                kwargs = {}
 
-            if not config.enabled:
-                continue
+            for hook in self.bot.get_hooks(name):
+                ctx = HookContext(hook.service, self.bot, self, target, origin)
 
-            try:
-                r = yield self.bot.defer_from_thread(hook, self, *args, **kwargs)
-                if isinstance(r, Future):
-                    r = yield r
+                if not ctx.config.enabled:
+                    continue
 
-                if r is Service.EAT:
-                    logging.debug("EAT suppressed further hooks.")
-                    return Service.EAT
-            except BaseException:
-                logger.error("Hook processing failed", exc_info=True)
+                try:
+                    r = yield self.bot.defer_from_thread(hook, ctx, *args, **kwargs)
+
+                    if isinstance(r, Future):
+                        r = yield r
+
+                    if r is Service.EAT:
+                        logging.debug("EAT suppressed further hooks.")
+                        return Service.EAT
+                except BaseException:
+                    logger.error("Hook processing failed", exc_info=True)
+
+        fut = _coro()
+        @fut.add_done_callback
+        def _callback(future):
+            if future.exception() is not None:
+                exc = future.exception()
+                logger.error("Hook runner failed",
+                             exc_info=(exc.__class__, exc, exc.__traceback__))
 
     def _add_to_backlog(self, target, by, message):
         backlog = self.backlogs.setdefault(target, deque([]))
@@ -170,51 +178,51 @@ class Client(_Client):
             backlog.pop()
 
     def on_invite(self, channel, by):
-        self._run_hooks("invite", by, [channel, by])
+        self._run_hooks("invite", by, by, [channel, by])
 
     def on_join(self, channel, user):
-        self._run_hooks("join", channel, [channel, user])
+        self._run_hooks("join", channel, user, [channel, user])
 
     def on_kill(self, target, by, reason):
-        self._run_hooks("kill", by, [target, by, reason])
+        self._run_hooks("kill", by, by, [target, by, reason])
 
     def on_kick(self, channel, target, by, reason=None):
-        self._run_hooks("kick", channel, [channel, target, by, reason])
+        self._run_hooks("kick", channel, by, [channel, target, by, reason])
 
     def on_mode_change(self, channel, modes, by):
-        self._run_hooks("mode_change", channel, [channel, modes, by])
+        self._run_hooks("mode_change", channel, by, [channel, modes, by])
 
     def on_user_mode_change(self, modes):
-        self._run_hooks("user_mode_change", None, [modes])
+        self._run_hooks("user_mode_change", None, self.nickname, [modes])
 
     def on_channel_message(self, target, by, message):
         self._add_to_backlog(target, by, message)
-        self._run_hooks("channel_message", target, [target, by, message])
+        self._run_hooks("channel_message", target, by, [target, by, message])
 
     def on_private_message(self, by, message):
         self._add_to_backlog(by, by, message)
-        self._run_hooks("private_message", by, [by, message])
+        self._run_hooks("private_message", by, by, [by, message])
 
     def on_nick_change(self, old, new):
-        self._run_hooks("nick_change", new, [old, new])
+        self._run_hooks("nick_change", new, new, [old, new])
 
     def on_channel_notice(self, target, by, message):
-        self._run_hooks("channel_notice", target, [target, by, message])
+        self._run_hooks("channel_notice", target, by, [target, by, message])
 
     def on_private_notice(self, by, message):
-        self._run_hooks("private_notice", by, [by, message])
+        self._run_hooks("private_notice", by, by, [by, message])
 
     def on_part(self, channel, user, message=None):
-        self._run_hooks("part", channel, [channel, user, message])
+        self._run_hooks("part", channel, user, [channel, user, message])
 
     def on_topic_change(self, channel, message, by):
-        self._run_hooks("topic_change", channel, [channel, message, by])
+        self._run_hooks("topic_change", channel, by, [channel, message, by])
 
     def on_quit(self, user, message=None):
-        self._run_hooks("quit", user, [user, message])
+        self._run_hooks("quit", user, user, [user, message])
 
     def on_ctcp(self, by, what, contents):
-        self._run_hooks("ctcp", by, [by, what, contents])
+        self._run_hooks("ctcp", by, by, [by, what, contents])
 
     def on_ctcp_action(self, by, what, contents):
-        self._run_hooks("ctcp_action", by, [by, what, contents])
+        self._run_hooks("ctcp_action", by, by, [by, what, contents])

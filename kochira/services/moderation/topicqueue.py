@@ -19,7 +19,7 @@ class Config(Config):
 @service.command("add (?P<topic>.+) to topic", mention=True)
 @service.command("!topic (?P<topic>.+)")
 @requires_permission("topic")
-def topic(client, target, origin, topic):
+def topic(ctx, topic):
     """
     Prepend to topic.
 
@@ -27,18 +27,16 @@ def topic(client, target, origin, topic):
     evict the oldest part of the topic.
     """
 
-    config = service.config_for(client.bot, client.name, target)
-
-    parts = client.channels[target].get("topic")
+    parts = ctx.client.channels[ctx.target].get("topic")
 
     if parts:
-        parts = parts.split(config.topic_separator)
+        parts = parts.split(ctx.config.topic_separator)
     else:
         parts = []
 
     parts.insert(0, topic)
 
-    while len(config.topic_separator.join(parts).encode("utf-8")) > client._topic_length_limit:
+    while len(ctx.config.topic_separator.join(parts).encode("utf-8")) > ctx.client._topic_length_limit:
         parts.pop()
 
-    client.topic(target, config.topic_separator.join(parts))
+    ctx.client.topic(ctx.target, ctx.config.topic_separator.join(parts))

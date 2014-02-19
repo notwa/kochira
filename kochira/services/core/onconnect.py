@@ -17,8 +17,6 @@ class Config(Config):
 
 
 @service.hook("connect", priority=-10)
-def onconnect(client):
-    config = service.config_for(client.bot, client.name)
-
-    for command in config.commands:
-        client.rawmsg(*command)
+def onconnect(ctx):
+    for command in ctx.config.commands:
+        ctx.client.rawmsg(*command)

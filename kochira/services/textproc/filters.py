@@ -53,29 +53,26 @@ def fabulousify(s):
     return buf
 
 
-def run_filter(f, client, target, origin, text=None):
+def run_filter(f, ctx, text=None):
     if text is None:
-        if not client.backlogs.get(target, []):
+        if not ctx.client.backlogs.get(target, []):
             return
 
-        if len(client.backlogs[target]) < 2:
+        if len(ctx.client.backlogs[target]) < 2:
             return
 
-        _, text = client.backlogs[target][1]
+        _, text = ctx.client.backlogs[target][1]
 
     text = f(text)
 
-    client.message(target, "{origin}: {text}".format(
-        origin=origin,
-        text=text
-    ))
+    ctx.respond(text)
 
 
 def bind_filter(name, f, doc):
     @service.command(r"!{}(?: (?P<text>.+))?$".format(name))
     @service.command(r"{}(?: (?P<text>.+))?$".format(name), mention=True)
-    def benis(client, target, origin, text=None):
-        run_filter(f, client, target, origin, text)
+    def benis(ctx, text=None):
+        run_filter(f, ctx, text)
     benis.__doc__ = doc
 
 

@@ -115,7 +115,7 @@ def make_application(settings):
 
 
 @service.hook("services.net.webserver")
-def webserver_config(bot):
+def webserver_config(ctx):
     return {
         "name": "help",
         "title": "Help",
@@ -127,21 +127,16 @@ def webserver_config(bot):
 @service.command(r"!commands")
 @service.command(r"!help")
 @service.command(r"help(?: me)?!?$", mention=True)
-def help(client, target, origin):
+def help(ctx):
     """
     Help.
 
     Links the user to the web help service, if available.
     """
 
-    config = service.config_for(client.bot, client.name, target)
-
-    if "kochira.services.net.webserver" not in client.bot.services:
-        client.message(target, "{origin}: Help currently unavailable.".format(
-            origin=origin
-        ))
+    if "kochira.services.net.webserver" not in ctx.bot.services:
+        ctx.respond("Help currently unavailable.")
     else:
-        client.message(target, "{origin}: My help is available at {url}".format(
-            origin=origin,
-            url=config.url
+        ctx.respond("My help is available at {url}".format(
+            url=ctx.config.url
         ))

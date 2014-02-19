@@ -19,7 +19,7 @@ class Add(Model):
 
 @service.command("add", mention=True, allow_private=False)
 @service.command("!add", mention=False, allow_private=False)
-def add(client, target, origin):
+def add(ctx):
     """
     Add to the number.
 
@@ -32,7 +32,6 @@ def add(client, target, origin):
     a.number += 1
     a.save()
 
-    client.message(target, "{origin}: Thanks, the number has been increased to {number}.".format(
-        origin=origin,
+    ctx.respond("Thanks, the number has been increased to {number}.".format(
         number=a.number
     ))

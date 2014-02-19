@@ -72,30 +72,28 @@ def do_update(remote, branch):
 
 @service.command(r"(?:windows )?update(?:s)?!?$", mention=True, allow_private=True)
 @requires_permission("admin")
-def update(client, target, origin):
+def update(ctx):
     """
     Update.
 
     Update the bot by pulling from the latest Git master.
     """
 
-    config = service.config_for(client.bot)
-
-    client.message(target, "Checking for updates...")
+    ctx.respond("Checking for updates...")
 
     try:
         head = rev_parse("HEAD")
 
-        if not do_update(config.remote, config.branch):
-            client.message(target, "No updates.")
+        if not do_update(ctx.config.remote, ctx.config.branch):
+            ctx.respond("No updates.")
             return
 
         for line in get_log(head, "HEAD"):
-            client.message(target, line)
+            ctx.respond(line)
     except UpdateError as e:
-        client.message(target, "Update failed! " + str(e))
+        ctx.respond("Update failed! " + str(e))
     else:
-        client.message(target, "Update finished!")
+        ctx.respond("Update finished!")
 
 
 class PostReceiveHandler(RequestHandler):
@@ -138,10 +136,8 @@ def make_application(settings):
 
 
 @service.hook("services.net.webserver")
-def webserver_config(bot):
-    config = service.config_for(bot)
-
-    if config.post_receive_key is None:
+def webserver_config(ctx):
+    if ctx.config.post_receive_key is None:
         return None
 
     return {

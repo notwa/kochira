@@ -25,7 +25,7 @@ class Config(Config):
 @service.command(r"(?:compute|calculate|mathify) (?:for (?P<who>\S+))?(?P<query>.+)$", mention=True)
 @background
 @coroutine
-def compute(client, target, origin, query, who=None):
+def compute(ctx, query, who=None):
     """
     Compute.
 
@@ -33,25 +33,20 @@ def compute(client, target, origin, query, who=None):
     """
 
     if who is not None:
-        user_data = yield client.bot.defer_from_thread(UserData.lookup_default, client, who)
+        user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, who)
 
         if "location" not in user_data:
-            client.message(target, "{origin}: I don't have location information for {who}.".format(
-                origin=origin,
-                who=who
-            ))
+            ctx.respond("I don't have location information for {who}.".format(who=who))
             return
     else:
         try:
-            user_data = yield client.bot.defer_from_thread(UserData.lookup, client, origin)
+            user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
         except UserData.DoesNotExist:
             user_data = {}
 
-    config = service.config_for(client.bot)
-
     params = {
         "input": query,
-        "appid": config.appid,
+        "appid": ctx.config.appid,
         "format": "plaintext",
         "reinterpret": "true"
     }
@@ -66,13 +61,10 @@ def compute(client, target, origin, query, who=None):
     )
 
     tree = etree.parse(resp.raw)
-
     result_node = tree.xpath("/queryresult[@success='true']")
 
     if not result_node:
-        client.message(target, "{origin}: Couldn't compute that.".format(
-            origin=origin
-        ))
+        ctx.respond("Couldn't compute that.")
         return
 
     result_node, = result_node
@@ -86,7 +78,4 @@ def compute(client, target, origin, query, who=None):
         "\n".join(result_node.xpath("pod[@primary='true']/subpod[1]/plaintext/text()")).strip()
     ).replace("\n", "; ")
 
-    client.message(target, "{origin}: {out}".format(
-        origin=origin,
-        out=out
-    ))
+    ctx.respond("{out}".format(out=out))

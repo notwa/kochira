@@ -34,59 +34,48 @@ def geocode(address):
 @service.command(r"weather(?: (?:for|in) (?P<where>.+))?", mention=True)
 @background
 @coroutine
-def weather(client, target, origin, where=None):
+def weather(ctx, where=None):
     """
     Weather.
 
     Get the weather for a location.
     """
-    config = service.config_for(client.bot, client.name, target)
-
     if where is None:
         try:
-            user_data = yield client.bot.defer_from_thread(UserData.lookup, client, origin)
+            user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
         except UserData.DoesNotExist:
             user_data = {}
 
         if "location" not in user_data:
-            client.message(target, "{origin}: I don't have location data for you.".format(
-                origin=origin,
-            ))
+            ctx.respond("I don't have location data for you.")
             return
         location = user_data["location"]
     else:
-        user_data = yield client.bot.defer_from_thread(UserData.lookup_default, client, where)
+        user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, where)
         location = user_data.get("location")
 
         if location is None:
             geocoded = geocode(where)
 
             if not geocoded:
-                client.message(target, "{origin}: I don't know where \"{where}\" is.".format(
-                    origin=origin,
-                    where=where
-                ))
+                ctx.respond("I don't know where \"{where}\" is.".format(where=where))
                 return
 
             location = geocoded[0]["geometry"]["location"]
 
     r = requests.get("http://api.wunderground.com/api/{api_key}/conditions/q/{lat},{lng}.json".format(
-        api_key=config.api_key,
+        api_key=ctx.config.api_key,
         **location
     )).json()
 
     if "error" in r:
-        client.message(target, "{origin}: Sorry, there was an error: {type}: {description}".format(
-            origin=origin,
+        ctx.respond("Sorry, there was an error: {type}: {description}".format(
             **r["error"]
         ))
         return
 
     if "current_observation" not in r:
-        client.message(target, "{origin}: Couldn't find weather for \"{where}\".".format(
-            origin=origin,
-            where=where
-        ))
+        ctx.respond("Couldn't find weather for \"{where}\".".format(where=where))
         return
 
     observation = r["current_observation"]
@@ -108,8 +97,7 @@ def weather(client, target, origin, where=None):
     precip = observation["precip_today_" + _unitize("metric", "in")]
     weather = observation["weather"]
 
-    client.message(target, "{origin}: Today's weather for {place} is: {weather}, {temp}° {cf}{feelslike}, wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
-        origin=origin,
+    ctx.respond("Today's weather for {place} is: {weather}, {temp}° {cf}{feelslike}, wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation".format(
         place=place,
         weather=weather,
         feelslike=" (feels like {feelslike}° {cf})".format(feelslike=feelslike, cf=_unitize("C", "F"))

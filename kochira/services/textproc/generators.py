@@ -27,8 +27,8 @@ def run_generator(*args):
 def bind_generator(name, fn, doc):
     @service.command("pretend you're a {} programmer".format(re.escape(name)), mention=True)
     @service.command(":{}:".format(re.escape(name)))
-    def command(client, target, origin):
-        client.message(target, fn())
+    def command(ctx):
+        ctx.respond(fn())
     command.__doc__ = doc
 
 java = partial(run_generator,

@@ -27,7 +27,7 @@ class Ignore(Model):
 
 @service.command(r"(?:ignore|add ignore for) (?P<hostmask>\S+)$", mention=True)
 @requires_permission("ignore")
-def add_ignore(client, target, origin, hostmask):
+def add_ignore(ctx, hostmask):
     """
     Add ignore.
 
@@ -35,41 +35,38 @@ def add_ignore(client, target, origin, hostmask):
     """
 
     if Ignore.select().where(Ignore.hostmask == hostmask,
-                             Ignore.network == client.name).exists():
-        client.message(target, "{origin}: I'm already ignoring {hostmask}.".format(
-            origin=origin,
+                             Ignore.network == ctx.client.name).exists():
+        ctx.respond("I'm already ignoring {hostmask}.".format(
             hostmask=hostmask
         ))
         return
 
-    Ignore.create(hostmask=hostmask, network=client.name).save()
+    Ignore.create(hostmask=hostmask, network=ctx.client.name).save()
 
-    client.message(target, "{origin}: Okay, now ignoring everything from {hostmask}.".format(
-        origin=origin,
+    ctx.respond("Okay, now ignoring everything from {hostmask}.".format(
         hostmask=hostmask
     ))
 
 
 @service.command(r"(?:list )?ignores$", mention=True)
 @requires_permission("ignore")
-def list_ignores(client, target, origin):
+def list_ignores(ctx):
     """
     List ignores.
 
     List all ignores for the bot on the current network.
     """
 
-    client.message(target, "{origin}: Ignores for {network}: {ignores}".format(
-        origin=origin,
-        network=client.name,
+    ctx.respond("Ignores for {network}: {ignores}".format(
+        network=ctx.client.name,
         ignores=", ".join(ignore.hostmask for ignore in
-                          Ignore.select().where(Ignore.network == client.name))
+                          Ignore.select().where(Ignore.network == ctx.client.name))
     ))
 
 
 @service.command(r"(?:unignore|don't ignore|stop ignoring|remove ignore from) (?P<hostmask>\S+)$", mention=True, priority=3000)
 @requires_permission("ignore")
-def remove_ignore(client, target, origin, hostmask):
+def remove_ignore(ctx, hostmask):
     """
     Remove ignore.
 
@@ -78,27 +75,25 @@ def remove_ignore(client, target, origin, hostmask):
     """
 
     if Ignore.delete().where(Ignore.hostmask == hostmask,
-                             Ignore.network == client.name).execute() == 0:
-        client.message(target, "{origin}: I'm not ignoring {hostmask}.".format(
-            origin=origin,
+                             Ignore.network == ctx.client.name).execute() == 0:
+        ctx.respond("I'm not ignoring {hostmask}.".format(
             hostmask=hostmask
         ))
         return
 
-    client.message(target, "{origin}: Okay, stopped ignoring everything from {hostmask}.".format(
-        origin=origin,
+    ctx.respond("Okay, stopped ignoring everything from {hostmask}.".format(
         hostmask=hostmask
     ))
 
 
 @service.hook("channel_message", priority=2000)
-def ignore_message(client, target, origin, message):
+def ignore_message(ctx, target, origin, message):
     hostmask = "{nickname}!{username}@{hostname}".format(
         nickname=origin,
-        username=client.users[origin]["username"],
-        hostname=client.users[origin]["hostname"]
+        username=ctx.client.users[origin]["username"],
+        hostname=ctx.client.users[origin]["hostname"]
     )
 
     if Ignore.select().where(Expression(hostmask, "ilike", fn.replace(Ignore.hostmask, "*", "%")),
-                             Ignore.network == client.name).exists():
+                             Ignore.network == ctx.client.name).exists():
         return service.EAT

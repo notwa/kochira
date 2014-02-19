@@ -40,9 +40,7 @@ def learn(url, username, password, what):
 
 @service.hook("channel_message", priority=-9999)
 @background
-def do_reply(client, target, origin, message):
-    config = service.config_for(client.bot, client.name, target)
-
+def do_reply(ctx, target, origin, message):
     front, _, rest = message.partition(" ")
 
     mention = False
@@ -51,28 +49,28 @@ def do_reply(client, target, origin, message):
     if front.startswith('?'):
         reply = True
         message = front.lstrip('?') + ' ' + rest
-    elif front.strip(",:").lower() == client.nickname.lower():
+    elif front.strip(",:").lower() == ctx.client.nickname.lower():
         mention = True
         reply = True
         message = rest
-    elif random.random() < config.random_replyness:
+    elif random.random() < ctx.config.random_replyness:
         reply = True
 
     message = message.strip()
 
-    if re.search(r"\b{}\b".format(re.escape(client.nickname)), message, re.I) is not None:
+    if re.search(r"\b{}\b".format(re.escape(ctx.client.nickname)), message, re.I) is not None:
         reply = True
 
-    if reply and config.reply:
-        reply_message = reply_and_learn(config.url,
-                                        config.username,
-                                        config.password,
+    if reply and ctx.config.reply:
+        reply_message = reply_and_learn(ctx.config.url,
+                                        ctx.config.username,
+                                        ctx.config.password,
                                         message)
 
         if mention:
-            client.message(target, "{origin}: {message}".format(origin=origin, message=reply_message))
+            ctx.respond("{message}".format(message=reply_message))
         else:
-            client.message(target, reply_message)
+            ctx.message(reply_message)
     elif message:
-        learn(config.url, config.username, config.password, message)
+        learn(ctx.config.url, ctx.config.username, ctx.config.password, message)
 

@@ -36,7 +36,7 @@ def is_regex(what):
 @service.command(r"don't reply to (?P<what>.+)$", mention=True)
 @service.command(r"remove reply (?:to|for) (?P<what>.+)$", mention=True)
 @requires_permission("reply")
-def remove_reply(client, target, origin, what):
+def remove_reply(ctx, what):
     """
     Remove reply.
 
@@ -44,22 +44,20 @@ def remove_reply(client, target, origin, what):
     """
 
     if not Reply.select().where(Reply.what == what).exists():
-        client.message(target, "{origin}: I'm not replying to \"{what}\".".format(
-            origin=origin,
+        ctx.respond("I'm not replying to \"{what}\".".format(
             what=what
         ))
         return
 
     Reply.delete().where(Reply.what == what).execute()
 
-    client.message(target, "{origin}: Okay, I won't reply to {what} anymore.".format(
-        origin=origin,
+    ctx.respond("Okay, I won't reply to {what} anymore.".format(
         what=what if is_regex(what) else "\"" + what + "\""
     ))
 
 
 @service.hook("channel_message")
-def do_reply(client, target, origin, message):
+def do_reply(ctx, target, origin, message):
     replies = []
 
     for reply in Reply.select():
@@ -73,12 +71,12 @@ def do_reply(client, target, origin, message):
     if not replies:
         return
 
-    client.message(target, random.choice(replies))
+    ctx.message(random.choice(replies))
 
 
 @service.command(r"reply to (?P<what>.+?) with (?P<reply>.+)$", mention=True)
 @requires_permission("reply")
-def add_reply(client, target, origin, what, reply):
+def add_reply(ctx, what, reply):
     """
     Add reply.
 
@@ -87,31 +85,28 @@ def add_reply(client, target, origin, what, reply):
     """
 
     if Reply.select().where(Reply.what == what).exists():
-        client.message(target, "{origin}: I'm already replying to {what}.".format(
-            origin=origin,
+        ctx.respond("I'm already replying to {what}.".format(
             what=what if is_regex(what) else "\"" + what + "\""
         ))
         return
 
     Reply.create(what=what, reply=reply).save()
 
-    client.message(target, "{origin}: Okay, I'll reply to {what}.".format(
-        origin=origin,
+    ctx.respond("Okay, I'll reply to {what}.".format(
         what=what if is_regex(what) else "\"" + what + "\""
     ))
 
 
 @service.command(r"what do you reply to\??$", mention=True)
 @service.command(r"replies\??$", mention=True)
-def list_replies(client, target, origin):
+def list_replies(ctx):
     """
     List replies.
 
     List all replies the bot has registered.
     """
 
-    client.message(target, "{origin}: I reply to the following: {replies}".format(
-        origin=origin,
+    ctx.respond("I reply to the following: {replies}".format(
         replies=", ".join(reply.what if is_regex(reply.what) else "\"" + reply.what + "\""
                           for reply in Reply.select().order_by(Reply.what))
     ))

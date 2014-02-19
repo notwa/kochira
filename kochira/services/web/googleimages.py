@@ -14,7 +14,7 @@ service = Service(__name__, __doc__)
 @service.command(r"!image (?P<term>.+?)(?: (?P<num>\d+))?$")
 @service.command(r"image(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
-def image(client, target, origin, term, num: int=None):
+def image(ctx, term, num: int=None):
     """
     Google.
 
@@ -34,10 +34,7 @@ def image(client, target, origin, term, num: int=None):
     results = r.get("responseData", {}).get("results", [])
 
     if not results:
-        client.message(target, "{origin}: Couldn't find anything matching \"{term}\".".format(
-            origin=origin,
-            term=term
-        ))
+        ctx.respond("Couldn't find anything matching \"{term}\".".format(term=term))
         return
 
     if num is None:
@@ -47,14 +44,10 @@ def image(client, target, origin, term, num: int=None):
     total = len(results)
 
     if num >= total or num < 0:
-        client.message(target, "{origin}: Can't find anything matching \"{term}\".".format(
-            origin=origin,
-            term=term
-        ))
+        ctx.respond("Can't find anything matching \"{term}\".".format(term=term))
         return
 
-    client.message(target, "{origin}: {url} ({num} of {total})".format(
-        origin=origin,
+    ctx.respond("{url} ({num} of {total})".format(
         url=results[num]["unescapedUrl"],
         num=num + 1,
         total=total
