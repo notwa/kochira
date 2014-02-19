@@ -47,10 +47,8 @@ class MainHandler(RequestHandler):
 
     def _run_request(self, name, url):
         application = self._get_application_factory(name)(self.settings)
-
         application.name = name
         application.bot = self.application.bot
-        application.config = self.application.config
 
         uri = self.request.uri[len(name) + 1:]
 
@@ -78,8 +76,10 @@ class MainHandler(RequestHandler):
 
 class IndexHandler(RequestHandler):
     def get(self):
+        config = service.config_for(self.application.bot)
+
         self.render("index.html",
-                    motd=publish_parts(self.application.config.motd, writer_name="html", settings_overrides={"initial_header_level": 2})["fragment"],
+                    motd=publish_parts(config.motd, writer_name="html", settings_overrides={"initial_header_level": 2})["fragment"],
                     clients=sorted(self.application.bot.clients.items()))
 
 class NotFoundHandler(RequestHandler):
@@ -90,13 +90,17 @@ class NotFoundHandler(RequestHandler):
 
 class TitleModule(UIModule):
     def render(self):
+        config = service.config_for(self.handler.application.bot)
+
         return self.render_string("_modules/title.html",
-                                  title=self.handler.application.config.title)
+                                  title=config.title)
 
 class NavBarModule(UIModule):
     def render(self):
+        config = service.config_for(self.handler.application.bot)
+
         return self.render_string("_modules/navbar.html",
-                                  title=self.handler.application.config.title,
+                                  title=config.title,
                                   name=self.handler.application.name,
                                   confs=_get_application_confs(self.handler.application.bot))
 
@@ -163,7 +167,6 @@ def setup_webserver(ctx):
         }
     )
     ctx.storage.application.bot = ctx.bot
-    ctx.storage.application.config = ctx.config
     ctx.storage.application.name = None
 
     @ctx.bot.event_loop.schedule
