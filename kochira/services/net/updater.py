@@ -116,7 +116,7 @@ class PostReceiveHandler(RequestHandler):
                         continue
 
                     for line in get_log(head, "HEAD"):
-                        client.notice(channel, ctx._("Update! {line}").format(
+                        client.notice(channel, self.application.ctx._("Update! {line}").format(
                             line=line
                         ))
 
