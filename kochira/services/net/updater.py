@@ -99,7 +99,7 @@ def update(ctx):
 class PostReceiveHandler(RequestHandler):
     @asynchronous
     def post(self):
-        if self.get_query_argument("key") != self.application.config.post_receive_key:
+        if self.get_query_argument("key") != self.application.ctx.config.post_receive_key:
             raise HTTPError(403)
 
         def _callback(future):
