@@ -247,7 +247,7 @@ def on_part(ctx, target, origin, message=None):
 
 @service.hook("topic_change", priority=5000)
 def on_topic_change(ctx, target, message, by):
-    update_seen(ctx.client, "topic", by, target, message)
+    update_seen(ctx.client, "topic_change", by, target, message)
 
 
 @service.hook("quit", priority=5000)
