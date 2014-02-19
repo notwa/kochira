@@ -77,16 +77,16 @@ def compute(client, target, origin, query, who=None):
 
     result_node, = result_node
 
-    inp = " ".join(result_node.xpath("pod[@id='Input']/subpod[1]/plaintext/text()")).strip()
-
-    primary = re.sub(
+    out = re.sub(
         r"(?<!\\)\\:([0-9a-fA-F]{4})",
         lambda x: chr(int(x.group(1), 16)),
+
+        "\n".join(result_node.xpath("pod[@id='Input']/subpod[1]/plaintext/text()")).strip() +
+        "=" +
         "\n".join(result_node.xpath("pod[@primary='true']/subpod[1]/plaintext/text()")).strip()
     ).replace("\n", "; ")
 
-    client.message(target, "{origin}: {inp} = {primary}".format(
+    client.message(target, "{origin}: {out}".format(
         origin=origin,
-        inp=inp,
-        primary=primary
+        out=out
     ))
