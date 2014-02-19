@@ -212,7 +212,7 @@ def find_quote(ctx, query):
 
     Full-text search for a given quote.
     """
-    quotes = list(_find_quotes(ctx.bot, query))
+    quotes = list(_find_quotes(ctx.bot.storage, query))
 
     if not quotes:
         ctx.respond(ctx._("Couldn't find any quotes."))
