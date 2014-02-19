@@ -82,7 +82,7 @@ def compute(client, target, origin, query, who=None):
         lambda x: chr(int(x.group(1), 16)),
 
         "\n".join(result_node.xpath("pod[@id='Input']/subpod[1]/plaintext/text()")).strip() +
-        "=" +
+        " = " +
         "\n".join(result_node.xpath("pod[@primary='true']/subpod[1]/plaintext/text()")).strip()
     ).replace("\n", "; ")
 
