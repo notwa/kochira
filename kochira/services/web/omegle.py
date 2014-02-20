@@ -305,8 +305,22 @@ def cycle(ctx):
 
     Closes the chat then reopens it.
     """
-    disconnect(ctx)
-    connect(ctx)
+    yield disconnect(ctx)
+    yield connect(ctx)
+
+
+@service.command("!omegle names")
+def names(ctx):
+    """
+    List connected clients.
+
+    Shows all connected Omegle clients.
+    """
+    k = (ctx.client.name, ctx.target)
+
+    ctx.respond(ctx._("The following users are connected: {users}").format(
+        users=", ",join(c.id for c in ctx.storage.connections.get(k, set([])))
+    ))
 
 
 @service.hook("channel_message")
