@@ -44,16 +44,25 @@ class Connection:
         self.id = None
 
     @coroutine
-    def _raw_request(self, endpoint, **params):
-        resp = yield self.http_client.fetch(HTTPRequest(
-            "http://" + self.host + "/" + endpoint,
-            method="POST",
-            headers={
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body=urlencode(params)
-        ))
-        return resp.body.decode("utf-8")
+    def _raw_request(self, endpoint, method="POST", **params):
+        if method == "GET":
+            req = HTTPRequest(
+                "http://" + self.host + "/" + endpoint + "?" + urlencode(params),
+                method="GET"
+            )
+        elif method == "POST":
+            req = HTTPRequest(
+                "http://" + self.host + "/" + endpoint,
+                method="POST",
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body=urlencode(params)
+            )
+        else:
+            raise ValueError("unknown method")
+
+        return (yield self.http_client.fetch(req)).body.decode("utf-8")
 
     def _request(self, endpoint, **params):
         if self.id is None:
@@ -63,7 +72,7 @@ class Connection:
 
     @coroutine
     def connect(self):
-        self.id = json.loads((yield self._raw_request("start", rcs=1, spid="")))
+        self.id = json.loads((yield self._raw_request("start", method="GET", rcs=1, spid="")))
 
     @coroutine
     def send(self, msg):
