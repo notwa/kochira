@@ -110,7 +110,7 @@ class PostReceiveHandler(RequestHandler):
 
             for client_name, client in self.application.ctx.bot.clients.items():
                 for channel in client.channels:
-                    c_ctx = HookContext(service, self.application.ctx.bot, client.name, channel)
+                    c_ctx = HookContext(service, self.application.ctx.bot, client, channel)
 
                     if not c_ctx.config.announce:
                         continue
