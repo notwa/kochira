@@ -118,7 +118,7 @@ class UserData(collections.MutableMapping):
         if account is None:
             raise cls.DoesNotExist
 
-        return cls(client.bot, client.network, account)
+        return cls(client.bot, client.network, client.normalize(account))
 
     @classmethod
     @coroutine
@@ -126,7 +126,7 @@ class UserData(collections.MutableMapping):
         try:
             r = yield cls.lookup(client, nickname)
         except cls.DoesNotExist:
-            return cls(client.bot, client.network, nickname)
+            return cls(client.bot, client.network, client.normalize(nickname))
         else:
             return r
 
