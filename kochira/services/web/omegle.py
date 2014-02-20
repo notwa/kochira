@@ -154,7 +154,7 @@ class IRCBoundConnection(Connection):
 
     @coroutine
     def on_message(self, message):
-        self.ctx.message(self.ctx._("[Omegle] {id}: {message}").format(
+        self.ctx.message(self.ctx._("\x02[Omegle] {id}:\x02 {message}").format(
             id=self.id,
             message=message
         ))
@@ -176,7 +176,7 @@ class IRCBoundConnection(Connection):
 
         if k in self.ctx.storage.connections:
             self.ctx.storage.connections[k].remove(self)
-            self.ctx.message(self.ctx._("[Omegle] {id} asked for reCAPTCHA, but I don't want to process this.").format(
+            self.ctx.message(self.ctx._("\x02[Omegle] {id}\x02 asked for reCAPTCHA, but I don't want to process this.").format(
                 id=self.id
             ))
 
@@ -190,7 +190,7 @@ class IRCBoundConnection(Connection):
 
         if k in self.ctx.storage.connections:
             self.ctx.storage.connections[k].remove(self)
-            self.ctx.message(self.ctx._("[Omegle] {id} disconnected.").format(
+            self.ctx.message(self.ctx._("\x02[Omegle] {id}\x02 disconnected.").format(
                 id=self.id
             ))
 
@@ -212,7 +212,13 @@ def close_connections(ctx):
 
         yield parallel(*futs)
 
-    _coro()
+    fut = _coro()
+    @fut.add_done_callback
+    def _callback(future):
+        exc = future.exception()
+        if exc is not None:
+            service.logger.error("Omegle unload error",
+                                 exc_info=(exc.__class__, exc, exc.__traceback__))
 
 
 @service.command("!omegle connect")
@@ -229,7 +235,7 @@ def connect(ctx):
 
     conn = IRCBoundConnection(ctx, host)
     yield conn.connect()
-    ctx.respond(ctx._("Connected to {id} via {host}.").format(
+    ctx.respond(ctx._("Connected to \x02{id}\x02 via {host}.").format(
         id=conn.id,
         host=conn.host
     ))
