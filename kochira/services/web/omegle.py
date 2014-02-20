@@ -137,6 +137,10 @@ class Connection:
         yield self.on_message(body)
 
     @coroutine
+    def on_raw_antinudeBanned(self):
+        yield self.on_banned()
+
+    @coroutine
     def on_raw_connected(self):
         yield self.on_connect()
 
@@ -191,6 +195,19 @@ class IRCBoundConnection(Connection):
         if k in self.ctx.storage.connections:
             self.ctx.storage.connections[k].remove(self)
             self.ctx.message(self.ctx._("\x02[Omegle] {id}\x02 asked for reCAPTCHA, but I don't want to process this.").format(
+                id=self.id
+            ))
+
+            yield self.on_disconnect()
+            self.id = None
+
+    @coroutine
+    def on_banned(self, challenge):
+        k = (self.ctx.client.name, self.ctx.target)
+
+        if k in self.ctx.storage.connections:
+            self.ctx.storage.connections[k].remove(self)
+            self.ctx.message(self.ctx._("\x02[Omegle] {id}\x02 responded with ban message. You're banned, doofus.").format(
                 id=self.id
             ))
 
