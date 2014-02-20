@@ -26,8 +26,16 @@ HEADERS = {
 def handle_html(resp):
     soup = BeautifulSoup(resp.content)
 
+    title = None
+
+    if soup.title is not None:
+        title = re.sub(r"\s+", " ", soup.title.string.strip())
+
+    if not title:
+        title = "(no title)"
+
     return "\x02Web Page Title:\x02 {title}".format(
-        title=re.sub(r"\s+", " ", soup.title.string.strip()) or "(no title)"
+        title=title
     )
 
 
