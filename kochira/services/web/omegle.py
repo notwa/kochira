@@ -289,7 +289,7 @@ def disconnect(ctx):
 
     del ctx.storage.connections[k]
 
-@service.command("!omegle disconnect")
+@service.command("!omegle cycle")
 @coroutine
 def cycle(ctx):
     """
