@@ -202,7 +202,7 @@ class IRCBoundConnection(Connection):
     def on_disconnect(self):
         k = (self.ctx.client.name, self.ctx.target)
 
-        if k in self.ctx.storage.connections and self in self.ctx.storage.connections:
+        if k in self.ctx.storage.connections and self in self.ctx.storage.connections[k]:
             self.ctx.storage.connections[k].remove(self)
             self.ctx.message(self.ctx._("\x02[Omegle] {id}\x02 disconnected.").format(
                 id=self.id
