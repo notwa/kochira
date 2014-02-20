@@ -31,6 +31,8 @@ class Config(Config):
                                   "front7.omegle.com",
                                   "front8.omegle.com",
                                   "front9.omegle.com"])
+    ignore_prefix = config.Field(doc="Ignore all messages starting with a prefix.",
+                                 default=",")
 
 
 class OmegleError(Exception):
@@ -291,6 +293,9 @@ def disconnect(ctx):
 @service.hook("channel_message")
 @coroutine
 def relay_irc(ctx, target, origin, message):
+    if message[0] == ctx.config.ignore_prefix:
+        return
+
     k = (ctx.client.name, ctx.target)
     futs = []
 
