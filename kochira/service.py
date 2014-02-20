@@ -324,9 +324,19 @@ def background(f):
     @coroutine
     def _inner(ctx, *args, **kwargs):
         result = yield ctx.bot.executor.submit(f, ctx, *args, **kwargs)
-        if isinstance(result, Future):
-            result = yield result
-        return result
+
+        @coroutine
+        def _cont():
+            nonlocal result
+
+            if isinstance(result, Future):
+                result = yield result
+            return result
+
+        # If we yielded the future from another thread (i.e. an executor
+        # thread), we do this song and dance to force it back into the main
+        # thread.
+        return (yield ctx.bot.defer_from_thread(_cont))
 
     return _inner
 
