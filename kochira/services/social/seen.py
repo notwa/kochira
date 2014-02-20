@@ -283,6 +283,6 @@ def seen(ctx, who):
 
         ctx.respond(ctx._("I last saw {who} {when}, {what}.").format(
             who=who,
-            what=seen.format(show_channel),
+            what=seen.format(ctx, show_channel),
             when=humanize.naturaltime(datetime.utcnow() - seen.ts)
         ))
