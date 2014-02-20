@@ -6,10 +6,8 @@ Look up and reverse look up addresses.
 
 import requests
 
-from pydle.async import coroutine
-
 from kochira import config
-from kochira.service import Service, background, Config
+from kochira.service import Service, background, Config, coroutine
 from kochira.userdata import UserData
 
 service = Service(__name__, __doc__)

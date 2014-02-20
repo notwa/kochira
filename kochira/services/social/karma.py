@@ -6,10 +6,8 @@ Enables users to grant each other karma.
 
 from datetime import datetime, timedelta
 
-from pydle.async import coroutine
-
 from kochira import config
-from kochira.service import Service, Config
+from kochira.service import Service, Config, coroutine
 from kochira.userdata import UserData
 
 service = Service(__name__, __doc__)

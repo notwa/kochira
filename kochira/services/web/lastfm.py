@@ -11,11 +11,9 @@ import humanize
 from datetime import datetime
 from lxml import etree
 
-from pydle.async import coroutine
-
 from kochira import config
 from kochira.userdata import UserData
-from kochira.service import Service, background, Config
+from kochira.service import Service, background, Config, coroutine
 
 service = Service(__name__, __doc__)
 

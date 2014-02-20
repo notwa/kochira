@@ -4,9 +4,7 @@ Personal profiles.
 This service allows the bot to keep track of people's profiles.
 """
 
-from pydle.async import coroutine
-
-from kochira.service import Service
+from kochira.service import Service, coroutine
 from kochira.userdata import UserData
 
 service = Service(__name__, __doc__)
