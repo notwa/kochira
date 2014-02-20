@@ -103,7 +103,7 @@ class Connection:
             if (yield self._request("disconnect")) != "win":
                 raise OmegleError
         finally:
-            self.on_disconnect()
+            yield self.on_disconnect()
             self.id = None
 
     @coroutine
@@ -194,9 +194,8 @@ class IRCBoundConnection(Connection):
                 id=self.id
             ))
 
-            # unset ID first, disconnect later
+            yield self.on_disconnect()
             self.id = None
-            self.disconnect()
 
     @coroutine
     def on_disconnect(self):
@@ -235,14 +234,8 @@ def close_connections(ctx):
                                  exc_info=(exc.__class__, exc, exc.__traceback__))
 
 
-@service.command("!omegle connect")
 @coroutine
-def connect(ctx):
-    """
-    Connect to Omegle.
-
-    Establish an Omegle connection.
-    """
+def _make_connection(ctx):
     k = (ctx.client.name, ctx.target)
 
     host = random.choice(ctx.config.hosts)
@@ -255,6 +248,20 @@ def connect(ctx):
     ))
 
     ctx.storage.connections.setdefault(k, set([])).add(conn)
+
+    return conn
+
+
+@service.command("!omegle connect")
+@coroutine
+def connect(ctx):
+    """
+    Connect to Omegle.
+
+    Establish an Omegle connection.
+    """
+
+    conn = yield _make_connection(ctx)
 
     fut = conn.poll()
 
@@ -289,16 +296,18 @@ def disconnect(ctx):
 
     del ctx.storage.connections[k]
 
+
 @service.command("!omegle cycle")
 @coroutine
 def cycle(ctx):
     """
     Cycle the chat.
-    
+
     Closes the chat then reopens it.
     """
     disconnect(ctx)
     connect(ctx)
+
 
 @service.hook("channel_message")
 @coroutine
