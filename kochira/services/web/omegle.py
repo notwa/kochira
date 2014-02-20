@@ -293,7 +293,9 @@ def disconnect(ctx):
 @coroutine
 def cycle(ctx):
     """
-    Cycle the chat
+    Cycle the chat.
+    
+    Closes the chat then reopens it.
     """
     disconnect(ctx)
     connect(ctx)
