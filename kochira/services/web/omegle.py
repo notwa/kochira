@@ -137,8 +137,8 @@ class Connection:
         yield self.on_message(body)
 
     @coroutine
-    def on_raw_antinudeBanned(self):
-        yield self.on_banned()
+    def on_raw_antinudeBanned(self, body):
+        yield self.on_banned(body)
 
     @coroutine
     def on_raw_connected(self):
@@ -202,12 +202,13 @@ class IRCBoundConnection(Connection):
             self.id = None
 
     @coroutine
-    def on_banned(self, challenge):
+    def on_banned(self, message):
         k = (self.ctx.client.name, self.ctx.target)
 
         if k in self.ctx.storage.connections:
             self.ctx.storage.connections[k].remove(self)
-            self.ctx.message(self.ctx._("\x02[Omegle] {id}\x02 responded with ban message. You're banned, doofus.").format(
+            self.ctx.message(self.ctx._("\x02[Omegle] {id}\x02 responded with ban message \"{message}\". You're banned, doofus.").format(
+                message=message,
                 id=self.id
             ))
 
