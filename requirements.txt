@@ -1,4 +1,4 @@
-pydle
+git+https://github.com/Shizmob/pydle
 peewee
 pyyaml
 requests
@@ -13,5 +13,5 @@ pure-sasl
 docutils
 tornado
 pathlib
-pyenchant
+git+https://github.com/rfk/pyenchant
 textblob
