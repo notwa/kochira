@@ -62,31 +62,11 @@ class Client(_Client):
                             eventloop=self.bot.event_loop,
                             **kwargs)
         except (OSError, IOError) as e:
-            backoff = Client.RECONNECT_BACKOFF[min(
-                attempt,
-                len(Client.RECONNECT_BACKOFF) - 1
-            )]
-
-            logger.warning("Couldn't connect: %s, reattempting in %d seconds: %s",
-                            self.name, backoff, e)
-
-            self._reconnect_timeout = self.bot.event_loop.io_loop.add_timeout(
-                timedelta(seconds=backoff),
-                lambda: self.connect(*args, reconnect=reconnect,
-                                     attempt=attempt + 1, **kwargs)
-            )
+            self.on_disconnect(False)
 
     def on_disconnect(self, expected):
-        self._reset_attributes()
-
-        if self._reconnect_timeout is not None:
-            self.bot.event_loop.io_loop.remove_timeout(self._reconnect_timeout)
-            self._reconnect_timeout = None
-
+        super().on_disconnect(expected)
         self._run_hooks("disconnect", None, None, [expected])
-
-        if not expected:
-            self.connect(reconnect=True)
 
     def _send_message(self, message):
         self.bot.defer_from_thread(super()._send_message, message)
