@@ -218,6 +218,11 @@ def close_connections(ctx):
 @service.command("!omegle connect")
 @coroutine
 def connect(ctx):
+    """
+    Connect to Omegle.
+
+    Establish an Omegle connection.
+    """
     k = (ctx.client.name, ctx.target)
 
     host = random.choice(ctx.config.hosts)
@@ -244,6 +249,11 @@ def connect(ctx):
 @service.command("!omegle disconnect")
 @coroutine
 def disconnect(ctx):
+    """
+    Disconnect from Omegle.
+
+    Sever all Omegle connections.
+    """
     k = (ctx.client.name, ctx.target)
 
     if k not in ctx.storage.connections:
