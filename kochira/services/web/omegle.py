@@ -206,7 +206,7 @@ def close_connections(ctx):
     def _coro():
         futs = []
 
-        for _, connections in ctx.storage.connections.values():
+        for connections in ctx.storage.connections.values():
             for conn in connections:
                 futs.append(conn.disconnect())
 
