@@ -111,8 +111,12 @@ class Connection:
         while self.id is not None:
             try:
                 yield self._poll_once()
-            except HTTPError:
-                pass
+            except HTTPError as e:
+                if e.code == 599:
+                    continue
+
+                yield self.on_disconnect()
+                self.id = None
 
     @coroutine
     def _poll_once(self):
