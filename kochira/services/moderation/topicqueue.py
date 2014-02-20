@@ -39,4 +39,4 @@ def topic(ctx, topic):
     while len(ctx.config.topic_separator.join(parts).encode("utf-8")) > ctx.client._topic_length_limit:
         parts.pop()
 
-    ctx.client.topic(ctx.target, ctx.config.topic_separator.join(parts))
+    ctx.client.set_topic(ctx.target, ctx.config.topic_separator.join(parts))
