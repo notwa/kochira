@@ -112,7 +112,7 @@ class Connection:
             try:
                 yield self._poll_once()
             except HTTPError:
-                yield self.on_disconnect()
+                pass
 
     @coroutine
     def _poll_once(self):
