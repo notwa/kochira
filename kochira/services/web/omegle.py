@@ -319,7 +319,7 @@ def names(ctx):
     k = (ctx.client.name, ctx.target)
 
     ctx.respond(ctx._("The following users are connected: {users}").format(
-        users=", ",join(c.id for c in ctx.storage.connections.get(k, set([])))
+        users=", ".join(c.id for c in ctx.storage.connections.get(k, set([])))
     ))
 
 
