@@ -151,7 +151,10 @@ class Client(_Client):
                     continue
 
                 try:
-                    r = yield self.bot.defer_from_thread(hook, ctx, *args, **kwargs)
+                    if getattr(hook, "background", False):
+                        r = yield self.bot.defer_from_thread(hook, ctx, *args, **kwargs)
+                    else:
+                        r = hook(ctx, *args, **kwargs)
 
                     if isinstance(r, Future):
                         r = yield r
