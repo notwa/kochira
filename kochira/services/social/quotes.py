@@ -219,7 +219,7 @@ def find_quote(ctx, query):
     elif len(quotes) == 1:
         ctx.respond(ctx._("Quote {id}: {text}").format(
             id=quotes[0].id,
-            text=quotes[0].text
+            text=quotes[0].quote
         ))
     else:
         qids = [quote.id for quote in quotes]
