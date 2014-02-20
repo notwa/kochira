@@ -99,6 +99,25 @@ sepples = partial(run_generator,
                            )
                   )
 
+python = partial(run_generator,
+                 WrapWith(RandomInt(4, 8),
+                          PickFrom(1, [
+                              "(lambda x: self._(x))({})",
+                              "[{} for _ in range(5)]",
+                              "reduce(lambda x: self._(x), [{} for _ in range(5)])",
+                              "(self.__dict__ for _ in range(5) if {0} == self.garlpy() else _)",
+                              "partial(name.replace, {})",
+                              "\", \".join({})"
+                          ]),
+                          PickFrom(1, [
+                              "x if self.test() else y",
+                              "\" \".join(range(1, 30))",
+                              "{'rfw': 'loser', 'Shiz': 'winner'}"
+                          ])
+                          )
+                 )
+
+
 csharp = partial(run_generator,
                PickFrom(1, [
                     "UI",
@@ -174,3 +193,11 @@ C++ programmer simulator.
 
 Generates typical C++ code.
 """)
+
+bind_generator("python", python,
+"""
+Python programmer simulator.
+
+Generates typical Python code.
+""")
+
