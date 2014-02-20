@@ -123,8 +123,8 @@ class PostReceiveHandler(RequestHandler):
         head = rev_parse("HEAD")
 
         self.application.ctx.bot.executor.submit(do_update,
-                                                 config.remote,
-                                                 config.branch) \
+                                                 self.application.ctx.config.remote,
+                                                 self.application.ctx.config.branch) \
             .add_done_callback(_callback)
 
 
