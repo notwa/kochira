@@ -200,6 +200,21 @@ def initialize_contexts(ctx):
     ctx.storage.connections = {}
 
 
+@service.shutdown
+def close_connections(ctx):
+    @coroutine
+    def _coro():
+        futs = []
+
+        for _, connections in ctx.storage.connections.values():
+            for conn in connections:
+                futs.append(conn.disconnect())
+
+        yield parallel(*futs)
+
+    _coro()
+
+
 @service.command("!omegle connect")
 @coroutine
 def connect(ctx):
