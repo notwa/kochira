@@ -150,28 +150,28 @@ def add_reminder(ctx, who, message):
 
 @service.hook("channel_message")
 def play_reminder_on_message(ctx, target, origin, message):
-    play_reminder(ctx.client, ctx.target, ctx.origin)
+    play_reminder(ctx, ctx.target, ctx.origin)
 
 
 @service.hook("join")
 def play_reminder_on_join(ctx, channel, user):
-    play_reminder(ctx.client, channel, user)
+    play_reminder(ctx, channel, user)
 
 
-def play_reminder(client, target, origin):
+def play_reminder(ctx, target, origin):
     now = datetime.utcnow()
-    origin = client.normalize(origin)
+    origin = ctx.client.normalize(origin)
 
     for reminder in Reminder.select().where(Reminder.who_n == origin,
                                             Reminder.channel == target,
-                                            Reminder.client_name == client.name,
+                                            Reminder.client_name == ctx.client.name,
                                             Reminder.duration >> None) \
         .order_by(Reminder.ts.asc()):
 
         # TODO: display time
         dt = now - reminder.ts
 
-        client.message(target, ctx._("{who}, {origin} wanted you to know: {message}").format(
+        ctx.message(ctx._("{who}, {origin} wanted you to know: {message}").format(
             who=reminder.who,
             origin=reminder.origin,
             message=reminder.message
@@ -179,5 +179,5 @@ def play_reminder(client, target, origin):
 
     Reminder.delete().where(Reminder.who_n == origin,
                             Reminder.channel == target,
-                            Reminder.client_name == client.name,
+                            Reminder.client_name == ctx.client.name,
                             Reminder.duration >> None).execute()
