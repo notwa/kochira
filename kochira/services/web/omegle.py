@@ -289,6 +289,14 @@ def disconnect(ctx):
 
     del ctx.storage.connections[k]
 
+@service.command("!omegle disconnect")
+@coroutine
+def cycle(ctx):
+    """
+    Cycle the chat
+    """
+    disconnect(ctx)
+    connect(ctx)
 
 @service.hook("channel_message")
 @coroutine
