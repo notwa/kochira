@@ -14,7 +14,7 @@ from urllib.parse import urlencode
 from kochira import config
 from kochira.service import Service, Config, coroutine
 
-from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest, HTTPError
 
 service = Service(__name__, __doc__)
 
@@ -107,7 +107,10 @@ class Connection:
     @coroutine
     def poll(self):
         while self.id is not None:
-            yield self._poll_once()
+            try:
+                yield self._poll_once()
+            except HTTPError:
+                yield self.on_disconnect()
 
     @coroutine
     def _poll_once(self):
@@ -292,6 +295,11 @@ def relay_irc(ctx, target, origin, message):
     futs = []
 
     for conn in ctx.storage.connections.get(k, set([])):
-        futs.append(conn.send(message))
+        @coroutine
+        def _coro():
+            yield conn.typing()
+            yield conn.send(message)
+
+        futs.append(_coro())
 
     yield parallel(*futs)
