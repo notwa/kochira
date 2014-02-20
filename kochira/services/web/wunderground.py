@@ -95,7 +95,7 @@ def weather(ctx, where=None):
     precip = observation["precip_today_" + _unitize("metric", "in")]
     weather = observation["weather"]
 
-    ctx.respond(ctx._("Today's weather for {place} is: {weather}, {temp}° {cf} (feels like {feelslike}° {cf}), wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation").format(
+    ctx.respond(ctx._("Today's weather for {place} is: {weather}, {temp} °{cf} (feels like {feelslike} °{cf}), wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip} {mmin} precipitation").format(
         place=place,
         weather=weather,
         feelslike=feelslike,
