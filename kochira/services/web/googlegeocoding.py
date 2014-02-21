@@ -61,7 +61,7 @@ def get_location(ctx, place):
     if who is not None:
         fmt = ctx._("{who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).")
     else:
-        fmt = ctx._("Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.10}).")
+        fmt = ctx._("Found \"{place}\" at {formatted_address} ({lat:.10}, {<lng: class="1"></lng:>0}).")
     ctx.respond(fmt.format(
         who=who,
         place=place,
@@ -71,6 +71,7 @@ def get_location(ctx, place):
     ))
 
 
+@service.command(r"i live (?:in|at) (?P<place>.+)", mention=True)
 @service.command(r"my location is (?P<place>.+)", mention=True)
 @background
 @coroutine
