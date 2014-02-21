@@ -18,14 +18,28 @@ class Config(Config):
     api_key = config.Field(doc="Google API key.")
 
 
-def geocode(address):
-    return requests.get(
+@service.provides("GeocodingError")
+class GeocodingError(Exception):
+    pass
+
+
+@service.provides("geocode")
+def geocode(ctx, address):
+    resp = requests.get(
         "https://maps.googleapis.com/maps/api/geocode/json",
         params={
             "address": address,
             "sensor": "false"
         }
-    ).json().get("results", [])
+    ).json()
+
+    if resp["status"] == "ZERO_RESULTS":
+        return []
+
+    if resp["status"] == "OK":
+        return resp["results"]
+
+    raise GeocodingError(resp["status"])
 
 
 @service.command(r"where is (?P<place>.+)\??", mention=True)
@@ -50,7 +64,7 @@ def get_location(ctx, place):
         ))
         return
 
-    results = geocode(place)
+    results = ctx.provider_for("geocode")(place)
 
     if not results:
         ctx.respond(ctx._("I don't know where \"{place}\" is.") .format(place=place))
@@ -88,7 +102,7 @@ def set_location(ctx, place):
         ctx.respond(ctx._("You need to be authenticated to set your location."))
         return
 
-    results = geocode(place)
+    results = ctx.provider_for("geocode")(place)
     if not results:
         ctx.respond(ctx._("I don't know where \"{place}\" is.").format(place=place))
         return
@@ -131,7 +145,7 @@ def nearby_search(ctx, what, place=None, radius : int=None, num : int=None):
             ctx.respond(ctx._("I don't know where you are."))
             return
     else:
-        results = geocode(place)
+        results = ctx.provider_for("geocode")(place)
 
         if not results:
             ctx.respond(ctx._("I don't know where \"{place}\" is.").format(place=place))

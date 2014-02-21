@@ -18,16 +18,6 @@ class Config(Config):
     api_key = config.Field(doc="Weather Underground API key.")
 
 
-def geocode(address):
-    return requests.get(
-        "https://maps.googleapis.com/maps/api/geocode/json",
-        params={
-            "address": address,
-            "sensor": "false"
-        }
-    ).json().get("results", [])
-
-
 @service.command(r"!weather(?: (?P<where>.+))?")
 @service.command(r"weather(?: (?:for|in) (?P<where>.+))?", mention=True)
 @background
@@ -38,6 +28,7 @@ def weather(ctx, where=None):
 
     Get the weather for a location.
     """
+
     if where is None:
         try:
             user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
@@ -53,6 +44,12 @@ def weather(ctx, where=None):
         location = user_data.get("location")
 
         if location is None:
+            try:
+                geocode = ctx.provider_for("geocode")
+            except KeyError:
+                ctx.respond(ctx._("Sorry, I don't have a geocode provider loaded."))
+                return
+
             geocoded = geocode(where)
 
             if not geocoded:

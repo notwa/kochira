@@ -71,6 +71,13 @@ class HookContext:
     def remove_context(self, context):
         self.service.remove_context(self.client, context, self.target)
 
+    def provider_for(self, name):
+        for bound in self.bot.services.values():
+            if name in bound.service.providers:
+                return functools.partial(bound.service.providers[name], self)
+
+        raise KeyError(name)
+
     @property
     def locale(self):
         locale = self.bot.config.core.locale
@@ -121,6 +128,7 @@ class Service:
         self.config_factory = Config
         self.on_setup = None
         self.on_shutdown = None
+        self.providers = {}
         self.logger = logging.getLogger(self.name)
 
     def hook(self, hook, priority=0):
@@ -261,6 +269,15 @@ class Service:
         """
         self.on_shutdown = f
         return f
+
+    def provides(self, name):
+        """
+        Register a provider function to expose to other services.
+        """
+        def _decorator(f):
+            self.providers[name] = f
+            return f
+        return _decorator
 
     def _autocreate_models(self):
         for model in self.models:
