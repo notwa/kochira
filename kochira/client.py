@@ -62,6 +62,7 @@ class Client(_Client):
                             eventloop=self.bot.event_loop,
                             **kwargs)
         except (OSError, IOError) as e:
+            self._reset_attributes()
             self.on_disconnect(False)
 
     def on_disconnect(self, expected):
