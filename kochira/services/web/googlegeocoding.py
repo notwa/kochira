@@ -106,11 +106,11 @@ def set_location(ctx, place):
     ctx.respond(ctx._("Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).").format(**location))
 
 
-@service.command(r"find (?P<what>.+?) near (?:me|(?P<place>.+))", mention=True)
-@service.command(r"find (?P<what>.+?) within (?P<radius>\d+) ?m of (?:me|(?P<place>.+))", mention=True)
+@service.command(r"find (?P<what>.+?) near (?:me|(?P<place>.+))(?: \((?P<num>\d+)\))?", mention=True)
+@service.command(r"find (?P<what>.+?) within (?P<radius>\d+) ?m of (?:me|(?P<place>.+))(?: \((?P<num>\d+)\))?", mention=True)
 @background
 @coroutine
-def nearby_search(ctx, what, place=None, radius : int=None):
+def nearby_search(ctx, what, place=None, radius : int=None, num : int=None):
     """
     Nearby search.
 
@@ -150,6 +150,10 @@ def nearby_search(ctx, what, place=None, radius : int=None):
         }
     ).json()
 
+    if resp["status"] == "ZERO_RESULTS":
+        ctx.respond(ctx._("Couldn't find anything."))
+        return
+
     if resp["status"] != "OK":
         ctx.respond(ctx._("Received an error code: {status}").format(
             status=resp["status"]
@@ -158,13 +162,23 @@ def nearby_search(ctx, what, place=None, radius : int=None):
 
     results = resp["results"]
 
-    if not results:
-        ctx.respond(ctx._("Couldn't find anything."))
+    if num is None:
+        num = 1
+
+    # offset definition
+    num -= 1
+    total = len(results)
+
+    result = results[num]
+
+    if num >= total or num < 0:
+        ctx.respond(ctx._("Can't find that location of \"{place}\".").format(place=place))
         return
 
-    result = results[0]
-    ctx.respond(ctx._("{name}, {vicinity} ({types})").format(
+    ctx.respond(ctx._("{name}, {vicinity} ({types}) ({num} of {total})").format(
         name=result["name"],
         vicinity=result["vicinity"],
-        types=", ".join(result["types"])
+        types=", ".join(result["types"]),
+        num=num + 1,
+        total=total
     ))
