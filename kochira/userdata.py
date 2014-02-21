@@ -112,7 +112,7 @@ class UserData(collections.MutableMapping):
         if whois.get("identified", False):
             account = nickname
 
-        if "account" in whois:
+        if "account" in whois and whois["account"] is not None:
             account = whois["account"]
 
         if account is None:
