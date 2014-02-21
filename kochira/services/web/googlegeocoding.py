@@ -145,13 +145,17 @@ def nearby_search(ctx, what, place=None, radius : int=None, num : int=None):
             ctx.respond(ctx._("I don't know where you are."))
             return
     else:
-        results = ctx.provider_for("geocode")(place)
+        user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, place)
+        location = user_data.get("location")
 
-        if not results:
-            ctx.respond(ctx._("I don't know where \"{place}\" is.").format(place=place))
-            return
+        if location is None:
+            results = ctx.provider_for("geocode")(place)
 
-        location = results[0]["geometry"]["location"]
+            if not results:
+                ctx.respond(ctx._("I don't know where \"{where}\" is.").format(where=place))
+                return
+
+            location = results[0]["geometry"]["location"]
 
     resp = requests.get(
         "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
