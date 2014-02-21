@@ -151,7 +151,9 @@ def nearby_search(ctx, what, place=None, radius : int=None):
     ).json()
 
     if resp["status"] != "OK":
-        ctx.respond(ctx._("Received an error code: {status}").format(resp["status"]))
+        ctx.respond(ctx._("Received an error code: {status}").format(
+            status=resp["status"]
+        ))
         return
 
     results = resp["results"]
