@@ -74,6 +74,7 @@ class RequestHandler(RequestHandler):
     def render(self, name, **kwargs):
         return super().render(name,
                               rst=rst,
+                              trim_docstring=trim_docstring,
                               get_long_doc=get_long_doc,
                               get_short_doc=get_short_doc,
                               **kwargs)

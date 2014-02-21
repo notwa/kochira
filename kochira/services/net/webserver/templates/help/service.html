@@ -42,5 +42,22 @@
 {% end %}
 </div>
 
+<div class="section" id="providers">
+<h2>Providers</h2>
+{% import inspect %}
+{% import types %}
+{% import functools %}
+{% if service.providers %}
+{% for name, provider in service.providers.items() %}
+<h3><tt>{{name}}{{str(inspect.signature(functools.partial(provider, None))) \
+                  if isinstance(provider, types.FunctionType) \
+                  else ""}}</tt></h3>
+{% raw rst(trim_docstring(provider.__doc__ or "(no documentation)"),
+           settings_overrides={"initial_header_level": 4}) %}
+{% end %}
+{% else %}
+<p>None.</p>
+{% end %}
+</div>
 
 {% end %}

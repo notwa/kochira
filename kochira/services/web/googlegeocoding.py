@@ -20,11 +20,17 @@ class Config(Config):
 
 @service.provides("GeocodingError")
 class GeocodingError(Exception):
+    """
+    An exception thrown when geocoding fails.
+    """
     pass
 
 
 @service.provides("geocode")
 def geocode(ctx, address):
+    """
+    Geocode an address.
+    """
     resp = requests.get(
         "https://maps.googleapis.com/maps/api/geocode/json",
         params={
