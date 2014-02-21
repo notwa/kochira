@@ -142,7 +142,7 @@ def nearby_search(ctx, what, place=None, radius : int=None):
     results = requests.get(
         "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
         params={
-            "key": config.api_key,
+            "key": ctx.config.api_key,
             "radius": radius,
             "sensor": "false",
             "location": "{lat:.10},{lng:.10}".format(**location),
