@@ -139,7 +139,7 @@ def nearby_search(ctx, what, place=None, radius : int=None):
 
         location = results[0]["geometry"]["location"]
 
-    results = requests.get(
+    resp = requests.get(
         "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
         params={
             "key": ctx.config.api_key,
@@ -148,7 +148,13 @@ def nearby_search(ctx, what, place=None, radius : int=None):
             "location": "{lat:.10},{lng:.10}".format(**location),
             "keyword": what
         }
-    ).json().get("results", [])
+    ).json()
+
+    if resp["status"] != "OK":
+        ctx.respond(ctx._("Received an error code: {status}").format(resp["status"]))
+        return
+
+    results = resp["results"]
 
     if not results:
         ctx.respond(ctx._("Couldn't find anything."))
