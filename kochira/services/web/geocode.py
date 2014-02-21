@@ -61,7 +61,7 @@ def get_location(ctx, place):
     if who is not None:
         fmt = ctx._("{who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).")
     else:
-        fmt = ctx._("Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.110}).")
+        fmt = ctx._("Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.10}).")
     ctx.respond(fmt.format(
         who=who,
         place=place,
