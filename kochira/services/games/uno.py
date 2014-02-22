@@ -257,7 +257,7 @@ def show_card_irc(card):
     }.get(rank, str(rank)) + "\x03"
 
 
-def show_scores(game):
+def show_scores(ctx, game):
     return ", ".join(ctx._("{player} ({num} cards)").format(player=k, num=len(v))
                      for k, v in game.scores())
 
@@ -587,7 +587,7 @@ def show_hand(ctx):
         ctx.respond(ctx._("You're not in this game."))
         return
 
-    ctx.message(ctx._("Standings: {scores}").format(scores=show_scores(game)))
+    ctx.message(ctx._("Standings: {scores}").format(scores=show_scores(ctx, game)))
 
 
 @service.command(r"!leave")
