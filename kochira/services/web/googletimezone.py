@@ -1,5 +1,5 @@
 """
-Google Time Zone.
+Google time zone.
 
 Get time zone information for places.
 """

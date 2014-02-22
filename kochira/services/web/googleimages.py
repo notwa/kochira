@@ -1,7 +1,7 @@
 """
-Google Image search.
+Google image search.
 
-Find image results
+Find image results.
 """
 
 import requests
