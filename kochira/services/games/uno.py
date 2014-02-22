@@ -539,7 +539,7 @@ def pass_(ctx):
     suffix = ""
 
     if must_draw > 0:
-        ctx.client.notice(ctx.origin, ctx._("[{target}] Uno: You drew: {card}").format(
+        ctx.client.notice(ctx.origin, ctx._("[{target}] Uno: You drew: {cards}").format(
             target=ctx.target,
             cards=" ".join(show_card_irc(card)
                            for card in game.players[ctx.origin][-must_draw:])))
