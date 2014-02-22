@@ -282,7 +282,7 @@ def do_game_over(ctx, prefix=""):
     game = ctx.storage.games[ctx.client.name, ctx.target]
 
     ctx.message(prefix + ctx._("Game over! Final results: {results}").format(
-        results=show_scores(game)
+        results=show_scores(ctx, game)
     ))
     del ctx.storage.games[ctx.client.name, ctx.target]
     ctx.remove_context("uno")
