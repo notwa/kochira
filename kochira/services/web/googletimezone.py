@@ -17,6 +17,7 @@ service = Service(__name__, __doc__)
 
 @service.command(r"!time(?: (?P<where>.+))?")
 @service.command(r"time(?: (?:for|in) (?P<where>.+))?", mention=True)
+@service.command(r"when is (?P<where>.+))?", mention=True)
 @background
 @coroutine
 def timezone(ctx, where=None):
