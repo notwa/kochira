@@ -46,8 +46,8 @@ class ServiceConfigLoader(collections.Mapping):
     def __getitem__(self, name):
         config_factory = self._config_factory_for(name)
 
-        # if we can't find the service name immediately, try removing its name
-        # from the list
+        # if we can't find the service name immediately, try removing
+        # services.__name__ from the start
         if name.startswith(services.__name__) and name not in self.configs:
             name = name[len(services.__name__):]
 
@@ -264,8 +264,9 @@ class Bot:
         """
         Unload a service from the bot.
         """
-        # if we can't find the service name immediately, try removing its name
-        # from the list
+
+        # if we can't find the service name immediately, try removing
+        # services.__name__ from the start
         if name[0] == "." and name not in self.services:
             name = services.__name__ + name
 
