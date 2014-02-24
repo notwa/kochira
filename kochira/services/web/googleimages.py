@@ -16,7 +16,7 @@ service = Service(__name__, __doc__)
 @background
 def image(ctx, term, num: int=None):
     """
-    Google.
+    Image search.
 
     Search for the given terms on Google. If a number is given, it will display
     that result.

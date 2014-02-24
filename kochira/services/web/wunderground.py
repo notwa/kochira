@@ -1,7 +1,7 @@
 """
 Weather Underground forecast.
 
-Get weather data from Weather Underground
+Get weather data from Weather Underground.
 """
 
 import requests
