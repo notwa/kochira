@@ -37,7 +37,6 @@ def _update_currencies(app_id, storage):
 
         if "BTC" in storage.names:
             storage.names["XBT"] = storage.names["BTC"]
-            del storage.names["BTC"]
 
     if storage.last_update + 60 * 60 <= now:
         req = requests.get(
@@ -54,7 +53,6 @@ def _update_currencies(app_id, storage):
 
         if "BTC" in storage.rates:
             storage.rates["XBT"] = storage.rates["BTC"]
-            del storage.rates["BTC"]
 
 
 @service.command(r"!convert (?P<amount>\d+(?:\.\d*)?)(?: ?(?P<from_currency>\S+))?(?: (?P<to_currency>\S+))?")
