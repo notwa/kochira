@@ -23,20 +23,17 @@ class Config(Config):
 @service.setup
 def initialize_storage(ctx):
     ctx.storage.last_update = 0
-
-
-def _currency_name(letter):
-    if letter  == "BTC":
-        return "Bitcoin"
-
-    try:
-        return pycountry.currencies.get(letter=letter).name
-    except KeyError:
-        return "unknown"
+    ctx.storage.names = None
 
 
 def _update_currencies(app_id, storage):
     now = time.time()
+
+    if storage.names is None:
+        req = requests.get("http://openexchangerates.org/api/currencies.json")
+        req.raise_for_status()
+
+        storage.names = req.json()
 
     if storage.last_update + 60 * 60 <= now:
         req = requests.get(
@@ -113,9 +110,9 @@ def convert(ctx, amount: float, from_currency=None, to_currency=None):
     ctx.respond(ctx._("{amount:.4f} {from_currency} ({from_currency_name}) = {converted:.4f} {to_currency} ({to_currency_name})").format(
         amount=amount,
         from_currency=from_currency,
-        from_currency_name=_currency_name(from_currency),
+        from_currency_name=storage.names[from_currency],
         converted=converted,
         to_currency=to_currency,
-        to_currency_name=_currency_name(to_currency)
+        to_currency_name=storage.names[to_currency]
     ))
 
