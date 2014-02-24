@@ -110,9 +110,9 @@ def convert(ctx, amount: float, from_currency=None, to_currency=None):
     ctx.respond(ctx._("{amount:.4f} {from_currency} ({from_currency_name}) = {converted:.4f} {to_currency} ({to_currency_name})").format(
         amount=amount,
         from_currency=from_currency,
-        from_currency_name=storage.names[from_currency],
+        from_currency_name=ctx.storage.names[from_currency],
         converted=converted,
         to_currency=to_currency,
-        to_currency_name=storage.names[to_currency]
+        to_currency_name=ctx.storage.names[to_currency]
     ))
 
