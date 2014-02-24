@@ -126,7 +126,7 @@ def set_location(ctx, place):
     ctx.respond(ctx._("Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).").format(**location))
 
 
-@service.command(r"find (?P<what>.+?) near (?:me|(?P<place>.+?))(?: \((?P<num>\d+)\))?", mention=True)
+@service.command(r"find (?P<what>.+?) (?:near|in) (?:me|(?P<place>.+?))(?: \((?P<num>\d+)\))?", mention=True)
 @service.command(r"find (?P<what>.+?) within (?P<radius>\d+) ?m of (?:me|(?P<place>.+?))(?: \((?P<num>\d+)\))?", mention=True)
 @background
 @coroutine
@@ -202,7 +202,7 @@ def nearby_search(ctx, what, place=None, radius : int=None, num : int=None):
     ctx.respond(ctx._("{name}, {vicinity} ({types}) ({num} of {total})").format(
         name=result["name"],
         vicinity=result["vicinity"],
-        types=", ".join(result["types"]),
+        types=", ".join(t.replace("_", " ") for t in result["types"]),
         num=num + 1,
         total=total
     ))
