@@ -35,6 +35,10 @@ def _update_currencies(app_id, storage):
 
         storage.names = req.json()
 
+        if "BTC" in storage.names:
+            storage.names["XBT"] = storage.names["BTC"]
+            del storage.names["BTC"]
+
     if storage.last_update + 60 * 60 <= now:
         req = requests.get(
             "https://openexchangerates.org/api/latest.json",
@@ -47,6 +51,10 @@ def _update_currencies(app_id, storage):
 
         storage.rates = req.json()["rates"]
         storage.last_update = now
+
+        if "BTC" in storage.rates:
+            storage.rates["XBT"] = storage.rates["BTC"]
+            del storage.rates["BTC"]
 
 
 @service.command(r"!convert (?P<amount>\d+(?:\.\d*)?)(?: ?(?P<from_currency>\S+))?(?: (?P<to_currency>\S+))?")
@@ -93,8 +101,8 @@ def convert(ctx, amount: float, from_currency=None, to_currency=None):
         if to_currency is None:
             to_currency = currency.letter
 
-    from_currency = from_currency.upper().replace("XBT", "BTC")
-    to_currency = to_currency.upper().replace("XBT", "BTC")
+    from_currency = from_currency.upper()
+    to_currency = to_currency.upper()
 
     for currency in [from_currency, to_currency]:
         if currency not in ctx.storage.rates:
