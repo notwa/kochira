@@ -96,12 +96,12 @@ def convert(ctx, amount: float, from_currency=None, to_currency=None):
             return
 
     try:
-        from_currency_name = pycountry.currencies.get(letter=from_currency_name).name
+        from_currency_name = pycountry.currencies.get(letter=from_currency).name
     except KeyError:
         from_currency_name = "unknown"
 
     try:
-        to_currency_name = pycountry.currencies.get(letter=to_currency_name).name
+        to_currency_name = pycountry.currencies.get(letter=to_currency).name
     except KeyError:
         to_currency_name = "unknown"
 
