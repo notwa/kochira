@@ -30,33 +30,23 @@ def weather(ctx, where=None):
     """
 
     if where is None:
-        try:
-            user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
-        except UserData.DoesNotExist:
-            user_data = {}
+        where = ctx.origin
 
-        if "location" not in user_data:
-            ctx.respond(ctx._("I don't have location data for you."))
-            return
-        location = user_data["location"]
-    else:
-        user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, where)
-        location = user_data.get("location")
+    try:
+        geocode = ctx.provider_for("geocode")
+    except KeyError:
+        ctx.respond(ctx._("Sorry, I don't have a geocode provider loaded."))
+        return
 
-        if location is None:
-            try:
-                geocode = ctx.provider_for("geocode")
-            except KeyError:
-                ctx.respond(ctx._("Sorry, I don't have a geocode provider loaded."))
-                return
+    results = yield geocode(where)
 
-            geocoded = geocode(where)
+    if not results:
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=where
+        ))
+        return
 
-            if not geocoded:
-                ctx.respond(ctx._("I don't know where \"{where}\" is.").format(where=where))
-                return
-
-            location = geocoded[0]["geometry"]["location"]
+    location = results[0]["geometry"]["location"]
 
     r = requests.get("http://api.wunderground.com/api/{api_key}/conditions/q/{lat},{lng}.json".format(
         api_key=ctx.config.api_key,
@@ -70,7 +60,9 @@ def weather(ctx, where=None):
         return
 
     if "current_observation" not in r:
-        ctx.respond(ctx._("Couldn't find weather for \"{where}\".").format(where=where))
+        ctx.respond(ctx._("Couldn't find weather for \"{where}\".").format(
+            where=where
+        ))
         return
 
     observation = r["current_observation"]

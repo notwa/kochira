@@ -23,18 +23,13 @@ class GeocodingError(Exception):
     """
     An exception thrown when geocoding fails.
     """
-    pass
 
 
-@service.provides("geocode")
-def geocode(ctx, address):
-    """
-    Geocode an address.
-    """
+def _geocode(where):
     resp = requests.get(
         "https://maps.googleapis.com/maps/api/geocode/json",
         params={
-            "address": address,
+            "address": where,
             "sensor": "false"
         }
     ).json()
@@ -42,60 +37,66 @@ def geocode(ctx, address):
     if resp["status"] == "ZERO_RESULTS":
         return []
 
-    if resp["status"] == "OK":
-        return resp["results"]
+    if resp["status"] != "OK":
+        raise GeocodingError(resp["status"])
 
-    raise GeocodingError(resp["status"])
+    return resp["results"]
 
 
-@service.command(r"where is (?P<place>.+)\??", mention=True)
+@service.provides("geocode")
+@coroutine
+def geocode(ctx, where):
+    """
+    Geocode an address.
+    """
+    location = None
+
+    user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, where)
+    location = user_data.get("location")
+
+    if where is None and location is None:
+        return []
+    elif location is not None:
+        result = _geocode("{lat},{lng}".format(**location))[0]
+        result["formatted_address"] = location["formatted_address"]
+        return [result]
+    else:
+        return _geocode(where)
+
+
+@service.command(r"where is (?P<where>.+)\??", mention=True)
 @background
 @coroutine
-def get_location(ctx, place):
+def get_location(ctx, where):
     """
     Get location.
 
     Get a location using geocoding.
     """
 
-    who = None
-    user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, place)
-
-    if "location" in user_data:
-        location = user_data["location"]
-
-        ctx.respond(ctx._("{who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).").format(
-            who=place,
-            **location
-        ))
-        return
-
-    results = ctx.provider_for("geocode")(place)
+    results = yield ctx.provider_for("geocode")(where)
 
     if not results:
-        ctx.respond(ctx._("I don't know where \"{place}\" is.") .format(place=place))
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=where
+        ))
         return
 
     result = results[0]
 
-    if who is not None:
-        fmt = ctx._("{who} set their location to {formatted_address} ({lat:.10}, {lng:.10}).")
-    else:
-        fmt = ctx._("Found \"{place}\" at {formatted_address} ({lat:.10}, {lng:.10}).")
-    ctx.respond(fmt.format(
-        who=who,
-        place=place,
+    ctx.respond(ctx._("Found \"{where}\" at {formatted_address} ({lat:.10}, {lng:.10}).").format(
+        where=where,
         formatted_address=result["formatted_address"],
         lat=float(result["geometry"]["location"]["lat"]),
         lng=float(result["geometry"]["location"]["lng"])
     ))
 
 
-@service.command(r"i live (?:in|at) (?P<place>.+)", mention=True)
-@service.command(r"my location is (?P<place>.+)", mention=True)
+@service.command(r"i live (?:in|at) (?P<where>.+)", mention=True)
+@service.command(r"my location is (?P<where>.+)", mention=True)
 @background
 @coroutine
-def set_location(ctx, place):
+def set_location(ctx, where):
     """
     Set location.
 
@@ -105,15 +106,19 @@ def set_location(ctx, place):
     try:
         user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
     except UserData.DoesNotExist:
-        ctx.respond(ctx._("You need to be authenticated to set your location."))
+        ctx.respond(ctx._("You need to be logged into NickServ to set your location."))
         return
 
-    results = ctx.provider_for("geocode")(place)
+    results = yield ctx.provider_for("geocode")(where)
+
     if not results:
-        ctx.respond(ctx._("I don't know where \"{place}\" is.").format(place=place))
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=where
+        ))
         return
 
     result = results[0]
+
     location = {
         "lat": float(result["geometry"]["location"]["lat"]),
         "lng": float(result["geometry"]["location"]["lng"]),
@@ -126,42 +131,32 @@ def set_location(ctx, place):
     ctx.respond(ctx._("Okay, set your location to {formatted_address} ({lat:.10}, {lng:.10}).").format(**location))
 
 
-@service.command(r"find (?P<what>.+?) (?:near|in) (?:me|(?P<place>.+?))(?: \((?P<num>\d+)\))?", mention=True)
-@service.command(r"find (?P<what>.+?) within (?P<radius>\d+) ?m of (?:me|(?P<place>.+?))(?: \((?P<num>\d+)\))?", mention=True)
+@service.command(r"find (?P<what>.+?) (?:near|in) (?:me|(?P<where>.+?))(?: \((?P<num>\d+)\))?", mention=True)
+@service.command(r"find (?P<what>.+?) within (?P<radius>\d+) ?m of (?:me|(?P<where>.+?))(?: \((?P<num>\d+)\))?", mention=True)
 @background
 @coroutine
-def nearby_search(ctx, what, place=None, radius : int=None, num : int=None):
+def nearby_search(ctx, what, where=None, radius : int=None, num : int=None):
     """
     Nearby search.
 
     Search for interesting places in an area.
     """
+
+    if where is None:
+        where = ctx.origin
+
     if radius is None:
         radius = 1000
 
-    if place is None:
-        try:
-            user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
-        except UserData.DoesNotExist:
-            location = None
-        else:
-            location = user_data.get("location", None)
+    results = yield ctx.provider_for("geocode")(where)
 
-        if location is None:
-            ctx.respond(ctx._("I don't know where you are."))
-            return
-    else:
-        user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, place)
-        location = user_data.get("location")
+    if not results:
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=where
+        ))
+        return
 
-        if location is None:
-            results = ctx.provider_for("geocode")(place)
-
-            if not results:
-                ctx.respond(ctx._("I don't know where \"{where}\" is.").format(where=place))
-                return
-
-            location = results[0]["geometry"]["location"]
+    location = results[0]["geometry"]["location"]
 
     resp = requests.get(
         "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
@@ -196,7 +191,7 @@ def nearby_search(ctx, what, place=None, radius : int=None, num : int=None):
     result = results[num]
 
     if num >= total or num < 0:
-        ctx.respond(ctx._("Can't find that location of \"{place}\".").format(place=place))
+        ctx.respond(ctx._("Can't find that location of \"{where}\".").format(where=where))
         return
 
     ctx.respond(ctx._("{name}, {vicinity} ({types}) ({num} of {total})").format(

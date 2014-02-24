@@ -8,14 +8,10 @@ from pydle.async import coroutine
 
 class JSONField(peewee.TextField):
     def db_value(self, value):
-        if value:
-            value = json.dumps(value)
-        return value
+        return json.dumps(value)
 
     def python_value(self, value):
-        if value:
-            value = json.loads(value)
-        return value
+        return json.loads(value)
 
 
 class UserDataKVPair(Model):

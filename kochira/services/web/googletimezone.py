@@ -28,37 +28,26 @@ def timezone(ctx, where=None):
     """
 
     if where is None:
-        try:
-            user_data = yield ctx.bot.defer_from_thread(UserData.lookup, ctx.client, ctx.origin)
-        except UserData.DoesNotExist:
-            user_data = {}
+        where = ctx.origin
 
-        if "location" not in user_data:
-            ctx.respond(ctx._("I don't have location data for you."))
-            return
-        location = user_data["location"]
-        formatted_address = location["formatted_address"]
-    else:
-        user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, where)
-        location = user_data.get("location")
+    try:
+        geocode = ctx.provider_for("geocode")
+    except KeyError:
+        ctx.respond(ctx._("Sorry, I don't have a geocode provider loaded."))
+        return
 
-        if location is not None:
-            formatted_address = location["formatted_address"]
-        else:
-            try:
-                geocode = ctx.provider_for("geocode")
-            except KeyError:
-                ctx.respond(ctx._("Sorry, I don't have a geocode provider loaded."))
-                return
+    results = yield geocode(where)
 
-            geocoded = geocode(where)
+    if not results:
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=where
+        ))
+        return
 
-            if not geocoded:
-                ctx.respond(ctx._("I don't know where \"{where}\" is.").format(where=where))
-                return
+    result = results[0]
 
-            location = geocoded[0]["geometry"]["location"]
-            formatted_address = geocoded[0]["formatted_address"]
+    location = result["geometry"]["location"]
+    formatted_address = result["formatted_address"]
 
     now = time.time()
 
