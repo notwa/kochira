@@ -6,7 +6,6 @@ Use Google Translate to perform translations between languages.
 
 import requests
 import pycountry
-from urllib.parse import urlencode
 
 from kochira.service import Service, background
 
@@ -23,14 +22,17 @@ for language in pycountry.languages.objects:
 
 
 def perform_translation(term, sl, tl):
-    return requests.get("http://translate.google.com/translate_a/t?" + urlencode({
-        "client": "p",
-        "sl": sl,
-        "tl": tl,
-        "text": term,
-        "ie": "UTF-8",
-        "oe": "UTF-8"
-    })).json()
+    return requests.get(
+        "http://translate.google.com/translate_a/t",
+        params={
+            "client": "p",
+            "sl": sl,
+            "tl": tl,
+            "text": term,
+            "ie": "UTF-8",
+            "oe": "UTF-8"
+        }
+    ).json()
 
 
 @service.command(r"(?:transliterate|romanize) (?P<term>.+?)(?: from (?P<from_lang>.+?))?$", mention=True)
