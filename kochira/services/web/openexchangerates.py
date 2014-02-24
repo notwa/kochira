@@ -87,9 +87,13 @@ def convert(ctx, amount: float, from_currency=None, to_currency=None):
         result = (yield geocode(ctx.origin))[0]
 
         currency = ccy.countryccy(
-            alpha2=[component["short_name"] for component in result["address_components"]
-                    if "country" in component["types"]][0]
+            [component["short_name"] for component in result["address_components"]
+             if "country" in component["types"]][0]
         )
+
+        if currency is None:
+            ctx.respond(ctx._("I don't know the currency for your location."))
+            return
 
         if from_currency is None:
             from_currency = currency
