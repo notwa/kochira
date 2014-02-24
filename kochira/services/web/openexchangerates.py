@@ -95,15 +95,27 @@ def convert(ctx, amount: float, from_currency=None, to_currency=None):
             ))
             return
 
+    try:
+        from_currency_name = pycountry.currencies.get(letter=from_currency_name).name
+    except KeyError:
+        from_currency_name = "unknown"
+
+    try:
+        to_currency_name = pycountry.currencies.get(letter=to_currency_name).name
+    except KeyError:
+        to_currency_name = "unknown"
+
     den = ctx.storage.rates[from_currency]
     num = ctx.storage.rates[to_currency]
 
     converted = amount * num / den
 
-    ctx.respond(ctx._("{amount:.4f} {from_currency} = {converted:.4f} {to_currency}").format(
+    ctx.respond(ctx._("{amount:.4f} {from_currency} ({from_currency_name}) = {converted:.4f} {to_currency} ({to_currency_name})").format(
         amount=amount,
         from_currency=from_currency,
+        from_currency_name=from_currency_name,
         converted=converted,
-        to_currency=to_currency
+        to_currency=to_currency,
+        to_currency_name=to_currency_name
     ))
 
