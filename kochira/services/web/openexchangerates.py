@@ -49,6 +49,7 @@ def _update_currencies(app_id, storage):
         storage.last_update = now
 
 
+@service.command(r"!convert (?P<amount>\d+(?:\.\d*)?)(?: ?(?P<from_currency>\S+))?(?: (?P<to_currency>\S+))?")
 @service.command(r"convert (?P<amount>\d+(?:\.\d*)?)(?: ?(?P<from_currency>\S+))?(?: to (?P<to_currency>\S+))?", mention=True)
 @background
 @coroutine
