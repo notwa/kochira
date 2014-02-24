@@ -5,7 +5,7 @@ Convert between currencies using Open Exchange Rates.
 """
 
 import requests
-import pycountry
+import ccy
 import time
 
 from kochira import config
@@ -81,23 +81,21 @@ def convert(ctx, amount: float, from_currency=None, to_currency=None):
         user_data = yield ctx.bot.defer_from_thread(UserData.lookup_default, ctx.client, ctx.origin)
 
         if "location" not in user_data:
-            ctx.respond(ctx._("You don't have location data set."))
+            ctx.respond(ctx._("You don't have location data set, so I can't guess what currency you want."))
             return
 
         result = (yield geocode(ctx.origin))[0]
 
-        country = pycountry.countries.get(
+        currency = ccy.countryccy(
             alpha2=[component["short_name"] for component in result["address_components"]
                     if "country" in component["types"]][0]
         )
 
-        currency = pycountry.currencies.get(numeric=country.numeric)
-
         if from_currency is None:
-            from_currency = currency.letter
+            from_currency = currency
 
         if to_currency is None:
-            to_currency = currency.letter
+            to_currency = currency
 
     from_currency = from_currency.upper()
     to_currency = to_currency.upper()
