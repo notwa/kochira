@@ -21,6 +21,7 @@ def choose(ctx, options):
     """
 
     options = options.split(" or ")
+    options.sort()
 
     ctx.respond(ctx._("I choose: {choice}").format(
         choice=options[(binascii.crc32(" or ".join(options).lower().encode("utf-8")) +
