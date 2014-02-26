@@ -196,13 +196,14 @@ class Service:
 
                 # check if we're either being mentioned or being PMed
                 if mention and origin != target:
-                    first, _, rest = message.partition(" ")
-                    first = first.rstrip(",:")
+                    match = re.match(r"{}\W+(?P<rest>.+)".format(
+                        re.escape(ctx.client.nickname)
+                    ), message, re.IGNORECASE)
 
-                    if first.lower() != ctx.client.nickname.lower():
+                    if match is None:
                         return
 
-                    message = rest
+                    message = match.group("rest")
 
                 match = pat.match(message)
                 if match is None:
