@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Client(_Client):
     RECONNECT_MAX_ATTEMPTS = None
+    context_factory = HookContext
 
     def __init__(self, bot, name, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -126,7 +127,7 @@ class Client(_Client):
                 kwargs = {}
 
             for hook in self.bot.get_hooks(name):
-                ctx = HookContext(hook.service, self.bot, self, target, origin)
+                ctx = self.context_factory(hook.service, self.bot, self, target, origin)
 
                 if not ctx.config.enabled:
                     continue

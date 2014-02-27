@@ -7,12 +7,16 @@ Allow the outputs of commands to be piped into each other.
 import types
 import re
 from kochira.client import Client
-from kochira.service import Service, coroutine
+from kochira.service import Service, coroutine, HookContext
 
 service = Service(__name__, __doc__)
 
 
 class BufferedClient(Client):
+    class context_factory(HookContext):
+        def respond(self, message):
+            self.message(message)
+
     def __init__(self, client):
         self.__dict__.update(client.__dict__)
         self.buffer = []
