@@ -18,8 +18,6 @@ class BufferedClient(Client):
         self.buffer = []
 
     def message(self, target, message):
-        if message.startswith("\r\n: "):
-            message = message[4:]
         self.buffer.append(message)
 
 
@@ -86,9 +84,7 @@ def run_pipe(ctx, commands):
         else:
             message += " " + acc
 
-        # \r\n is not allowed in the IRC protocol inside a message body, so we
-        # use it as the prefix to strip off ctx.respond headers.
-        yield c._run_hooks("channel_message", ctx.target, "\r\n",
+        yield c._run_hooks("channel_message", ctx.target, ctx.origin,
                            [ctx.target, ctx.origin, message])
         acc = "\n".join(c.buffer)
 
