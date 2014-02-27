@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class Client(_Client):
-    RECONNECT_BACKOFF = [0, 5, 10, 20, 40, 80, 120]
+    RECONNECT_MAX_ATTEMPTS = None
 
     def __init__(self, bot, name, *args, **kwargs):
         super().__init__(*args, **kwargs)
