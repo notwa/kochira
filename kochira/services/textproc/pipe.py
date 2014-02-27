@@ -79,7 +79,12 @@ def run_pipe(ctx, commands):
 
     while parts:
         c = BufferedClient(ctx.client)
-        message = re.sub(r"\b_\b", acc, parts.pop().strip())
+        message = parts.pop().strip()
+
+        if "_" in message:
+            message = re.sub(r"\b_\b", acc, message)
+        else:
+            message += " " + acc
 
         # \r\n is not allowed in the IRC protocol inside a message body, so we
         # use it as the prefix to strip off ctx.respond headers.
