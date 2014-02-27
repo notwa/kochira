@@ -26,7 +26,7 @@ def choose(ctx, options):
     Choose options, separated by " or ".
     """
 
-    options = re.split(r"(?: or |/|,)", options)
+    options = [o.strip() for o in re.split(r"(?: or |/|,)", options)]
     options.sort(key=_ordering_key)
 
     ctx.respond(ctx._("I choose: {choice}").format(
