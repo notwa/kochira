@@ -6,6 +6,7 @@ Decide between options.
 
 import binascii
 import time
+import re
 
 from kochira.service import Service
 
@@ -25,7 +26,7 @@ def choose(ctx, options):
     Choose options, separated by " or ".
     """
 
-    options = options.split(" or ")
+    options = re.split(r"(?: or |/|,)", options)
     options.sort(key=_ordering_key)
 
     ctx.respond(ctx._("I choose: {choice}").format(
