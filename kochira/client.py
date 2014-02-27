@@ -151,6 +151,8 @@ class Client(_Client):
                 logger.error("Hook runner failed",
                              exc_info=(exc.__class__, exc, exc.__traceback__))
 
+        return fut
+
     def _add_to_backlog(self, target, by, message):
         backlog = self.backlogs.setdefault(target, deque([]))
         backlog.appendleft((by, message))
