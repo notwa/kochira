@@ -160,6 +160,7 @@ def show_source(ctx):
 @service.command(r"!bugs")
 @service.command(r"report (?:a )?bug", mention=True)
 @service.command(r"bugs", mention=True)
+@service.command(r"u stink", mention=True)
 def bug_report(ctx):
     """
     Bug report.
