@@ -205,7 +205,7 @@ class Client(_Client):
     def on_quit(self, user, message=None):
         self._run_hooks("quit", user, user, [user, message])
 
-    def on_ctcp(self, by, what, contents):
+    def on_ctcp(self, by, target, what, contents):
         self._run_hooks("ctcp", by, by, [by, what, contents])
 
     def on_ctcp_action(self, by, what, contents):
