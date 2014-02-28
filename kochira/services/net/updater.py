@@ -106,7 +106,10 @@ class PostReceiveHandler(RequestHandler):
             if future.exception() is not None:
                 self.send_error(500)
                 raise future.exception()
-            self.finish()
+            try:
+                self.finish()
+            except:
+                pass
 
             for client_name, client in self.application.ctx.bot.clients.items():
                 for channel in client.channels:
