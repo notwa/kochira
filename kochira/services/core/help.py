@@ -141,3 +141,30 @@ def help(ctx):
         ctx.respond(ctx._("My help is available at {url}").format(
             url=ctx.config.url
         ))
+
+
+@service.command(r"!source")
+@service.command(r"source", mention=True)
+@service.command(r"repo", mention=True)
+@service.command(r"github", mention=True)
+def show_source(ctx):
+    """
+    Show source.
+
+    Links the user to the source code repository.
+    """
+    ctx.respond(ctx._("My source code is at: https://github.com/rfw/kochira"))
+
+
+
+@service.command(r"!bugs")
+@service.command(r"report (?:a )?bug", mention=True)
+@service.command(r"bugs", mention=True)
+def bug_report(ctx):
+    """
+    Bug report.
+
+    Links the user to the bug report URL.
+    """
+    ctx.respond(ctx._("Found a bug? Report it! https://github.com/rfw/kochira/issues"))
+
