@@ -55,17 +55,21 @@ def _update_currencies(app_id, storage):
             storage.rates["XBT"] = storage.rates["BTC"]
 
 
+@service.command(r"price of (?P<from_currency>\S+)(?: in (?P<to_currency>\S+))?", mention=True)
 @service.command(r"!convert (?P<amount>\d+(?:\.\d*)?)(?: ?(?P<from_currency>\S+))?(?: (?P<to_currency>\S+))?")
 @service.command(r"convert (?P<amount>\d+(?:\.\d*)?)(?: ?(?P<from_currency>\S+))?(?: to (?P<to_currency>\S+))?", mention=True)
 @background
 @coroutine
-def convert(ctx, amount: float, from_currency=None, to_currency=None):
+def convert(ctx, amount: float=None, from_currency=None, to_currency=None):
     """
     Convert.
 
     Convert between currencies. Defaults to geolocated currencies.
     """
     _update_currencies(ctx.config.app_id, ctx.storage)
+
+    if amount is None:
+        amount = 1
 
     if from_currency is None and to_currency is None:
         ctx.respond(ctx._("You haven't specified a currency pair."))
