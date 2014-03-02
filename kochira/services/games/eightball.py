@@ -43,7 +43,9 @@ def ask_8ball(ctx, question):
     If you don't know what an 8ball does just Google it.
     """
 
+    day = int(time.time() // (60 * 60 * 24))
+    i = binascii.crc32(question.lower().encode("utf-8"), day)
+
     ctx.respond(ctx._("The Magic 8-Ball says: {prediction}").format(
-        prediction=OPTIONS[(binascii.crc32(question.lower().encode("utf-8")) +
-                           int(time.time() // (60 * 60 * 24))) % len(OPTIONS)](ctx)
+        prediction=OPTIONS[i % len(OPTIONS)](ctx)
     ))
