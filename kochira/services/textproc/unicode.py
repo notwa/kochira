@@ -25,7 +25,7 @@ def query(ctx, character):
         ctx.respond(ctx._("I don't know what that character is."))
         return
 
-    category = unicodedata.category(character, "?")
+    category = unicodedata.category(character)
 
     ctx.respond(ctx._("{character}: {name} (Category: {category})").format(
         character=character,
@@ -50,7 +50,7 @@ def lookup(ctx, name):
         ctx.respond(ctx._("I don't know what that character is."))
         return
 
-    category = unicodedata.category(character, "?")
+    category = unicodedata.category(character)
 
     ctx.respond(ctx._("{character}: {name} (Category: {category})").format(
         character=character,
