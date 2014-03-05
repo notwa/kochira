@@ -35,7 +35,7 @@ def query(ctx, character):
     ))
 
 
-@service.command(r"!u [Uu]\+(?P<escape>[0-9a-fA-F]{1,4})", re_flags=0)
+@service.command(r"!u [Uu]\+(?P<escape>[0-9a-fA-F]{1,6})", re_flags=0)
 def query_escape(ctx, escape):
     """
     Query escape.
