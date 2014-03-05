@@ -47,7 +47,7 @@ def lookup(ctx, name):
 
     try:
         character = unicodedata.lookup(name)
-    except ValueError:
+    except KeyError:
         ctx.respond(ctx._("I don't know what that character is."))
         return
 
