@@ -27,8 +27,9 @@ def query(ctx, character):
 
     category = unicodedata.category(character)
 
-    ctx.respond(ctx._("{character}: {name} (Category: {category})").format(
+    ctx.respond(ctx._("{character} (0x{hex}): {name} (Category: {category})").format(
         character=character,
+        hex=hex(ord(character)),
         name=name,
         category=category
     ))
@@ -52,8 +53,9 @@ def lookup(ctx, name):
 
     category = unicodedata.category(character)
 
-    ctx.respond(ctx._("{character}: {name} (Category: {category})").format(
+    ctx.respond(ctx._("{character} (0x{hex}): {name} (Category: {category})").format(
         character=character,
+        hex=hex(ord(character)),
         name=name,
         category=category
     ))
