@@ -35,6 +35,36 @@ def query(ctx, character):
     ))
 
 
+@service.command(r"!u [Uu]\+(?P<escape>[0-9a-fA-F]{1,4})", re_flags=0)
+def query_escape(ctx, escape):
+    """
+    Query escape.
+
+    Find information about a Unicode character escape.
+    """
+
+    try:
+        character = chr(int(escape, 16))
+    except ValueError:
+        ctx.respond(ctx._("I don't know what that escape is."))
+        return
+
+    try:
+        name = unicodedata.name(character)
+    except ValueError:
+        ctx.respond(ctx._("I don't know what that character is."))
+        return
+
+    category = unicodedata.category(character)
+
+    ctx.respond(ctx._("{character} (U+{ord:04X}): {name} (Category: {category})").format(
+        character=character,
+        ord=ord(character),
+        name=name,
+        category=category
+    ))
+
+
 @service.command(r"!U (?P<name>.+)", re_flags=0)
 def lookup(ctx, name):
     """
