@@ -9,6 +9,7 @@ import os
 from pydle.async import coroutine, Future
 
 from .auth import has_permission, requires_permission
+from .userdata import UserData
 from . import config
 
 from .util import Expando
@@ -101,6 +102,11 @@ class HookContext:
                                          languages=languages)
         except IOError:
             self.t = gettext.NullTranslations()
+
+    def lookup_user_data(self, who=None):
+        if who is None:
+            who = self.origin
+        return UserData.lookup(self.client, who)
 
     def gettext(self, string):
         return self.t.gettext(string)

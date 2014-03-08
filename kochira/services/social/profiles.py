@@ -19,7 +19,7 @@ def forget_profile(ctx):
     """
 
     try:
-        user_data = yield UserData.lookup(ctx.client, ctx.origin)
+        user_data = yield ctx.lookup_user_data()
     except UserData.DoesNotExist:
         exists = False
     else:
@@ -45,7 +45,7 @@ def remember_profile(ctx, text):
     """
 
     try:
-        user_data = yield UserData.lookup(ctx.client, ctx.origin)
+        user_data = yield ctx.lookup_user_data()
     except UserData.DoesNotExist:
         ctx.respond(ctx._("Please authenticate before you add a profile."))
         return
@@ -68,7 +68,7 @@ def get_profile(ctx, who=None):
     if who is None:
         who = ctx.origin
 
-    user_data = yield UserData.lookup_default(ctx.client, who)
+    user_data = yield ctx.lookup_user_data(who)
 
     if "profile" not in user_data:
         ctx.respond(ctx._("{who} hasn't told me who they are yet.").format(

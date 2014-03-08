@@ -33,6 +33,11 @@ class UserData(collections.MutableMapping):
         self.account = account
         self.refresh()
 
+        if "_alias" in self:
+            self.network = self["_alias"]["network"]
+            self.account = self["_alias"]["account"]
+            self.refresh()
+
     def refresh(self):
         self._fields = {}
         self._dirty = set([])

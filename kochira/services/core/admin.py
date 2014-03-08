@@ -1,5 +1,5 @@
 """
-Administration services.
+Administration and bot management.
 
 This service allows administrators to manage various aspects of the bot.
 """
