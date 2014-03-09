@@ -52,7 +52,7 @@ function dismiss() {
 
     google.maps.event.addListener(marker, "mouseout", dismiss);
     google.maps.event.addListener(marker, "click", function () {
-        map.setZoom(8);
+        map.setZoom(Math.max(8, map.getZoom()));
         map.setCenter(marker.getPosition());
     });
 });
