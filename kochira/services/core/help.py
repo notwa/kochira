@@ -135,7 +135,7 @@ def help(ctx):
         ctx.respond(ctx._("Help currently unavailable."))
     else:
         ctx.respond(ctx._("My help is available at {url}").format(
-            url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help"
+            url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help/"
         ))
 
 
