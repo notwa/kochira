@@ -51,7 +51,8 @@ function dismiss() {
     });
 
     google.maps.event.addListener(marker, "mouseout", dismiss);
-    google.maps.event.addLister(marker, "click", function () {
+    google.maps.event.addListener(marker, "click", function () {
+        map.setZoom(8);
         map.setCenter(marker.getPosition());
     });
 });
