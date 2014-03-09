@@ -1,3 +1,4 @@
+import copy
 import json
 import peewee
 import collections
@@ -39,11 +40,9 @@ class UserData(collections.MutableMapping):
             self.refresh()
 
     def refresh(self):
-        self._fields = {}
-        self._dirty = set([])
-
-        for kv in self._all_kv_pairs_query():
-            self._fields[kv.key] = kv.value
+        self._pre_fields = {kv.key: kv.value
+                            for kv in self._all_kv_pairs_query()}
+        self._fields = copy.deepcopy(self._pre_fields)
 
     def _all_kv_pairs_query(self):
         return UserDataKVPair.select().where(UserDataKVPair.account == self.account,
@@ -66,11 +65,9 @@ class UserData(collections.MutableMapping):
 
     def __setitem__(self, key, value):
         self._fields[key] = value
-        self._dirty.add(key)
 
     def __delitem__(self, key):
         del self._fields[key]
-        self._dirty.add(key)
 
     def __iter__(self):
         return iter(self._fields)
@@ -79,23 +76,24 @@ class UserData(collections.MutableMapping):
         return len(self._fields)
 
     def save(self):
+        added_fields = set(self._fields) - set(self._pre_fields)
+        deleted_fields = set(self._pre_fields) - set(self._fields)
+        updated_fields = set(self._pre_fields) & set(self._fields)
+
         with database.transaction():
-            while self._dirty:
-                k = self._dirty.pop()
+            for k in deleted_fields:
+                self._get_kv_pair(k).delete_instance()
 
-                if k not in self._fields:
-                    self._get_kv_pair(k).delete_instance()
-                    continue
+            for k in added_fields:
+                self._make_kv_pair(k, self._fields[k]).save()
 
-                v = self._fields[k]
-
-                try:
+            for k in updated_fields:
+                if self._pre_fields[k] != self._fields[k]:
                     kv = self._get_kv_pair(k)
-                except UserDataKVPair.DoesNotExist:
-                    kv = self._make_kv_pair(k, v)
-                else:
-                    kv.value = v
-                kv.save()
+                    kv.value = self._fields[k]
+                    kv.save()
+
+        self.refresh()
 
 
     class DoesNotExist(Exception): pass
