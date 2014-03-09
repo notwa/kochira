@@ -2,14 +2,16 @@
 
 {% block title %}Map{% end %}
 
-{% block body %}
-<div id="map" style="width: 100%; height: 500px"></div>
+{% block wrap %}
+<div style="padding-top: 50px; padding-bottom: 60px; position: absolute; top: 0; left: 0; width: 100%; height: 100%">
+    <div id="map" style="width: 100%; height: 100%"></div>
+</div>
 <script src="//maps.googleapis.com/maps/api/js?sensor=false"></script>
 <script src="//google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclustererplus/src/markerclusterer_packed.js"></script>
 <script>
 var map = new google.maps.Map(document.getElementById("map"), {
     center: new google.maps.LatLng(0, 0),
-    zoom: 1
+    zoom: 3
 });
 
 var infoWindow = null;
@@ -57,7 +59,9 @@ function dismiss() {
     });
 });
 
-var mc = new MarkerClusterer(map, markers);
+var mc = new MarkerClusterer(map, markers, {
+    averageCenter: true
+});
 google.maps.event.addListener(mc, "mouseover", function (c) {
     dismiss();
 

@@ -9,10 +9,11 @@
     <body>
         <div id="wrap">
             {% module NavBar() %}
-            {% block before_container %}{% end %}
+            {% block wrap %}
             <div class="container">
                 {% block body %}{% end %}
             </div>
+            {% end %}
         </div>
         {% module Footer() %}
         <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>

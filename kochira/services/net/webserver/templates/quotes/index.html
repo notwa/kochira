@@ -2,7 +2,7 @@
 
 {% block title %}{{query + " – " if query else ""}}Quotes{% end %}
 
-{% block before_container %}
+{% block wrap %}
 <nav class="navbar navbar-default navbar-fixed-top navbar-secondary" role="navigation">
     <div class="container">
         <form class="navbar-form navbar-right" role="search" method="get" action="/quotes/">
@@ -13,6 +13,7 @@
         </form>
     </div>
 </nav>
+<div class="container">{% block body %}{% end %}</div>
 {% end %}
 
 {% block body %}
