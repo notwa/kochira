@@ -59,8 +59,7 @@ def link(ctx, account, network):
         ctx.respond(ctx._("You can't link your account to an alias."))
         return
 
-    ctx.respond(ctx._("Okay, sent request to that user for linking."))
-    alt_client.notice(account, ctx._("Hi, {account} from {network} has requested to link their account with you. If this is you, please message \"!confirmlink {account} {network}\" to me.").format(
+    ctx.respond(ctx._("Okay, please message me \"!confirmlink {account} {network}\" on that network.").format(
         account=ctx.origin,
         network=ctx.client.network
     ))
@@ -108,5 +107,7 @@ def confirm_link(ctx, account, network):
     if fut is None:
         ctx.respond(ctx._("That account hasn't requested linkage."))
         return
+
+    ctx.respond(ctx._("Link confirmed."))
 
     fut.set_result(None)
