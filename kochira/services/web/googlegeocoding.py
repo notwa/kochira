@@ -205,6 +205,23 @@ def nearby_search(ctx, what, where=None, radius : int=None, num : int=None):
     ))
 
 
+@service.command(r"!map")
+@service.command(r"where is everyone\??", mention=True)
+def show_map(ctx):
+    """
+    Show map.
+
+    Links the user to the web map, if available.
+    """
+
+    if "kochira.services.net.webserver" not in ctx.bot.services:
+        ctx.respond(ctx._("Map currently unavailable."))
+    else:
+        ctx.respond(ctx._("The map is available at {url}").format(
+            url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/map"
+        ))
+
+
 class IndexHandler(RequestHandler):
     def get(self):
         self.render("map/index.html",

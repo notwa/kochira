@@ -11,10 +11,6 @@ from tornado.web import RequestHandler, Application, HTTPError, UIModule
 
 service = Service(__name__, __doc__)
 
-@service.config
-class Config(Config):
-    url = config.Field(doc="Base URL for the help documentation, e.g. ``http://example.com:8000/help``.")
-
 
 def rst(s, **kw):
     return publish_parts(s, writer_name="html", **kw)["fragment"]
@@ -139,7 +135,7 @@ def help(ctx):
         ctx.respond(ctx._("Help currently unavailable."))
     else:
         ctx.respond(ctx._("My help is available at {url}").format(
-            url=ctx.config.url
+            url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help"
         ))
 
 
