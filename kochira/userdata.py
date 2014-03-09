@@ -34,14 +34,15 @@ class UserData(collections.MutableMapping):
         self.account = account
         self.refresh()
 
-        if "_alias" in self:
-            self.network = self["_alias"]["network"]
-            self.account = self["_alias"]["account"]
-            self.refresh()
-
     def refresh(self):
         self._pre_fields = {kv.key: kv.value
                             for kv in self._all_kv_pairs_query()}
+
+        if "_alias" in self._pre_fields:
+            self.network = self._pre_fields["_alias"]["network"]
+            self.account = self._pre_fields["_alias"]["account"]
+            self.refresh()
+
         self._fields = copy.deepcopy(self._pre_fields)
 
     def _all_kv_pairs_query(self):
