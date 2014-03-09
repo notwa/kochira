@@ -68,7 +68,7 @@ def get_profile(ctx, who=None):
     if who is None:
         who = ctx.origin
 
-    user_data = yield ctx.lookup_user_data(who)
+    user_data = yield UserData.lookup_default(ctx.client, who)
 
     if "profile" not in user_data:
         ctx.respond(ctx._("{who} hasn't told me who they are yet.").format(
