@@ -20,6 +20,7 @@ class Config(Config):
     username = config.Field(doc="The username to use when connecting.")
     password = config.Field(doc="The password to use when connecting.")
     reply = config.Field(doc="Whether or not to generate replies.", default=True)
+    prefix = config.Field(doc="Prefix to trigger brain.", default="?")
     random_replyness = config.Field(doc="Probability the brain will generate a reply for all messages.", default=0.0)
 
 
@@ -46,9 +47,9 @@ def do_reply(ctx, target, origin, message):
     mention = False
     reply = False
 
-    if front.startswith('?'):
+    if ctx.config.prefix is not None and front.startswith(ctx.config.prefix):
         reply = True
-        message = front.lstrip('?') + ' ' + rest
+        message = front[len(ctx.config.prefix):] + " " + rest
     elif front.strip(",:").lower() == ctx.client.nickname.lower():
         mention = True
         reply = True
