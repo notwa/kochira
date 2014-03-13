@@ -25,7 +25,7 @@ service = Service(__name__, __doc__)
 class Config(Config):
     port = config.Field(doc="Port to run the web server on.", default=8080)
     address = config.Field(doc="Address to bind the HTTP server to.", default="0.0.0.0")
-    title = config.Field(doc="Title for the web site.", default="Kobun")
+    title = config.Field(doc="Title for the web site.", default="Kochira")
     motd = config.Field(doc="MOTD for the web site, formatted in reStructuredText.", default="(no message of the day)")
     base_url = config.Field(doc="Base URL for the web server.")
 
