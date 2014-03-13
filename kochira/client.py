@@ -86,6 +86,10 @@ class Client(_Client):
         self._run_hooks("connect", None, None)
 
     def _autotruncate(self, command, target, message, suffix="..."):
+        # IRC treats UTF-8 as ISO-8859-1, so sometimes we won't have the
+        # correct character length
+        message = message.encode("utf-8").decode("iso-8859-1")
+
         hostmask = self._format_hostmask(self.nickname)
         chunklen = MESSAGE_LENGTH_LIMIT - len("{hostmask} {command} {target} :".format(
             hostmask=hostmask,
@@ -95,6 +99,8 @@ class Client(_Client):
 
         if len(message) > chunklen:
             message = textwrap.wrap(message, chunklen - len(suffix))[0] + suffix
+
+        message = message.decode("iso-8859-1").encode("utf-8")
 
         return message
 
