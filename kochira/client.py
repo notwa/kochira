@@ -86,7 +86,7 @@ class Client(_Client):
         self._run_hooks("connect", None, None)
 
     def _autotruncate(self, command, target, message, suffix="..."):
-        hostmask = self._format_hostmask(self.nickname)
+        hostmask = self._format_user_mask(self.nickname)
         chunklen = MESSAGE_LENGTH_LIMIT - len("{hostmask} {command} {target} :".format(
             hostmask=hostmask,
             command=command,
