@@ -164,7 +164,7 @@ def read_quote(ctx, qid: int):
 
 @service.command(r"what is the last quote\??", mention=True)
 @service.command(r"last quote", mention=True)
-@service.command(r"!quote read las$")
+@service.command(r"!quote read last")
 def last_quote(ctx):
     """
     Last quote.
