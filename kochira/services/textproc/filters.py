@@ -53,6 +53,12 @@ def fabulousify(s):
     return buf
 
 
+ASCII_TO_WIDE = {i: chr(i + 0xfee0) for i in range(0x21, 0x7f)}
+
+def wide(s):
+    return s.translate(ASCII_TO_WIDE)
+
+
 def run_filter(f, ctx, text=None):
     if text is None:
         if not ctx.client.backlogs.get(ctx.target, []):
@@ -88,4 +94,11 @@ bind_filter("fabulous", fabulousify,
 Fabulous.
 
 Rainbow text!
+""")
+
+bind_filter("wide", wide,
+"""
+Widen.
+
+Convert text to fullwidth.
 """)
