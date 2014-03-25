@@ -54,6 +54,7 @@ def fabulousify(s):
 
 
 ASCII_TO_WIDE = {i: chr(i + 0xfee0) for i in range(0x21, 0x7f)}
+ASCII_TO_WIDE.update({0x20: "\u3000", 0x2D: "\u2212"})
 
 def wide(s):
     return s.translate(ASCII_TO_WIDE)
