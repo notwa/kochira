@@ -4,6 +4,7 @@ Geocoding.
 Look up and reverse look up addresses.
 """
 
+import math
 import requests
 
 from kochira import config
@@ -200,4 +201,55 @@ def nearby_search(ctx, what, where=None, radius : int=None, num : int=None):
         types=", ".join(t.replace("_", " ") for t in result["types"]),
         num=num + 1,
         total=total
+    ))
+
+
+def haversin(theta):
+    return (1 - math.cos(theta)) / 2
+
+EARTH_RADIUS = 6367.5
+
+
+@service.command(r"distance from (?P<start_loc>.+?) to (?P<end_loc>.+?)", mention=True)
+@background
+@coroutine
+def distance(ctx, start_loc, end_loc):
+    """
+    Distance.
+
+    Compute the great-circle distance between two locations.
+    """
+
+    start_results = yield ctx.provider_for("geocode")(start_loc)
+
+    if not start_results:
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=start_loc
+        ))
+        return
+
+    start_result = start_results[0]
+    start_coords = start_result["geometry"]["location"]
+    lat1, lng1 = start_coords["lat"], start_coords["lng"]
+
+    end_results = yield ctx.provider_for("geocode")(end_loc)
+
+    if not end_results:
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=end_loc
+        ))
+        return
+
+    end_result = end_results[0]
+    end_coords = end_result["geometry"]["location"]
+    lat2, lng2 = end_coords["lat"], end_coords["lng"]
+
+    d = 2 * EARTH_RADIUS * math.asin(
+        math.sqrt(haversin(lat2 - lat1) +
+                  math.cos(lat1) * math.cos(lat2) * haversin(lng2 - lng1)))
+
+    ctx.respond(ctx._("Distance between {start} and {end}: {distance:.3f} km").format(
+        start=start_result["formatted_address"],
+        end=end_result["formatted_address"],
+        distance=d
     ))
