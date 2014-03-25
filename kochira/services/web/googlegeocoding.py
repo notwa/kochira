@@ -230,7 +230,8 @@ def distance(ctx, start_loc, end_loc):
 
     start_result = start_results[0]
     start_coords = start_result["geometry"]["location"]
-    lat1, lng1 = start_coords["lat"], start_coords["lng"]
+    rlat1, rlng1 = \
+        math.radians(start_coords["lat"]), math.radians(start_coords["lng"])
 
     end_results = yield ctx.provider_for("geocode")(end_loc)
 
@@ -242,13 +243,14 @@ def distance(ctx, start_loc, end_loc):
 
     end_result = end_results[0]
     end_coords = end_result["geometry"]["location"]
-    lat2, lng2 = end_coords["lat"], end_coords["lng"]
+    rlat2, rlng2 = \
+        math.radians(end_coords["lat"]), math.radians(end_coords["lng"])
 
     d = 2 * EARTH_RADIUS * math.asin(
-        math.sqrt(haversin(lat2 - lat1) +
-                  math.cos(lat1) * math.cos(lat2) * haversin(lng2 - lng1)))
+        math.sqrt(haversin(rlat2 - rlat1) +
+                  math.cos(rlat1) * math.cos(rlat2) * haversin(rlng2 - rlng1)))
 
-    ctx.respond(ctx._("Distance between {start} and {end}: {distance:.3f} km").format(
+    ctx.respond(ctx._("Distance from {start} to {end}: {distance:.3f} km").format(
         start=start_result["formatted_address"],
         end=end_result["formatted_address"],
         distance=d
