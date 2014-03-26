@@ -99,8 +99,8 @@ def weather(ctx, where=None):
     ))
 
 
-@service.command(r"!forecast(?: (?P<where>.+))?(?: (?P<num>\d+))?")
-@service.command(r"forecast(?: (?:for|in) (?P<where>.+))?(?: \((?P<num>\d+)\))?\??", mention=True)
+@service.command(r"!forecast(?: (?P<where>.+?))?(?: (?P<num>\d+))?")
+@service.command(r"forecast(?: (?:for|in) (?P<where>.+?))?(?: \((?P<num>\d+)\))?\??", mention=True)
 @background
 @coroutine
 def forecast(ctx, where=None, num: int=0):
