@@ -159,8 +159,9 @@ def forecast(ctx, where=None, num: int=0):
         ctx.respond(ctx._("No forecast data."))
         return
 
-    ctx.respond(ctx._("Forecast for {title}: {fcttext_metric} ({num} of {total})").format(
-        num=num,
+    ctx.respond(ctx._("Forecast for {location}, {title}: {fcttext_metric} ({num} of {total})").format(
+        location=results[0]["formatted_address"],
+        num=num + 1,
         total=total,
         **forecasts[num]
     ))
