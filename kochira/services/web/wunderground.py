@@ -97,3 +97,68 @@ def weather(ctx, where=None):
         precip=precip,
         mmin=_unitize("mm", "in")
     ))
+
+
+@service.command(r"!forecast(?: (?P<where>.+))?(?: (?P<num>\d+))?")
+@service.command(r"forecast(?: (?:for|in) (?P<where>.+))?(?: \((?P<num>\d+)\))?\??", mention=True)
+@background
+@coroutine
+def forecast(ctx, where=None, num: int=0):
+    """
+    Forecast.
+
+    Get the forecast for a location.
+    """
+
+    if where is None:
+        where = ctx.origin
+
+    try:
+        geocode = ctx.provider_for("geocode")
+    except KeyError:
+        ctx.respond(ctx._("Sorry, I don't have a geocode provider loaded."))
+        return
+
+    results = yield geocode(where)
+
+    if not results:
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=where
+        ))
+        return
+
+    location = results[0]["geometry"]["location"]
+
+    r = requests.get("http://api.wunderground.com/api/{api_key}/forecast/q/{lat},{lng}.json".format(
+        api_key=ctx.config.api_key,
+        **location
+    )).json()
+
+    if "error" in r:
+        ctx.respond(ctx._("Sorry, there was an error: {type}: {description}").format(
+            **r["error"]
+        ))
+        return
+
+    if "forecast" not in r:
+        ctx.respond(ctx._("Couldn't find weather for \"{where}\".").format(
+            where=where
+        ))
+        return
+
+    forecasts = r["forecast"]["txt_forecast"]["forecastday"]
+
+    if num is None:
+        num = 1
+
+    # offset definition
+    num -= 1
+    total = len(forecasts)
+
+    if num >= total or num < 0:
+        ctx.respond(ctx._("No forecast data."))
+        return
+
+    ctx.respond(ctx._("Forecast for {title}: {fcttext_metric}").format(
+        **forecasts[num]
+    ))
