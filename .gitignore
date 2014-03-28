@@ -35,7 +35,8 @@ nosetests.xml
 .project
 .pydevproject
 
-config.yml
+*.yml
+!config.yml.dist
 
 # virtualenv and stuff
 quotes
