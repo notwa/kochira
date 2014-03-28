@@ -56,11 +56,11 @@ def _update_currencies(app_id, storage):
 
 
 @service.command(r"price of (?P<from_currency>\S+)(?: in (?P<to_currency>\S+))?", mention=True)
-@service.command(r"!convert (?P<amount>\d+(?:\.\d*)?)(?: ?(?P<from_currency>\S+))?(?: (?P<to_currency>\S+))?")
-@service.command(r"convert (?P<amount>\d+(?:\.\d*)?)(?: ?(?P<from_currency>\S+))?(?: to (?P<to_currency>\S+))?", mention=True)
+@service.command(r"!convert (?P<amount>\d+(?:\.\d*)?)?(?: ?(?P<from_currency>\S+))?(?: (?P<to_currency>\S+))?")
+@service.command(r"convert (?P<amount>\d+(?:\.\d*)?)?(?: ?(?P<from_currency>\S+))?(?: to (?P<to_currency>\S+))?", mention=True)
 @background
 @coroutine
-def convert(ctx, amount: float=None, from_currency=None, to_currency=None):
+def convert(ctx, amount: float=1, from_currency=None, to_currency=None):
     """
     Convert.
 
