@@ -210,15 +210,18 @@ def haversin(theta):
 EARTH_RADIUS = 6367.5
 
 
-@service.command(r"distance from (?P<start_loc>.+?) to (?P<end_loc>.+?)", mention=True)
+@service.command(r"distance(?: from (?P<start_loc>.+?)) to (?P<end_loc>.+?)", mention=True)
 @background
 @coroutine
-def distance(ctx, start_loc, end_loc):
+def distance(ctx, end_loc, start_loc=None):
     """
     Distance.
 
     Compute the great-circle distance between two locations.
     """
+
+    if start_loc is None:
+        start_loc = ctx.origin
 
     start_results = yield ctx.provider_for("geocode")(start_loc)
 
