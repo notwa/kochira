@@ -210,7 +210,7 @@ def haversin(theta):
 EARTH_RADIUS = 6367.5
 
 
-@service.command(r"distance(?: from (?P<start_loc>.+?)) to (?P<end_loc>.+?)", mention=True)
+@service.command(r"distance(?: from (?P<start_loc>.+?))? to (?P<end_loc>.+?)", mention=True)
 @background
 @coroutine
 def distance(ctx, end_loc, start_loc=None):
