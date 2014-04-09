@@ -7,9 +7,14 @@ Retrieves definitions of terms from Wordnik.
 import requests
 
 from urllib.parse import quote_plus
-from kochira.service import Service, background
+from kochira import config
+from kochira.service import Service, background, Config
 
 service = Service(__name__, __doc__)
+
+@service.config
+class Config(Config):
+    api_key = config.Field(doc="Wordnik API key.")
 
 
 @service.command(r"!define (?P<term>.+?)(?: (?P<num>\d+))?$")
