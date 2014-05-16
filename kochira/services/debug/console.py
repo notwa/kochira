@@ -41,6 +41,7 @@ def eval_code(ctx, code):
     err = None
 
     try:
+        ctx.storage.console.locals["client"] = ctx.client
         r = ctx.storage.console.push(code)
     except BaseException as e:
         err = "{}: {}".format(e.__class__.__qualname__, e)
