@@ -82,6 +82,9 @@ def _config_class_factory(bot):
             password = config.Field(doc="IRC server password.", default=None)
             source_address = config.Field(doc="Source address to connect from.", default="")
 
+            authenticated_userdata = config.Field(doc="Does user data need authentication?", default=True)
+            response_format = config.Field(doc="How should responses be formatted?", default="{origin}: {message}")
+
             class TLS(config.Config):
                 enabled = config.Field(doc="Enable TLS?", default=False)
                 verify = config.Field(doc="Verify TLS connection?", default=True)

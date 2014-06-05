@@ -102,21 +102,24 @@ class UserData(collections.MutableMapping):
     @classmethod
     @coroutine
     def lookup(cls, client, nickname):
-        whois = yield client.whois(nickname)
+        if client.config.authenticated_userdata:
+            whois = yield client.whois(nickname)
 
-        if whois is None:
-            raise cls.DoesNotExist
+            if whois is None:
+                raise cls.DoesNotExist
 
-        account = None
+            account = None
 
-        if whois.get("identified", False):
+            if whois.get("identified", False):
+                account = nickname
+
+            if "account" in whois and whois["account"] is not None:
+                account = whois["account"]
+
+            if account is None:
+                raise cls.DoesNotExist
+        else:
             account = nickname
-
-        if "account" in whois and whois["account"] is not None:
-            account = whois["account"]
-
-        if account is None:
-            raise cls.DoesNotExist
 
         return cls(client.bot, client.network, client.normalize(account))
 
