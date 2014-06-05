@@ -12,8 +12,6 @@ service = Service(__name__, __doc__)
 
 
 @service.command(r"!ud (?P<term>.+?)(?: (?P<num>\d+))?$")
-@service.command(r"define (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
-@service.command(r"what does (?P<term>.+) mean(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
 def define(ctx, term, num: int=None):
     """

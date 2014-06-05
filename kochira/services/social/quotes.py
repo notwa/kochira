@@ -162,6 +162,32 @@ def read_quote(ctx, qid: int):
     ))
 
 
+@service.command(r"what is the last quote\??", mention=True)
+@service.command(r"last quote", mention=True)
+@service.command(r"!quote read last")
+def last_quote(ctx):
+    """
+    Last quote.
+
+    Get the last quote from the database.
+    """
+
+    q = Quote.select() \
+        .order_by(Quote.id.desc()) \
+        .limit(1)
+
+    if not q.exists():
+        ctx.respond(ctx._("There aren't any quotes."))
+        return
+
+    quote, = q
+
+    ctx.respond(ctx._("Quote {id}: {text}").format(
+        id=quote.id,
+        text=quote.quote
+    ))
+
+
 @service.command(r"(?:give me a )?random quote(?: matching (?P<query>.+))?$", mention=True)
 @service.command(r"!quote rand(?: (?P<query>.+))?$")
 def rand_quote(ctx, query=None):

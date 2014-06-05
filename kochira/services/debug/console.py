@@ -40,6 +40,8 @@ def eval_code(ctx, code):
 
     err = None
 
+    ctx.storage.console.locals["client"] = ctx.client
+
     try:
         r = ctx.storage.console.push(code)
     except BaseException as e:

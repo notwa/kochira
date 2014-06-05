@@ -148,7 +148,7 @@ class Game:
         self.draw_pile.extend(hand)
         random.shuffle(self.draw_pile)
 
-        if self.players:
+        if self.players and self.started:
             self._turn_index %= len(self.players)
 
         return not self.players or (self.started and len(self.players) <= 1)
@@ -529,7 +529,7 @@ def pass_(ctx):
         card = game.turn_pass()
     except UnoStateError as e:
         if e.code == UnoStateError.MUST_DRAW_FIRST:
-            ctx.respond(ctx._("You need to draw first."))
+            ctx.respond(ctx._("You need to draw first. "))
             return
         elif e.code == UnoStateError.NO_MORE_DRAWS:
             do_game_over(ctx, ctx._("Looks like the pile ran out! "))
@@ -545,12 +545,12 @@ def pass_(ctx):
                            for card in game.players[ctx.origin][-must_draw:])))
 
     if must_draw > 0:
-        prefix = ctx._("{origin} passed and had to draw {num} cards.".format(
+        prefix = ctx._("{origin} passed and had to draw {num} cards. ".format(
             origin=ctx.origin,
             num=must_draw
         ))
     else:
-        prefix = ctx._("{origin} passed.").format(origin=ctx.origin)
+        prefix = ctx._("{origin} passed. ").format(origin=ctx.origin)
 
     send_summary(ctx, game, prefix)
     send_hand(ctx, game.turn, game)

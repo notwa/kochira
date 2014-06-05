@@ -4,6 +4,7 @@ Geocoding.
 Look up and reverse look up addresses.
 """
 
+import math
 import requests
 
 from kochira import config
@@ -200,4 +201,61 @@ def nearby_search(ctx, what, where=None, radius : int=None, num : int=None):
         types=", ".join(t.replace("_", " ") for t in result["types"]),
         num=num + 1,
         total=total
+    ))
+
+
+def haversin(theta):
+    return (1 - math.cos(theta)) / 2
+
+EARTH_RADIUS = 6367.5
+
+
+@service.command(r"distance to (?P<end_loc>.+?) from (?P<start_loc>.+?)", mention=True, priority=1)
+@service.command(r"distance(?: from (?P<start_loc>.+?))? to (?P<end_loc>.+?)", mention=True)
+@background
+@coroutine
+def distance(ctx, end_loc, start_loc=None):
+    """
+    Distance.
+
+    Compute the great-circle distance between two locations.
+    """
+
+    if start_loc is None:
+        start_loc = ctx.origin
+
+    start_results = yield ctx.provider_for("geocode")(start_loc)
+
+    if not start_results:
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=start_loc
+        ))
+        return
+
+    start_result = start_results[0]
+    start_coords = start_result["geometry"]["location"]
+    rlat1, rlng1 = \
+        math.radians(start_coords["lat"]), math.radians(start_coords["lng"])
+
+    end_results = yield ctx.provider_for("geocode")(end_loc)
+
+    if not end_results:
+        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+            where=end_loc
+        ))
+        return
+
+    end_result = end_results[0]
+    end_coords = end_result["geometry"]["location"]
+    rlat2, rlng2 = \
+        math.radians(end_coords["lat"]), math.radians(end_coords["lng"])
+
+    d = 2 * EARTH_RADIUS * math.asin(
+        math.sqrt(haversin(rlat2 - rlat1) +
+                  math.cos(rlat1) * math.cos(rlat2) * haversin(rlng2 - rlng1)))
+
+    ctx.respond(ctx._("Distance from {start} to {end}: {distance:.3f} km").format(
+        start=start_result["formatted_address"],
+        end=end_result["formatted_address"],
+        distance=d
     ))

@@ -1,6 +1,5 @@
 import logging
 from collections import deque
-from datetime import timedelta
 import textwrap
 
 from pydle import Client as _Client
@@ -94,7 +93,8 @@ class Client(_Client):
         )) - 25
 
         if len(message) > chunklen:
-            message = textwrap.wrap(message, chunklen - len(suffix))[0] + suffix
+            message = message.encode("utf-8")[:chunklen - len(suffix)] \
+                .decode("utf-8", "ignore") + suffix
 
         return message
 
