@@ -65,7 +65,7 @@ class HookContext:
         def _coro():
             if (yield self.client._run_hooks(
                 "respond", self.target, self.origin,
-                [message])) is not Service.EAT:
+                [self.target, self.origin, message])) is not Service.EAT:
                 self.message(self.client.config.response_format.format(
                     origin=self.origin,
                     message=message
