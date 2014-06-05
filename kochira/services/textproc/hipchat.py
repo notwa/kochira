@@ -42,6 +42,7 @@ def _update_users(auth_token, storage):
 @background
 def translate_mention(ctx, target, origin, message):
     _, user_id = ctx.client.users[origin]["username"].split("_")
+    user_id = int(user_id)
 
     if user_id not in ctx.storage.users:
         _update_users(ctx.config.auth_token, ctx.storage)
