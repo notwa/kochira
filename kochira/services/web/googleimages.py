@@ -47,7 +47,7 @@ def image(ctx, term, num: int=None):
         ctx.respond(ctx._("Couldn't find anything matching \"{term}\".").format(term=term))
         return
 
-    ctx.respond(ctx._("{url} ({num} of {total})").format(
+    ctx.respond(ctx._("({num} of {total}) {url}").format(
         url=results[num]["unescapedUrl"],
         num=num + 1,
         total=total

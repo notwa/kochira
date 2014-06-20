@@ -101,7 +101,7 @@ def poll_for_updates(ctx):
                     continue
 
                 c_ctx.message(
-                    ctx._("New snap from {sender}! {link} ({dt})").format(
+                    ctx._("New snap from {sender} ({dt})! {link}").format(
                         sender=sender,
                         link=link,
                         dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"] / 1000.0))
