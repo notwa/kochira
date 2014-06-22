@@ -7,6 +7,13 @@ networks:
         nickname: Kochira
         hostname: irc.freenode.net
         port: 6667
+        channels:
+            "#foo":
+            "#bar":
+        acl:
+            "nick!user@host": [ "admin" ]
+            "foo!bar@baz": [ "admin" ]
+            "nope!blag@umm": [ "quote", "blarg" ]
 
 services:
     kochira.services.core.admin:
@@ -16,3 +23,11 @@ services:
         autoload: true
         channels:
             - name: "#kochira"
+
+    kochira.services.net.webserver:
+        autoload: true
+        base_url: http://someplace.com
+
+    kochira.services.social.quotes:
+        autoload: true
+        index_path: /tmp/
