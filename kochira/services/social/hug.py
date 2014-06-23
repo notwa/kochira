@@ -33,6 +33,6 @@ def need_a_hug(ctx, target, origin, message):
     elif front.strip(",:").lower() == ctx.client.nickname.lower() and \
         rest.lower() in ["yes", "yup", "yeah", "yep"] and \
         k in ctx.storage.huggable:
-        ctx.respond("C(˘⌣˘)Ɔ")
+        ctx.respond("c(˘⌣˘)ↄ")
         ctx.storage.huggable.remove(k)
         return Service.EAT
