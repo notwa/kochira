@@ -23,15 +23,16 @@ def need_a_hug(ctx, target, origin, message):
                                   ";_;", ":c", ":<"]):
         ctx.client.ctcp(ctx.target,
                         "ACTION " + ctx._("hugs {who}").format(who=ctx.origin))
+        return Service.EAT
     elif any(t in message.lower() for t in ["hate this", "sad", "i need a hug",
                                             "i'm sad", "fml", "this is crap",
                                             "i need a drink"]):
         ctx.respond("Need a hug?")
         ctx.storage.huggable.add(k)
+        return Service.EAT
     elif front.strip(",:").lower() == ctx.client.nickname.lower() and \
         rest.lower() in ["yes", "yup", "yeah", "yep"] and \
         k in ctx.storage.huggable:
         ctx.respond("C(˘⌣˘)Ɔ")
         ctx.storage.huggable.remove(k)
-
-    return Service.EAT
+        return Service.EAT
