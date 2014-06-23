@@ -96,7 +96,7 @@ def add_timed_reminder(ctx, who, duration, message):
     now = datetime.now()
     t = parse_time(duration)
 
-    if who.lower() == "me" and who not in ctx.client.channels[target]["users"]:
+    if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
         who = ctx.origin
 
     if t is None:

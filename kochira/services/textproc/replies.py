@@ -67,7 +67,7 @@ def do_reply(ctx, target, origin, message):
             expr = r"\b{}\b".format(re.escape(reply.what))
         match = re.search(expr, message, re.I)
         if match is not None:
-            replies.append(re.sub(expr, reply.reply, match.group(0)))
+            replies.append(re.sub(expr, reply.reply, match.group(0), flags=re.I))
 
     if not replies:
         return

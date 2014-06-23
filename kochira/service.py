@@ -61,10 +61,17 @@ class HookContext:
         self.client.message(self.target, message)
 
     def respond(self, message):
-        self.message("{origin}: {message}".format(
-            origin=self.origin,
-            message=message
-        ))
+        @coroutine
+        def _coro():
+            if (yield self.client._run_hooks(
+                "respond", self.target, self.origin,
+                [self.target, self.origin, message])) is not Service.EAT:
+                self.message(self.client.config.response_format.format(
+                    origin=self.origin,
+                    message=message
+                ))
+
+        return _coro()
 
     def add_context(self, context):
         self.service.add_context(self.client, context, self.target)
@@ -202,7 +209,7 @@ class Service:
 
                 # check if we're either being mentioned or being PMed
                 if mention and origin != target:
-                    match = re.match(r"{}\W*\b(?P<rest>.+)".format(
+                    match = re.match(r"@?{}\W*\b(?P<rest>.+)".format(
                         re.escape(ctx.client.nickname)
                     ), message, re.IGNORECASE)
 
