@@ -20,7 +20,7 @@ def need_a_hug(ctx, target, origin, message):
 
     if any(t in message for t in [":(", ":-(", ":'(", "QQ", ":C", "T_T",
                                   ";_;", ":c"]):
-        ctx.client.ctcp(ctx.channel,
+        ctx.client.ctcp(ctx.target,
                         "ACTION " + ctx._("hugs {who}").format(who=ctx.origin))
     elif any(t in message.lower() for t in ["hate this", "sad", "i need a hug",
                                             "i'm sad", "fml", "this is crap",
