@@ -6,9 +6,15 @@ Find image results.
 
 import requests
 
-from kochira.service import Service, background
+from kochira import config
+from kochira.service import Service, background, Config, coroutine
 
 service = Service(__name__, __doc__)
+
+
+@service.config
+class Config(Config):
+    safesearch = config.Field(doc="Whether or not to use SafeSearch.", default=False)
 
 
 @service.command(r"!image (?P<term>.+?)(?: (?P<num>\d+))?$")
@@ -25,7 +31,7 @@ def image(ctx, term, num: int=None):
     r = requests.get(
         "https://ajax.googleapis.com/ajax/services/search/images",
         params={
-            "safe": "off",
+            "safe": "on" if ctx.config.safesearch else "off",
             "v": "1.0",
             "q": term
         }
