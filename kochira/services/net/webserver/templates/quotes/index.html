@@ -45,7 +45,9 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment.min.js"></script>
 <script>
 [].forEach.call(document.querySelectorAll("time"), function (el) {
-    el.textContent = moment(el.attrs.datetime).fromNow();
+    var datetime = el.getAttribute("datetime");
+    el.title = datetime;
+    el.textContent = moment(datetime).fromNow();
 });
 </script>
 {% end %}
