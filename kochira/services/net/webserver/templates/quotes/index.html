@@ -26,7 +26,7 @@
             {{line}}<br>
             {% end %}
         </p>
-        <small><a href="?q=id:{{quote.id}}">Quote #{{quote.id}}</a> by <a href="?q=by:{{quote.by}}">{{quote.by}}</a>, {{quote.ts}}</small>
+        <small><a href="?q=id:{{quote.id}}">Quote #{{quote.id}}</a> by <a href="?q=by:{{quote.by}}">{{quote.by}}</a> in <a href="?q=channel:{{quote.channel}}+AND+network:{{quote.network}}">{{quote.channel}}</a> on <a href="?q=network:{{quote.network}}">{{quote.network}}</a> at {{quote.ts}}</small>
     </blockquote>
     {% end %}
 
