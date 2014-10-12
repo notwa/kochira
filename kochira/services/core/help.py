@@ -141,7 +141,7 @@ def help(ctx, trigger=None):
 
             for service_name, binding in ctx.bot.services.items():
                 for command in binding.service.commands:
-                    for pattern in command.patterns:
+                    for pattern, _ in command.patterns:
                         if pattern.match(trigger) is not None:
                             matches.add((command, service_name))
 
