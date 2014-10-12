@@ -139,7 +139,7 @@ def help(ctx, trigger=None):
         if trigger is not None:
             matches = []
 
-            for service_name, binding in bot.services.items():
+            for service_name, binding in ctx.bot.services.items():
                 for command in binding.service.commands:
                     for pattern in command.patterns:
                         if pattern.match(trigger) is not None:
