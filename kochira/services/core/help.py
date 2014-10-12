@@ -4,6 +4,8 @@ Help and documentation.
 This service displays help information on the web server.
 """
 
+import itertools
+
 from kochira import config
 from kochira.service import Service, Config
 from docutils.core import publish_parts
@@ -122,8 +124,8 @@ def webserver_config(ctx):
 
 
 @service.command(r"!commands")
-@service.command(r"!help")
-@service.command(r"help(?: me)?!?$", mention=True)
+@service.command(r"!help(?: (?P<trigger>.+))?")
+@service.command(r"help(?: me)?!?$", trigger=None, mention=True)
 def help(ctx):
     """
     Help.
@@ -134,9 +136,26 @@ def help(ctx):
     if "kochira.services.net.webserver" not in ctx.bot.services:
         ctx.respond(ctx._("Help currently unavailable."))
     else:
-        ctx.respond(ctx._("My help is available at {url}").format(
-            url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help/"
-        ))
+        if trigger is not None:
+            matches = []
+
+            for service_name, binding in bot.services.items():
+                for command in binding.service.commands:
+                    for pattern in command.patterns:
+                        if pattern.match(trigger) is not None:
+                            matches.add((command, service_name))
+
+            if matches:
+                command, service_name = next(iter(matches))
+                ctx.respond(ctx._("Help for that command is available at {url}").format(
+                    url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help/" + service_name + "#" + command.__name__
+                ))
+            else:
+                ctx.respond(ctx._("No help available for this command."))
+        else:
+            ctx.respond(ctx._("My help is available at {url}").format(
+                url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help/"
+            ))
 
 
 @service.command(r"!source")
