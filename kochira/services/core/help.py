@@ -152,7 +152,7 @@ def help(ctx, trigger=None):
                     url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help/" + service_name + "#" + command.__name__
                 ))
             else:
-                ctx.respond(ctx._("No help available for this command."))
+                ctx.respond(ctx._("Sorry, no help is available for that command."))
         else:
             ctx.respond(ctx._("My help is available at {url}").format(
                 url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help/"
