@@ -144,7 +144,7 @@ def help(ctx, trigger=None):
                 for command in binding.service.commands:
                     for pattern, _ in command.patterns:
                         if re.match(pattern, trigger) is not None:
-                            matches.add((command, service_name))
+                            matches.append((command, service_name))
 
             if matches:
                 command, service_name = next(iter(matches))
