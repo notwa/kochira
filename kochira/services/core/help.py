@@ -5,6 +5,7 @@ This service displays help information on the web server.
 """
 
 import itertools
+import re
 
 from kochira import config
 from kochira.service import Service, Config
