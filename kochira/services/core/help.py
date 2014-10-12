@@ -125,8 +125,8 @@ def webserver_config(ctx):
 
 @service.command(r"!commands")
 @service.command(r"!help(?: (?P<trigger>.+))?")
-@service.command(r"help(?: me)?!?$", trigger=None, mention=True)
-def help(ctx):
+@service.command(r"help(?: me)?!?$", mention=True)
+def help(ctx, trigger=None):
     """
     Help.
 
