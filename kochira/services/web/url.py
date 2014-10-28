@@ -10,7 +10,6 @@ import requests
 import mimetypes
 import tempfile
 from datetime import timedelta
-
 from bs4 import BeautifulSoup
 from PIL import Image
 
@@ -94,6 +93,7 @@ def detect_urls(ctx, origin, target, message):
 
         if url not in found_info:
             try:
+                url = ''.join([i for i in url if 31 < ord(i) < 127])
                 resp = requests.head(url, headers=HEADERS, verify=False)
             except requests.RequestException as e:
                 info = "\x02Error:\x02 " + str(e)
