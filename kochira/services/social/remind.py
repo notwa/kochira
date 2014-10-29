@@ -83,8 +83,8 @@ def play_timed_reminder(ctx, reminder):
         reminder.delete_instance()
 
 
-@service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to|that) (?P<message>.+) (?P<duration>(?:in|on|after) .+|tomorrow)$", mention=True, priority=1)
-@service.command(r"(?:remind|tell) (?P<who>\S+) (?P<duration>(?:in|on|after) .+|tomorrow) (?:about|to|that) (?P<message>.+)$", mention=True, priority=1)
+@service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to|that) (?P<message>.+) (?P<duration>(?:in|on|after) .+|at .+|tomorrow)$", mention=True, priority=1)
+@service.command(r"(?:remind|tell) (?P<who>\S+) (?P<duration>(?:in|on|after) .+|at .+|tomorrow) (?:about|to|that) (?P<message>.+)$", mention=True, priority=1)
 def add_timed_reminder(ctx, who, duration, message):
     """
     Add timed reminder.
