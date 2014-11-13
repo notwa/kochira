@@ -67,6 +67,7 @@ def transliterate(ctx, term, from_lang=None):
 
 @service.command(r"what is (?P<term>.+) in (?P<to_lang>.+)\??$", mention=True)
 @service.command(r"(?:translate) (?P<term>.+?)(?: from (?P<from_lang>.+?))?(?: to (?P<to_lang>.+))?$", mention=True)
+@service.command(r"!tra(nslate)?(?: (?P<from_lang>.+?)-(?P<to_lang>.+?))? (?P<term>.+)")
 @background
 def translate(ctx, term, to_lang=None, from_lang=None):
     """
@@ -81,18 +82,24 @@ def translate(ctx, term, to_lang=None, from_lang=None):
         sl = "auto"
     else:
         try:
-            sl = LANGUAGES[from_lang.lower()]
+            if len(from_lang) == 2:
+                sl = from_lang
+            else:
+                sl = LANGUAGES[from_lang.lower()]
         except KeyError:
-            ctx.respond(ctx._("Sorry, I don't understand \"{lang}\".").format(lang=from_lang))
+            ctx.respond(ctx._("Sorry, I don't understand from language: \"{lang}\".").format(lang=from_lang))
             return
 
     if to_lang is None:
         tl = "en"
     else:
         try:
-            tl = LANGUAGES[to_lang.lower()]
+            if len(to_lang) == 2:
+                tl = to_lang
+            else:
+                tl = LANGUAGES[to_lang.lower()]
         except KeyError:
-            ctx.respond(ctx._("Sorry, I don't understand \"{lang}\".").format(lang=to_lang))
+            ctx.respond(ctx._("Sorry, I don't understand to language: \"{lang}\".").format(lang=to_lang))
             return
 
     r = perform_translation(term, sl, tl)

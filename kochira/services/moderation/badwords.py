@@ -59,7 +59,7 @@ def add_badword(ctx, word):
     ctx.respond(ctx._("Okay, whoever says that will be kicked."))
 
 
-@service.command("(?P<word>.+) is not a bad word", mention=True, priority=2550)
+@service.command("(?P<word>.+) is (?:not|no longer) a bad word", mention=True, priority=2550)
 @requires_permission("badword")
 def remove_badword(ctx, word):
     """
