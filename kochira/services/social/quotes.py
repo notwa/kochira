@@ -78,7 +78,7 @@ def initialize_model(ctx):
 def _add_quote(storage, network, channel, origin, quote):
     with database.transaction():
         quote = Quote.create(by=origin, quote=quote, channel=channel,
-                             network=network, ts=datetime.utcnow())
+                             network=network, ts=datetime.now())
         quote.save()
 
         with storage.index.writer() as writer:
