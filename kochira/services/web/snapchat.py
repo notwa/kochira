@@ -71,41 +71,36 @@ def make_snapchat(ctx):
     ctx.bot.scheduler.schedule_every(timedelta(seconds=30), poll_for_updates)
 
 
-@service.task
-@background
-def poll_for_updates(ctx):
-    for snapchat in ctx.storage.snapchats:
-        has_snaps = False
+def check_snapchat(ctx, snapchat):
+    has_snaps = False
 
-        for snap in reversed(snapchat.get_snaps()):
-            has_snaps = True
-            sender = snap["sender"]
+    for snap in reversed(snapchat.get_snaps()):
+        has_snaps = True
+        sender = snap["sender"]
 
-            blob = snapchat.get_blob(snap["id"])
-            if blob is None:
-                continue
+        blob = snapchat.get_blob(snap["id"])
+        if blob is None:
+            continue
 
-            if snap["media_type"] in (MEDIA_VIDEO, MEDIA_VIDEO_NOAUDIO):
-                blob = convert_to_gif(blob)
+        if snap["media_type"] in (MEDIA_VIDEO, MEDIA_VIDEO_NOAUDIO):
+            blob = convert_to_gif(blob)
 
-            if blob is not None:
-                ulim = requests.post("https://api.imgur.com/3/upload.json",
-                                     headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
-                                     data={"image": blob}).json()
-                if ulim["status"] != 200:
-                    link = "(unavailable)"
-                else:
-                    link = ulim["data"]["link"]
+        if blob is not None:
+            ulim = requests.post("https://api.imgur.com/3/upload.json",
+                                 headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
+                                 data={"image": blob}).json()
+            if ulim["status"] != 200:
+                link = "(unavailable)"
             else:
-                link = ctx._("(could not convert video)")
+                link = ulim["data"]["link"]
+        else:
+            link = ctx._("(could not convert video)")
 
-            for client_name, client in ctx.bot.clients.items():
-                for channel in client.channels:
-                    c_ctx = HookContext(service, ctx.bot, client, channel)
+        for client_name, client in ctx.bot.clients.items():
+            for channel in client.channels:
+                c_ctx = HookContext(service, ctx.bot, client, channel)
 
-                    if snapchat.username not in c_ctx.config.announce_for:
-                        continue
-
+                if snapchat.username in c_ctx.config.announce_for:
                     c_ctx.message(
                         ctx._("New snap from {sender} ({dt})! {link}").format(
                             sender=sender,
@@ -114,9 +109,15 @@ def poll_for_updates(ctx):
                         )
                     )
 
-            snapchat.mark_viewed(snap["id"])
+        snapchat.mark_viewed(snap["id"])
 
-        if has_snaps:
-            snapchat._request("clear", {
-                "username": snapchat.username
-            })
+    if has_snaps:
+        snapchat._request("clear", {
+            "username": snapchat.username
+        })
+
+
+@service.task
+def poll_for_updates(ctx):
+    for snapchat in ctx.storage.snapchats:
+        ctx.bot.executor.submit(check_snapchat, ctx, snapchat)
