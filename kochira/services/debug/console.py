@@ -40,6 +40,7 @@ def eval_code(ctx, code):
 
     err = None
 
+    ctx.storage.console.locals["ctx"] = ctx
     ctx.storage.console.locals["client"] = ctx.client
 
     try:
