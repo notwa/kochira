@@ -23,8 +23,7 @@ service = Service(__name__, __doc__)
 class Config(Config):
     accounts = config.Field(doc="Mapping of account usernames to passwords.", type=config.Mapping(str))
     imgur_clientid = config.Field(doc="Client ID for use with Imgur.")
-    announce_for = config.Field(doc="Which accounts should be announced for.",
-                                default=[], type=config.Many(str))
+    announce_for = config.Field(doc="Which accounts should be announced for.", type=config.Many(str))
 
 
 GIF_FRAMERATE = 7
