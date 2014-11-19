@@ -21,11 +21,10 @@ service = Service(__name__, __doc__)
 
 @service.config
 class Config(Config):
-    username = config.Field(doc="The username to use when connecting.")
-    password = config.Field(doc="The password to use when connecting.")
+    accounts = config.Field(doc="Mapping of account usernames to passwords.", type=config.Mapping(str))
     imgur_clientid = config.Field(doc="Client ID for use with Imgur.")
-    announce = config.Field(doc="Whether or not to announce. Set this on a per-channel basis.",
-                            default=False)
+    announce_for = config.Field(doc="Which accounts should be announced for.",
+                                default=[], type=config.Many(str))
 
 
 GIF_FRAMERATE = 7
@@ -58,10 +57,16 @@ def convert_to_gif(blob):
 
 @service.setup
 def make_snapchat(ctx):
-    ctx.storage.snapchat = Snapchat()
-    if not ctx.storage.snapchat.login(ctx.config.username, ctx.config.password) \
-        .get("logged"):
-        raise Exception("could not log into Snapchat")
+    ctx.storage.snapchats = []
+
+    for username, password in ctx.config.accounts.items():
+        snapchat = Snapchat()
+
+        if not snapchat.login(username, password).get("logged"):
+            service.logger.error("Could not log into: %s", username)
+            continue
+
+        ctx.storage.snapchats.append(snapchat)
 
     ctx.bot.scheduler.schedule_every(timedelta(seconds=30), poll_for_updates)
 
@@ -69,48 +74,49 @@ def make_snapchat(ctx):
 @service.task
 @background
 def poll_for_updates(ctx):
-    has_snaps = False
+    for snapchat in ctx.storage.snapchats.values():
+        has_snaps = False
 
-    for snap in reversed(ctx.storage.snapchat.get_snaps()):
-        has_snaps = True
-        sender = snap["sender"]
+        for snap in reversed(snapchat.get_snaps()):
+            has_snaps = True
+            sender = snap["sender"]
 
-        blob = ctx.storage.snapchat.get_blob(snap["id"])
-        if blob is None:
-            continue
+            blob = snapchat.get_blob(snap["id"])
+            if blob is None:
+                continue
 
-        if snap["media_type"] in (MEDIA_VIDEO, MEDIA_VIDEO_NOAUDIO):
-            blob = convert_to_gif(blob)
+            if snap["media_type"] in (MEDIA_VIDEO, MEDIA_VIDEO_NOAUDIO):
+                blob = convert_to_gif(blob)
 
-        if blob is not None:
-            ulim = requests.post("https://api.imgur.com/3/upload.json",
-                                 headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
-                                 data={"image": blob}).json()
-            if ulim["status"] != 200:
-                link = "(unavailable)"
+            if blob is not None:
+                ulim = requests.post("https://api.imgur.com/3/upload.json",
+                                     headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
+                                     data={"image": blob}).json()
+                if ulim["status"] != 200:
+                    link = "(unavailable)"
+                else:
+                    link = ulim["data"]["link"]
             else:
-                link = ulim["data"]["link"]
-        else:
-            link = ctx._("(could not convert video)")
+                link = ctx._("(could not convert video)")
 
-        for client_name, client in ctx.bot.clients.items():
-            for channel in client.channels:
-                c_ctx = HookContext(service, ctx.bot, client, channel)
+            for client_name, client in ctx.bot.clients.items():
+                for channel in client.channels:
+                    c_ctx = HookContext(service, ctx.bot, client, channel)
 
-                if not c_ctx.config.announce:
-                    continue
+                    if snapchat.username not in c_ctx.config.announce_for:
+                        continue
 
-                c_ctx.message(
-                    ctx._("New snap from {sender} ({dt})! {link}").format(
-                        sender=sender,
-                        link=link,
-                        dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"] / 1000.0))
+                    c_ctx.message(
+                        ctx._("New snap from {sender} ({dt})! {link}").format(
+                            sender=sender,
+                            link=link,
+                            dt=humanize.naturaltime(datetime.fromtimestamp(snap["sent"] / 1000.0))
+                        )
                     )
-                )
 
-        ctx.storage.snapchat.mark_viewed(snap["id"])
+            snapchat.mark_viewed(snap["id"])
 
-    if has_snaps:
-        ctx.storage.snapchat._request("clear", {
-            "username": ctx.storage.snapchat.username
-        })
+        if has_snaps:
+            snapchat._request("clear", {
+                "username": snapchat.username
+            })
