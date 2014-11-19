@@ -74,7 +74,7 @@ def make_snapchat(ctx):
 @service.task
 @background
 def poll_for_updates(ctx):
-    for snapchat in ctx.storage.snapchats.values():
+    for snapchat in ctx.storage.snapchats:
         has_snaps = False
 
         for snap in reversed(snapchat.get_snaps()):
