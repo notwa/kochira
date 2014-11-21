@@ -60,9 +60,9 @@ def wide(s):
     return s.translate(ASCII_TO_WIDE)
 
 
-NORMAL = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-BOLDSCRIPT = u'𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩'
-ASCII_TO_BOLDSCRIPT = dict((ord(x[0]), x[1]) for x in zip(NORMAL, BOLDSCRIPT))
+NORMAL = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+BOLDSCRIPT = "𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩"
+ASCII_TO_BOLDSCRIPT = {ord(k): ord(v) for k, v in zip(NORMAL, BOLDSCRIPT)}
 
 def boldscript(s):
     return s.translate(ASCII_TO_BOLDSCRIPT)
