@@ -60,6 +60,14 @@ def wide(s):
     return s.translate(ASCII_TO_WIDE)
 
 
+NORMAL = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+BOLDSCRIPT = "𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩"
+ASCII_TO_BOLDSCRIPT = {ord(k): ord(v) for k, v in zip(NORMAL, BOLDSCRIPT)}
+
+def boldscript(s):
+    return s.translate(ASCII_TO_BOLDSCRIPT)
+
+
 def run_filter(f, ctx, text=None):
     if text is None:
         if not ctx.client.backlogs.get(ctx.target, []):
@@ -102,4 +110,11 @@ bind_filter("wide", wide,
 Widen.
 
 Convert text to fullwidth.
+""")
+
+bind_filter("fancy", boldscript,
+"""
+Fancy.
+
+Convert text to boldscript.
 """)
