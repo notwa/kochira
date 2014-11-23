@@ -20,7 +20,7 @@ class Config(Config):
 
 
 @service.command(r"!wa (?P<query>.+)$")
-@service.command(r"(?:compute|calculate|mathify) (?:for (?P<who>\S+))?(?P<query>.+)$", mention=True)
+@service.command(r"(?:compute|calculate|mathify|computer) (?:for (?P<who>\S+))?(?P<query>.+)$", mention=True)
 @background
 @coroutine
 def compute(ctx, query, who=None):
