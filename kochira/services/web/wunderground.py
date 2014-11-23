@@ -82,7 +82,7 @@ def weather(ctx, where=None):
     wind_dir = observation["wind_dir"]
     humidity = observation["relative_humidity"]
     precip = observation["precip_today_" + _unitize("metric", "in")]
-    weather = observation["weather"]
+    weather = observation["weather"] or ctx._("Unknown Conditions")
 
     ctx.respond(ctx._("Today's weather for {place} is: {weather}, {temp} °{cf} (feels like {feelslike} °{cf}), wind from {wind_dir} at {wind} {kphmph}, {humidity} humidity, {precip}{mmin} precipitation").format(
         place=place,
