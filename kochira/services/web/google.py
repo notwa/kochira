@@ -55,7 +55,7 @@ def search(ctx, term, num: int=None):
         ctx.respond(ctx._("Couldn't find anything matching \"{term}\".").format(term=term))
         return
 
-    ctx.respond(ctx._("{title}: {url} ({num} of {total})").format(
+    ctx.respond(ctx._("{title}: ({num} of {total}) {url}").format(
         title=results[num]["title"],
         url=results[num]["link"],
         num=num + 1,
