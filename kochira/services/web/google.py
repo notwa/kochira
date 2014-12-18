@@ -5,13 +5,18 @@ Run queries on Google and return results.
 """
 
 import requests
-from html.parser import HTMLParser
 
-from kochira.service import Service, background
+from kochira import config
+from kochira.service import Service, background, Config, coroutine
+from kochira.userdata import UserData
 
 service = Service(__name__, __doc__)
 
-html_parser = HTMLParser()
+
+@service.config
+class Config(Config):
+    api_key = config.Field(doc="Google API key.")
+    cx = config.Field(doc="Custom search engine ID.")
 
 
 @service.command(r"!g (?P<term>.+?)(?: (?P<num>\d+))?$")
@@ -26,14 +31,15 @@ def search(ctx, term, num: int=None):
     """
 
     r = requests.get(
-        "https://ajax.googleapis.com/ajax/services/search/web",
+        "https://www.googleapis.com/customsearch/v1",
         params={
-            "v": "1.0",
+            "key": ctx.config.api_key,
+            "cx": ctx.config.cx,
             "q": term
         }
     ).json()
 
-    results = r.get("responseData", {}).get("results", [])
+    results = r.get("items", [])
 
     if not results:
         ctx.respond(ctx._("Couldn't find anything matching \"{term}\".").format(term=term))
@@ -50,8 +56,8 @@ def search(ctx, term, num: int=None):
         return
 
     ctx.respond(ctx._("{title}: {url} ({num} of {total})").format(
-        title=html_parser.unescape(results[num]["titleNoFormatting"]),
-        url=results[num]["unescapedUrl"],
+        title=results[num]["title"],
+        url=results[num]["link"],
         num=num + 1,
         total=total
     ))
