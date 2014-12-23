@@ -244,5 +244,5 @@ def distance(ctx, end_loc, start_loc=None):
         start=start_result["formatted_address"],
         end=end_result["formatted_address"],
         distance=vincenty((start_coords["lat"], start_coords["lng"]),
-                          (end_coords["lat"], end_coords["lng"]))
+                          (end_coords["lat"], end_coords["lng"])).km
     ))
