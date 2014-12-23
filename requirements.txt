@@ -16,3 +16,4 @@ pathlib
 https://github.com/rfk/pyenchant/tarball/master#egg=pyenchant
 textblob
 ccy
+geopy
