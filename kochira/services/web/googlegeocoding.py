@@ -5,7 +5,7 @@ Look up and reverse look up addresses.
 """
 
 import requests
-from geopy.distance import vincenty
+from geopy.distance import vincenty, great_circle
 
 from kochira import config
 from kochira.service import Service, background, Config, coroutine
@@ -240,9 +240,18 @@ def distance(ctx, end_loc, start_loc=None):
     end_result = end_results[0]
     end_coords = end_result["geometry"]["location"]
 
-    ctx.respond(ctx._("Distance from {start} to {end}: {distance:.3f} km").format(
+    is_great_circle = False
+    try:
+        distance = vincenty((start_coords["lat"], start_coords["lng"]),
+                            (end_coords["lat"], end_coords["lng"]))
+    except ValueError:
+        is_great_circle = True
+        distance = great_circle((start_coords["lat"], start_coords["lng"]),
+                                (end_coords["lat"], end_coords["lng"]))
+
+    ctx.respond(ctx._("Distance from {start} to {end}: {approx}{distance:.3f} km").format(
         start=start_result["formatted_address"],
         end=end_result["formatted_address"],
-        distance=vincenty((start_coords["lat"], start_coords["lng"]),
-                          (end_coords["lat"], end_coords["lng"])).km
+        distance=distance.km,
+        great_circleness="~" if is_great_circle else ""
     ))
