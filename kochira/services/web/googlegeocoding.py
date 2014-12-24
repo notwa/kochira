@@ -253,5 +253,5 @@ def distance(ctx, end_loc, start_loc=None):
         start=start_result["formatted_address"],
         end=end_result["formatted_address"],
         distance=distance.km,
-        great_circleness="~" if is_great_circle else ""
+        approx="~" if is_great_circle else ""
     ))
