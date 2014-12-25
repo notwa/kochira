@@ -27,6 +27,9 @@ def choose(ctx, options):
     """
 
     options = [o.strip() for o in re.split(r"(?: or |/|,)", options)]
+    if not options:
+        return
+
     options.sort(key=_ordering_key)
 
     ctx.respond(ctx._("I choose: {choice}").format(
