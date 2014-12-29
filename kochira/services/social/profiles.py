@@ -11,6 +11,7 @@ service = Service(__name__, __doc__)
 
 
 @service.command(r"forget(?: about)? me$", mention=True)
+@service.command(r"!forget$", mention=False)
 def forget_profile(ctx):
     """
     Forget profile.
@@ -36,6 +37,7 @@ def forget_profile(ctx):
 
 
 @service.command(r"[Ii](?: a|')m (?P<text>.+)$", mention=True)
+@service.command(r"!setinfo (?P<text>.+)$", mention=False)
 @coroutine
 def remember_profile(ctx, text):
     """
@@ -58,6 +60,7 @@ def remember_profile(ctx, text):
 
 @service.command(r"who am [Ii]\??$", mention=True)
 @service.command(r"who(?: is|'s| the .* is) (?P<who>\S+?)\??$", mention=True)
+@service.command(r"!info (?P<who>\S+?)$", mention=False)
 @coroutine
 def get_profile(ctx, who=None):
     """
