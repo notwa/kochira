@@ -49,7 +49,7 @@ def remember_profile(ctx, text):
     try:
         user_data = yield ctx.lookup_user_data()
     except UserData.DoesNotExist:
-        ctx.respond(ctx._("Please authenticate before you add a profile."))
+        ctx.respond(ctx._("Please authenticate with NickServ before you add a profile."))
         return
 
     user_data["profile"] = text
