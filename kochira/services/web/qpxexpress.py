@@ -22,10 +22,10 @@ class Config(Config):
     api_key = config.Field(doc="Google API key.")
 
 
-SLICE_SPEC_EXPR = re.compile(r"from (?P<origin>.+?) to (?P<destination>.+?) on (?P<date>.+?)$")
+SLICE_SPEC_EXPR = re.compile(r"(?P<origin>.+?) to (?P<destination>.+?) on (?P<date>.+?)$")
 
 
-@service.command(r"flights(?: for (?P<num_adults>\d+)(?: adults?)?)? (?P<slice_specs>.*)", mention=True)
+@service.command(r"flights(?: for (?P<num_adults>\d+)(?: adults?)?)? from (?P<slice_specs>.*)", mention=True)
 @background
 def flight_search(ctx, slice_specs, num_adults: int=1):
     """
@@ -65,7 +65,7 @@ def flight_search(ctx, slice_specs, num_adults: int=1):
                     "adultCount": num_adults or 1
                 },
                 "slice": slices,
-                "solutions": 5
+                "solutions": 1
             }
         })).json()
 
@@ -115,7 +115,7 @@ def flight_search(ctx, slice_specs, num_adults: int=1):
                     if departure_time.date() != arrival_time.date():
                         dest_time = arrival_time.strftime("%b %d") + ", " + dest_time
 
-                    segment_infos.append(ctx._("{origin} ({departure}) -/{flight}/-> {destination} ({arrival})").format(
+                    segment_infos.append(ctx._("{origin} ({departure}) -({flight})-> {destination} ({arrival})").format(
                         departure=orig_time,
                         origin=origin_airport["code"],
                         flight="{carrier}{number}".format(**segment["flight"]),
