@@ -64,7 +64,8 @@ def flight_search(ctx, slice_specs, num_adults=2):
         }).json()
 
     if "error" in resp:
-        ctx.reply(ctx._("Error while computing flights: {message}").format(message=resp["error"]["message"]))
+        ctx.respond(ctx._("Error while computing flights: {message}").format(message=resp["error"]["message"]))
+        return
 
     trips = resp["trips"]
     data = trips["data"]
