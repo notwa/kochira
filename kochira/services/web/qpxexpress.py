@@ -128,6 +128,6 @@ def flight_search(ctx, slice_specs, num_adults: int=1):
 
     ctx.respond(
         ctx._("For {symbol}{price}: {segments}").format(
-            symbol=currency.symbol
+            symbol=currency.symbol,
             price=price[3:],
             segments=" | ".join(slice_infos)))
