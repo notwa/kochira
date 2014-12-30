@@ -21,7 +21,7 @@ class Config(Config):
     api_key = config.Field(doc="Google API key.")
 
 
-SLICE_SPEC_EXPR = re.compile(r"from (?P<origin>.+?) to (?P<destination>.+?) on (?P<date>.+?)")
+SLICE_SPEC_EXPR = re.compile(r"from (?P<origin>.+?) to (?P<destination>.+?) on (?P<date>.+?)$")
 
 
 @service.command(r"flights(?: for (?P<num_adults>\d+)(?: adults?)?)? (?P<slice_specs>.*)", mention=True)
@@ -50,15 +50,6 @@ def flight_search(ctx, slice_specs, num_adults: int=1):
             "date": dateutil.parser.parse(match.group("date")).strftime("%Y-%m-%d")
         })
 
-    ctx.respond(json.dumps({
-            "request": {
-                "passengers": {
-                    "adultCount": num_adults or 1
-                },
-                "slice": slices,
-                "solutions": 5
-            }
-        }))
     resp = requests.post(
         "https://www.googleapis.com/qpxExpress/v1/trips/search",
         params={
