@@ -26,7 +26,7 @@ SLICE_SPEC_EXPR = re.compile(r"from (?P<origin>.+?) to (?P<destination>.+?) on (
 
 @service.command(r"flights(?: for (?P<num_adults>\d+)(?: adults)?)? (?P<slice_specs>.*)", mention=True)
 @background
-def flight_search(ctx, slice_specs, num_adults=2):
+def flight_search(ctx, slice_specs, num_adults: int=1):
     """
     Search for flights.
 
