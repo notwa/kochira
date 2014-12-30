@@ -7,6 +7,7 @@ Find flights using ITA Software's flight search.
 from kochira import config
 from kochira.service import Service, background, Config
 
+import ccy
 import dateutil.parser
 import json
 import re
@@ -123,7 +124,10 @@ def flight_search(ctx, slice_specs, num_adults: int=1):
 
             slice_infos.append(", ".join(segment_infos))
 
+    currency = ccy.currency(price[:3])
+
     ctx.respond(
-        ctx._("For {price}: {segments}").format(
-            price=price,
+        ctx._("For {symbol}{price}: {segments}").format(
+            symbol=currency.symbol
+            price=price[3:],
             segments=" | ".join(slice_infos)))
