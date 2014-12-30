@@ -39,7 +39,7 @@ def flight_search(ctx, slice_specs, num_adults=2):
         match = SLICE_SPEC_EXPR.match(slice_spec)
 
         if match is None:
-            ctx.reply(
+            ctx.respond(
                 ctx._("Couldn't figure out what you wanted. Make sure flights are in the format \"flights from <origin> to <destination> on <date>\"."))
             return
 
@@ -63,7 +63,7 @@ def flight_search(ctx, slice_specs, num_adults=2):
     trips = resp["trips"]
 
     if not trips:
-        ctx.reply(ctx._("No flights available."))
+        ctx.respond(ctx._("No flights available."))
         return
 
     data = trips["data"]
@@ -116,7 +116,7 @@ def flight_search(ctx, slice_specs, num_adults=2):
 
             slice_infos.append(", ".join(segment_infos))
 
-    ctx.reply(
+    ctx.respond(
         ctx._("For {price}: {segments}").format(
             price=price,
             segments=" | ".join(slice_infos)))
