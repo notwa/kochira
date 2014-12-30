@@ -10,7 +10,7 @@ from kochira.service import Service, background, Config
 import dateutil.parser
 import re
 import requests
-import urllib
+import urllib.parse
 
 service = Service(__name__, __doc__)
 
@@ -50,7 +50,7 @@ def flight_search(ctx, slice_specs, num_adults=2):
         })
 
     resp = requests.post(
-        "https://www.googleapis.com/qpxExpress/v1/trips/search?key=" + urllib.urlencode(ctx.config.api_key),
+        "https://www.googleapis.com/qpxExpress/v1/trips/search?key=" + urllib.parse.urlencode(ctx.config.api_key),
         params={
             "request": {
                 "passengers": {
