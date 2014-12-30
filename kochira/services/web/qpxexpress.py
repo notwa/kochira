@@ -8,6 +8,7 @@ from kochira import config
 from kochira.service import Service, background, Config
 
 import dateutil.parser
+import json
 import re
 import requests
 import urllib.parse
@@ -50,10 +51,14 @@ def flight_search(ctx, slice_specs, num_adults=2):
         })
 
     resp = requests.post(
-        "https://www.googleapis.com/qpxExpress/v1/trips/search?" + urllib.parse.urlencode({
-            "key": ctx.config.api_key
-        }),
+        "https://www.googleapis.com/qpxExpress/v1/trips/search",
         params={
+            "key": ctx.config.api_key
+        },
+        headers={
+            "Content-Type": "application/json"
+        },
+        data=json.dumps({
             "request": {
                 "passengers": {
                     "adultCount": num_adults
@@ -61,7 +66,7 @@ def flight_search(ctx, slice_specs, num_adults=2):
                 "slice": slices,
                 "solutions": 5
             }
-        }).json()
+        })).json()
 
     if "error" in resp:
         ctx.respond(ctx._("Error while computing flights: {message}").format(message=resp["error"]["message"]))
