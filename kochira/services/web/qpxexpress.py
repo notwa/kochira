@@ -58,16 +58,15 @@ def flight_search(ctx, slice_specs, num_adults=2):
                 "passengers": {
                     "adultCount": num_adults
                 },
-                "slice": slices
+                "slice": slices,
+                "solutions": 5
             }
         }).json()
 
+    if "error" in resp:
+        ctx.reply(ctx._("Error while computing flights: {message}").format(message=resp["error"]["message"]))
+
     trips = resp["trips"]
-
-    if not trips:
-        ctx.respond(ctx._("No flights available."))
-        return
-
     data = trips["data"]
     options = trips["tripOption"]
 
