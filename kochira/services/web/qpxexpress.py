@@ -50,7 +50,9 @@ def flight_search(ctx, slice_specs, num_adults=2):
         })
 
     resp = requests.post(
-        "https://www.googleapis.com/qpxExpress/v1/trips/search?key=" + urllib.parse.urlencode(ctx.config.api_key),
+        "https://www.googleapis.com/qpxExpress/v1/trips/search?" + urllib.parse.urlencode({
+            "key": ctx.config.api_key
+        }),
         params={
             "request": {
                 "passengers": {
