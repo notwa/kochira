@@ -7,7 +7,9 @@
 <blockquote id="{{profile.network}}/{{profile.account}}">
     <ul>
         {% for line in profile.value.split(" | ") %}
-        <li>{{linkify(line.strip())}}</li>
+        {% autoescape None %}
+        <li>{{linkify(xhtml_escape(line.strip()))}}</li>
+        {% autoescape xhtml_escape %}
         {% end %}
     </ul>
     <small><a href="#{{profile.network}}/{{profile.account}}">{{profile.account}} of {{profile.network}}</a></small>
