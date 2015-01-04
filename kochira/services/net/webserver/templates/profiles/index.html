@@ -1,0 +1,12 @@
+{% extends "../_layout.html" %}
+
+{% block title %}Profiles{% end %}
+
+{% block body %}
+{% for profile in profiles %}
+<blockquote>
+    <p>{{profile.value}}</p>
+    <small>{{profile.account}} of {{profile.network}}</small>
+</blockquote>
+{% end %}
+{% end %}

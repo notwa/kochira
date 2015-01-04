@@ -4,8 +4,12 @@ Personal profiles.
 This service allows the bot to keep track of people's profiles.
 """
 
+import operator
+import itertools
+from tornado.web import RequestHandler, Application
+
 from kochira.service import Service, coroutine
-from kochira.userdata import UserData
+from kochira.userdata import UserData, UserDataKVPair
 
 service = Service(__name__, __doc__)
 
@@ -83,3 +87,28 @@ def get_profile(ctx, who=None):
         who=who,
         text=user_data["profile"]
     ))
+
+
+class IndexHandler(RequestHandler):
+    def get(self):
+        self.render("profiles/index.html",
+                    profiles=UserDataKVPair
+                            .select()
+                            .where(UserDataKVPair.key == "profile")
+                            .order_by(UserDataKVPair.network)
+                            .order_by(UserDataKVPair.account))
+
+
+def make_application(settings):
+    return Application([
+        (r"/", IndexHandler)
+    ], **settings)
+
+
+@service.hook("services.net.webserver")
+def webserver_config(ctx):
+    return {
+        "name": "profiles",
+        "title": "Profiles",
+        "application_factory": make_application
+    }
