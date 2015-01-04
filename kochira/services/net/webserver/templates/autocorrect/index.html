@@ -1,0 +1,24 @@
+{% extends "../_layout.html" %}
+
+{% block title %}Autocorrect{% end %}
+
+{% block body %}
+<table class="table">
+  <tr>
+    <th>Look for</th>
+    <th>Correct to</th>
+  </tr>
+  {% for correction in corrections %}
+    <tr>
+      <td>
+        {% if is_regex(correction.what) %}
+        <code>{{correction.what}}</code>
+        {% else %}
+        {{correction.what}}
+        {% end %}
+      </td>
+      <td>{{correction.correction}}</td>
+    </tr>
+  {% end %}
+</table>
+{% end %}

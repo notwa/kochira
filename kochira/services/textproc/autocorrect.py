@@ -7,6 +7,7 @@ keywords.
 
 import re
 from peewee import CharField
+from tornado.web import RequestHandler, Application
 
 from kochira.db import Model
 
@@ -129,3 +130,25 @@ def list_corrections(ctx):
         corrections=", ".join(correction.what if is_regex(correction.what) else "\"" + correction.what + "\""
                               for correction in Correction.select().order_by(Correction.what))
     ))
+
+
+class IndexHandler(RequestHandler):
+    def get(self):
+        self.render("autocorrect/index.html",
+                    corrections=Correction.select().order_by(Correction.what),
+                    is_regex=is_regex)
+
+
+def make_application(settings):
+    return Application([
+        (r"/", IndexHandler)
+    ], **settings)
+
+
+@service.hook("services.net.webserver")
+def webserver_config(ctx):
+    return {
+        "name": "autocorrect",
+        "title": "Autocorrect",
+        "application_factory": make_application
+    }
