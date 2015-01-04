@@ -8,6 +8,7 @@ users.
 import random
 import re
 from peewee import CharField
+from tornado.web import RequestHandler, Application
 
 from kochira.db import Model
 
@@ -111,3 +112,24 @@ def list_replies(ctx):
         replies=", ".join(reply.what if is_regex(reply.what) else "\"" + reply.what + "\""
                           for reply in Reply.select().order_by(Reply.what))
     ))
+
+
+class IndexHandler(RequestHandler):
+    def get(self):
+        self.render("replies/index.html",
+                    replies=Reply.select().order_by(Reply.what))
+
+
+def make_application(settings):
+    return Application([
+        (r"/", IndexHandler)
+    ], **settings)
+
+
+@service.hook("services.net.webserver")
+def webserver_config(ctx):
+    return {
+        "name": "replies",
+        "title": "Replies",
+        "application_factory": make_application
+    }

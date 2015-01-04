@@ -1,0 +1,18 @@
+{% extends "../_layout.html" %}
+
+{% block title %}Replies{% end %}
+
+{% block body %}
+<table class="table">
+  <tr>
+    <th>Look for</th>
+    <th>Reply with</th>
+  </tr>
+  {% for reply in replies %}
+    <tr>
+      <td>{{reply.what}}</td>
+      <td>{{reply.reply}}</td>
+    </tr>
+  {% end %}
+</table>
+{% end %}

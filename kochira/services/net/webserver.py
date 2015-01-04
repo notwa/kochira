@@ -10,6 +10,7 @@ from docutils.core import publish_parts
 from kochira import config
 from kochira.service import Service, Config, HookContext
 
+import copy
 import os
 import subprocess
 
@@ -54,13 +55,12 @@ class MainHandler(RequestHandler):
         application.ctx = HookContext(service, self.application._ctx.bot)
         application.name = name
 
-        uri = self.request.uri[len(name) + 1:]
+        path = self.request.path[len(name) + 1:]
 
-        application(HTTPRequest(self.request.method, uri,
-                                self.request.version, self.request.headers,
-                                self.request.body, self.request.remote_ip,
-                                self.request.protocol, self.request.host,
-                                self.request.files, self.request.connection))
+        request = copy.copy(self.request)
+        request.path = path
+
+        application(request)
         self._handled = True
 
     def finish(self, chunk=None):
