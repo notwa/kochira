@@ -5,7 +5,11 @@
 {% block body %}
 {% for profile in profiles %}
 <blockquote id="{{profile.network}}/{{profile.account}}">
-    <p>{{profile.value}}</p>
+    <ul>
+        {% for line in profile.value.split(" | ") %}
+        <li>{{line.strip()}}</li>
+        {% end %}
+    </ul>
     <small><a href="#{{profile.network}}/{{profile.account}}">{{profile.account}} of {{profile.network}}</a></small>
 </blockquote>
 {% end %}
