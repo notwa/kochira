@@ -4,9 +4,9 @@
 
 {% block body %}
 {% for profile in profiles %}
-<blockquote>
+<blockquote id="{{profile.network}}-{{profile.account}}">
     <p>{{profile.value}}</p>
-    <small>{{profile.account}} of {{profile.network}}</small>
+    <small><a href="#{{profile.network}}-{{profile.account}}">{{profile.account}} of {{profile.network}}</a></small>
 </blockquote>
 {% end %}
 {% end %}
