@@ -95,8 +95,8 @@ class IndexHandler(RequestHandler):
                     profiles=UserDataKVPair
                             .select()
                             .where(UserDataKVPair.key == "profile")
-                            .order_by(UserDataKVPair.network)
-                            .order_by(UserDataKVPair.account))
+                            .order_by(UserDataKVPair.account)
+                            .order_by(UserDataKVPair.network))
 
 
 def make_application(settings):
