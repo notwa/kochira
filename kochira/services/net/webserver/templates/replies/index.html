@@ -10,7 +10,13 @@
   </tr>
   {% for reply in replies %}
     <tr>
-      <td>{{reply.what}}</td>
+      <td>
+        {% if is_regex(reply.what) %}
+        <code>{{reply.what}}</code>
+        {% else %}
+        {{reply.what}}
+        {% end %}
+      </td>
       <td>{{reply.reply}}</td>
     </tr>
   {% end %}

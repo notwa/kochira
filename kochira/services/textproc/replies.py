@@ -117,7 +117,8 @@ def list_replies(ctx):
 class IndexHandler(RequestHandler):
     def get(self):
         self.render("replies/index.html",
-                    replies=Reply.select().order_by(Reply.what))
+                    replies=Reply.select().order_by(Reply.what),
+                    is_regex=is_regex)
 
 
 def make_application(settings):
