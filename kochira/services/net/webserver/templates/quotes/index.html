@@ -2,44 +2,37 @@
 
 {% block title %}{{query + " – " if query else ""}}Quotes{% end %}
 
-{% block wrap %}
-<nav class="navbar navbar-default navbar-fixed-top navbar-secondary" role="navigation">
-    <div class="container">
-        <form class="navbar-form navbar-right" role="search" method="get" action="/quotes/">
-            <div class="form-group">
-                <input type="text" class="form-control" placeholder="Search" name="q" value="{{query or ""}}">
-            </div>
-            <button type="submit" class="btn btn-default">Submit</button>
-        </form>
-    </div>
-</nav>
-<div class="container">{% block body %}{% end %}</div>
-{% end %}
-
 {% block body %}
+<form class="navbar-form navbar-right" role="search" method="get" action="/quotes/">
+    <div class="form-group">
+        <input type="text" class="form-control" placeholder="Search" name="q" value="{{query or ""}}">
+    </div>
+    <button type="submit" class="btn btn-default">Submit</button>
+</form>
+
 <div class="quotes-container">
 {% import math %}
-    {% for quote in quotes %}
-    <blockquote>
-        <p>
-            {% for line in quote.quote_with_newlines.split("\n") %}
-            {{line}}<br>
-            {% end %}
-        </p>
-        <small><a href="?q=id:{{quote.id}}">Quote #{{quote.id}}</a>
-        by <a href="?q=by:{{url_escape(quote.by)}}">{{quote.by}}</a>
-        in <a href="?q=channel:{{url_escape(quote.channel)}}+AND+network:{{url_escape(quote.network)}}">{{quote.channel}}</a>
-        on <a href="?q=network:{{url_escape(quote.network)}}">{{quote.network}}</a>
-        <time datetime="{{quote.ts.isoformat()}}Z">{{quote.ts.isoformat()}}Z</time></small>
-    </blockquote>
-    {% end %}
+{% for quote in quotes %}
+<blockquote>
+    <p>
+        {% for line in quote.quote_with_newlines.split("\n") %}
+        {{line}}<br>
+        {% end %}
+    </p>
+    <small><a href="?q=id:{{quote.id}}">Quote #{{quote.id}}</a>
+    by <a href="?q=by:{{url_escape(quote.by)}}">{{quote.by}}</a>
+    in <a href="?q=channel:{{url_escape(quote.channel)}}+AND+network:{{url_escape(quote.network)}}">{{quote.channel}}</a>
+    on <a href="?q=network:{{url_escape(quote.network)}}">{{quote.network}}</a>
+    <time datetime="{{quote.ts.isoformat()}}Z">{{quote.ts.isoformat()}}Z</time></small>
+</blockquote>
+{% end %}
 
-    <ul class="pager">
-        {% set n = int(math.ceil(count / limit)) %}
-        {% set j = offset // limit %}
-        <li class="previous{% if j <= 0 %} disabled{% end %}"><a href="?offset={{(j - 1) * limit}}&limit={{limit}}&q={{url_escape(query) or ""}}">&larr; Newer</a></li>
-        <li class="next{% if j >= n - 1 %} disabled{% end %}"><a href="?offset={{(j + 1) * limit}}&limit={{limit}}&q={{url_escape(query) or ""}}">Older &rarr;</a></li>
-    </ul>
+<ul class="pager">
+    {% set n = int(math.ceil(count / limit)) %}
+    {% set j = offset // limit %}
+    <li class="previous{% if j <= 0 %} disabled{% end %}"><a href="?offset={{(j - 1) * limit}}&limit={{limit}}&q={{url_escape(query) or ""}}">&larr; Newer</a></li>
+    <li class="next{% if j >= n - 1 %} disabled{% end %}"><a href="?offset={{(j + 1) * limit}}&limit={{limit}}&q={{url_escape(query) or ""}}">Older &rarr;</a></li>
+</ul>
 </div>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment.min.js"></script>

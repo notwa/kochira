@@ -16,7 +16,7 @@ body {
 }
 
 #wrap > .container {
-  padding: 60px 15px 0;
+  padding: 0 15px 0;
 }
 
 .container .text-muted {
@@ -29,7 +29,7 @@ body {
 }
 
 .quotes-container {
-  padding-top: 50px;
+  clear: both;
 }
 
 .service-list {
@@ -51,10 +51,6 @@ body {
 
 .config-options p {
   display: inline;
-}
-
-.navbar-secondary {
-  top: 51px;
 }
 
 @media (min-width: 768px) {
