@@ -24,12 +24,12 @@ def sed(ctx, pattern, replacement, who=None, flags=None):
     if flags is None:
         flags = ""
 
-    re_flags = re.UNICODE
+    re_flags = re2.UNICODE
 
     if "i" in flags:
-        re_flags |= re.IGNORECASE
+        re_flags |= re2.IGNORECASE
     if "s" in flags:
-        re_flags |= re.DOTALL
+        re_flags |= re2.DOTALL
 
     try:
         expr = re2.compile(pattern, re_flags)
