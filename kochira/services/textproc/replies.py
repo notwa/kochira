@@ -6,7 +6,7 @@ users.
 """
 
 import random
-import re
+import re2
 from peewee import CharField
 from tornado.web import RequestHandler, Application
 
@@ -65,10 +65,10 @@ def do_reply(ctx, target, origin, message):
         if is_regex(reply.what):
             expr = reply.what[1:-1]
         else:
-            expr = r"\b{}\b".format(re.escape(reply.what))
-        match = re.search(expr, message, re.I)
+            expr = r"\b{}\b".format(re2.escape(reply.what))
+        match = re2.search(expr, message, re2.I)
         if match is not None:
-            replies.append(re.sub(expr, reply.reply, match.group(0), flags=re.I))
+            replies.append(re2.sub(expr, reply.reply, match.group(0), flags=re2.I))
 
     if not replies:
         return

@@ -5,7 +5,7 @@ This service enables the bot to perform automatic corrections for given
 keywords.
 """
 
-import re
+import re2
 from peewee import CharField
 from tornado.web import RequestHandler, Application
 
@@ -82,10 +82,10 @@ def do_correction(ctx, target, origin, message):
         if is_regex(correction.what):
             expr = correction.what[1:-1]
         else:
-            expr = r"\b{}\b".format(re.escape(correction.what))
-        corrected = re.sub(expr,
+            expr = r"\b{}\b".format(re2.escape(correction.what))
+        corrected = re2.sub(expr,
                            make_case_corrector("\x1f" + correction.correction + "\x1f"),
-                           corrected, 0, re.I)
+                           corrected, 0, re2.I)
 
     if message != corrected:
         ctx.message(ctx._("<{origin}> {corrected}").format(
