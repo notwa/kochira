@@ -83,9 +83,10 @@ def do_correction(ctx, target, origin, message):
             expr = correction.what[1:-1]
         else:
             expr = r"\b{}\b".format(re2.escape(correction.what))
-        corrected = re2.sub(expr,
-                           make_case_corrector("\x1f" + correction.correction + "\x1f"),
-                           corrected, 0, re2.I)
+        expr = re2.compile(expr, re2.I)
+        corrected = expr.sub(
+            make_case_corrector("\x1f" + correction.correction + "\x1f"),
+            corrected)
 
     if message != corrected:
         ctx.message(ctx._("<{origin}> {corrected}").format(
