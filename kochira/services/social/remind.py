@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from peewee import TextField, CharField, DateTimeField, IntegerField
 
 import math
+import re
 
 from kochira.db import Model
 
@@ -82,10 +83,21 @@ def play_timed_reminder(ctx, reminder):
     if not needs_archive:
         reminder.delete_instance()
 
+def natural_join(xs):
+    if len(xs) == 0:
+        return ""
 
-@service.command(r"(?:remind|tell) (?P<who>\S+) (?:about|to|that) (?P<message>.+) (?P<duration>(?:in|on|after) .+|at .+|tomorrow)$", mention=True, priority=1)
-@service.command(r"(?:remind|tell) (?P<who>\S+) (?P<duration>(?:in|on|after) .+|at .+|tomorrow) (?:about|to|that) (?P<message>.+)$", mention=True, priority=1)
-def add_timed_reminder(ctx, who, duration, message):
+    if len(xs) == 1:
+        return xs[0]
+
+    *init, last = xs
+
+    return ctx._("{init}, and {last}").format(init=ctx._(", ").join(init), last=last)
+
+
+@service.command(r"(?:remind|tell) (?P<whos>.+?) (?:about|to|that) (?P<message>.+) (?P<duration>(?:in|on|after) .+|at .+|tomorrow)$", mention=True, priority=1)
+@service.command(r"(?:remind|tell) (?P<whos>.+?) (?P<duration>(?:in|on|after) .+|at .+|tomorrow) (?:about|to|that) (?P<message>.+)$", mention=True, priority=1)
+def add_timed_reminder(ctx, whos, duration, message):
     """
     Add timed reminder.
 
@@ -96,29 +108,32 @@ def add_timed_reminder(ctx, who, duration, message):
     now = datetime.now()
     t = parse_time(duration)
 
-    if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
-        who = ctx.origin
+    whos = re.split(r",(?: and )?| and ", who)
 
-    if t is None:
-        ctx.respond(ctx._("Sorry, I don't understand that time."))
-        return
+    for who in whos:
+        if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
+            who = ctx.origin
+    
+        if t is None:
+            ctx.respond(ctx._("Sorry, I don't understand that time."))
+            return
+    
+        dt = timedelta(seconds=int(math.ceil((parse_time(duration) - now).total_seconds())))
+    
+        if dt < timedelta(0):
+            ctx.respond(ctx._("Uh, that's in the past."))
+            return
+    
+        # persist reminder to the DB
+        reminder = Reminder.create(who=who, who_n=ctx.client.normalize(who),
+                                   channel=ctx.target, origin=ctx.origin,
+                                   message=message, client_name=ctx.client.name,
+                                   ts=datetime.utcnow(),
+                                   duration=dt.total_seconds())
+        reminder.save()
 
-    dt = timedelta(seconds=int(math.ceil((parse_time(duration) - now).total_seconds())))
-
-    if dt < timedelta(0):
-        ctx.respond(ctx._("Uh, that's in the past."))
-        return
-
-    # persist reminder to the DB
-    reminder = Reminder.create(who=who, who_n=ctx.client.normalize(who),
-                               channel=ctx.target, origin=ctx.origin,
-                               message=message, client_name=ctx.client.name,
-                               ts=datetime.utcnow(),
-                               duration=dt.total_seconds())
-    reminder.save()
-
-    ctx.respond(ctx._("Okay, I'll let {who} know in around {dt}.").format(
-        who=who,
+    ctx.respond(ctx._("Okay, I'll let {whos} know in around {dt}.").format(
+        whos=natural_join(whos),
         dt=humanize.naturaltime(-dt)
     ))
 
@@ -126,8 +141,8 @@ def add_timed_reminder(ctx, who, duration, message):
     ctx.bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
 
 
-@service.command(r"(?:remind|tell) (?P<who>\S+)(?: about| to| that)? (?P<message>.+)$", mention=True)
-def add_reminder(ctx, who, message):
+@service.command(r"(?:remind|tell) (?P<whos>.+?)(?: about| to| that)? (?P<message>.+)$", mention=True)
+def add_reminder(ctx, whos, message):
     """
     Add reminder.
 
@@ -135,16 +150,19 @@ def add_reminder(ctx, who, message):
     the channel.
     """
 
-    if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
-        who = ctx.origin
+    whos = re.split(r",(?: and )?| and ", who)
 
-    Reminder.create(who=who, who_n=ctx.client.normalize(who),
-                    channel=ctx.target, origin=ctx.origin, message=message,
-                    client_name=ctx.client.name, ts=datetime.utcnow(),
-                    duration=None).save()
+    for who in whos:
+        if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
+            who = ctx.origin
+    
+        Reminder.create(who=who, who_n=ctx.client.normalize(who),
+                        channel=ctx.target, origin=ctx.origin, message=message,
+                        client_name=ctx.client.name, ts=datetime.utcnow(),
+                        duration=None).save()
 
-    ctx.respond(ctx._("Okay, I'll let {who} know.").format(
-        who=who
+    ctx.respond(ctx._("Okay, I'll let {whos} know.").format(
+        whos=natural_join(whos)
     ))
 
 
