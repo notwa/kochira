@@ -140,7 +140,7 @@ def add_timed_reminder(ctx, whos, duration, message):
     ctx.bot.scheduler.schedule_after(dt, play_timed_reminder, reminder)
 
 
-@service.command(r"(?:remind|tell) (?P<whos>.+?)(?: about| to| that)? (?P<message>.+)$", mention=True)
+@service.command(r"(?:remind|tell) (?P<whos>.+?) (?:about|to|that) (?P<message>.+)$", mention=True)
 def add_reminder(ctx, whos, message):
     """
     Add reminder.
