@@ -87,7 +87,8 @@ def natural_join(ctx, xs):
         return ""
 
     if len(xs) == 1:
-        return xs[0]
+        x, = xs
+        return x
 
     if len(xs) == 2:
         a, b = xs
