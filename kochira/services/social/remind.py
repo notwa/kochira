@@ -111,7 +111,7 @@ def add_timed_reminder(ctx, whos, duration, message):
     now = datetime.now()
     t = parse_time(duration)
 
-    whos = set(re.split(r",(?: and )?| and ", whos))
+    whos = set(re.split(r",(?: and | )?| and ", whos))
 
     for who in whos:
         if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
@@ -153,7 +153,7 @@ def add_reminder(ctx, whos, message):
     the channel.
     """
 
-    whos = set(re.split(r",(?: and )?| and ", whos))
+    whos = set(re.split(r",(?: and | )?| and ", whos))
 
     for who in whos:
         if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
