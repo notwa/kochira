@@ -89,6 +89,10 @@ def natural_join(ctx, xs):
     if len(xs) == 1:
         return xs[0]
 
+    if len(xs) == 2:
+        a, b = xs
+        return ctx._("{first} and {second}").format(first=a, second=b)
+
     *init, last = xs
 
     return ctx._("{init}, and {last}").format(init=ctx._(", ").join(init), last=last)
@@ -107,7 +111,7 @@ def add_timed_reminder(ctx, whos, duration, message):
     now = datetime.now()
     t = parse_time(duration)
 
-    whos = re.split(r",(?: and )?| and ", whos)
+    whos = set(re.split(r",(?: and )?| and ", whos))
 
     for who in whos:
         if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
@@ -149,7 +153,7 @@ def add_reminder(ctx, whos, message):
     the channel.
     """
 
-    whos = re.split(r",(?: and )?| and ", whos)
+    whos = set(re.split(r",(?: and )?| and ", whos))
 
     for who in whos:
         if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
