@@ -10,7 +10,6 @@ import parsedatetime
 
 from datetime import datetime, timedelta
 from peewee import TextField, CharField, DateTimeField, IntegerField
-w
 import math
 import re
 
