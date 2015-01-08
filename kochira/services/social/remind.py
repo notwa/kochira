@@ -82,7 +82,7 @@ def play_timed_reminder(ctx, reminder):
     if not needs_archive:
         reminder.delete_instance()
 
-def natural_join(xs):
+def natural_join(ctx, xs):
     if len(xs) == 0:
         return ""
 
@@ -132,7 +132,7 @@ def add_timed_reminder(ctx, whos, duration, message):
         reminder.save()
 
     ctx.respond(ctx._("Okay, I'll let {whos} know in around {dt}.").format(
-        whos=natural_join(whos),
+        whos=natural_join(ctx, whos),
         dt=humanize.naturaltime(-dt)
     ))
 
@@ -161,7 +161,7 @@ def add_reminder(ctx, whos, message):
                         duration=None).save()
 
     ctx.respond(ctx._("Okay, I'll let {whos} know.").format(
-        whos=natural_join(whos)
+        whos=natural_join(ctx, whos)
     ))
 
 
