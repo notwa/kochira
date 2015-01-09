@@ -32,7 +32,7 @@ def stock_price(ctx, symbol):
             params={"s": symbol, "f": "sxnl1t1c1p2"}).text),
         delimiter=",", quotechar="\"")
 
-    ctx.respond(ctx._("The last trading price at {last_trade_time} for {name} ({exchange}: {symbol}) is {last_trade_price} ({change}, {change_pct})").format(
+    ctx.respond(ctx._("The last trading price at {last_trade_time} for {name} ({exchange}: {symbol}) is {last_trade_price}, with a change of {change} ({change_pct}).").format(
         last_trade_time=last_trade_time,
         last_trade_price=last_trade_price,
         name=name,
