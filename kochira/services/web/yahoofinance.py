@@ -37,6 +37,6 @@ def stock_price(ctx, symbol):
         last_trade_price=last_trade_price,
         name=name,
         exchange=exchange,
-        symbol=symbol
+        symbol=symbol,
         change=change,
         change_pct=change_pct))
