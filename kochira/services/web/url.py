@@ -77,7 +77,8 @@ HANDLERS = {
     "application/xhtml+xml": handle_html,
     "image/jpeg": handle_image,
     "image/png": handle_image,
-    "image/gif": handle_image
+    "image/gif": handle_image,
+    "image/webp": handle_image
 }
 
 @service.hook("channel_message")
