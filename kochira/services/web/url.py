@@ -7,7 +7,6 @@ Fetches and displays metadata for web pages, images and more.
 import humanize
 import re
 import requests
-import mimetypes
 import tempfile
 from datetime import timedelta
 from bs4 import BeautifulSoup
@@ -49,9 +48,7 @@ def get_num_image_frames(im):
 
 
 def handle_image(resp):
-    with tempfile.NamedTemporaryFile(
-        suffix=mimetypes.guess_extension(resp.headers["content-type"])
-    ) as f:
+    with tempfile.NamedTemporaryFile() as f:
         f.write(resp.content)
         im = Image.open(f.name)
 
