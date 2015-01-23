@@ -55,9 +55,22 @@ def search(ctx, term, num: int=None):
         ctx.respond(ctx._("Couldn't find anything matching \"{term}\".").format(term=term))
         return
 
-    ctx.respond(ctx._("({num} of {total}) {title} – {description}: http://youtu.be/{video_id}").format(
+    r = requests.get(
+        "https://www.googleapis.com/youtube/v3/videos",
+        params={
+            "key": ctx.config.api_key,
+            "part": "statistics",
+            "id": results[num]["id"]["videoId"]
+        }
+    ).json()
+
+    statistics, = r["items"]
+
+    ctx.respond(ctx._("({num} of {total}) {title} (+{likes}/-{dislikes}, {views} views): http://youtu.be/{video_id}").format(
         title=results[num]["snippet"]["title"],
-        description=results[num]["snippet"]["description"],
+        likes=statistics["likeCount"],
+        dislikes=statistics["dislikeCount"],
+        views=statistics["viewCount"],
         video_id=results[num]["id"]["videoId"],
         num=num + 1,
         total=total
