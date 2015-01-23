@@ -116,7 +116,7 @@ def detect_urls(ctx, origin, target, message):
                             info = "\x02Content Type:\x02 " + content_type
                             continue
 
-                    info = HANDLERS[content_type]()
+                    info = HANDLERS[content_type](content)
                 else:
                     info = "\x02Content Type:\x02 " + content_type
             found_info[url] = info
