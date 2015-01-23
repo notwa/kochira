@@ -65,6 +65,7 @@ def search(ctx, term, num: int=None):
     ).json()
 
     statistics, = r["items"]
+    statistics = statistics["statistics"]
 
     ctx.respond(ctx._("({num} of {total}) {title} (+{likes}/-{dislikes}, {views} views): http://youtu.be/{video_id}").format(
         title=results[num]["snippet"]["title"],
