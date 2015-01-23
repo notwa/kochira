@@ -109,7 +109,7 @@ def detect_urls(ctx, origin, target, message):
                 if content_type in HANDLERS:
                     resp = requests.get(url, headers=HEADERS, verify=False,
                                         stream=True)
-                    content = ""
+                    content = b""
 
                     for chunk in resp.iter_content(2048):
                         content += chunk
