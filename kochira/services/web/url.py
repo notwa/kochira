@@ -23,8 +23,6 @@ class Config(Config):
     max_size = config.Field(doc="Maximum request size.", default=5 * 1024 * 1024)
 
 
-service = Service(__name__, __doc__)
-
 HEADERS = {
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:23.0) Gecko/20130426 Firefox/23.0'
 }
