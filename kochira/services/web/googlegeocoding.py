@@ -4,6 +4,7 @@ Geocoding.
 Look up and reverse look up addresses.
 """
 
+import re
 import requests
 from geopy.distance import vincenty, great_circle
 
@@ -204,11 +205,10 @@ def nearby_search(ctx, what, where=None, radius : int=None, num : int=None):
     ))
 
 
-@service.command(r"distance to (?P<end_loc>.+?) from (?P<start_loc>.+?)", mention=True, priority=1)
-@service.command(r"distance(?: from (?P<start_loc>.+?))? to (?P<end_loc>.+?)", mention=True)
+@service.command(r"distance(?: from (?P<start_loc>.+?))? to (?P<path>.+?)", mention=True)
 @background
 @coroutine
-def distance(ctx, end_loc, start_loc=None):
+def distance(ctx, path, start_loc=None):
     """
     Distance.
 
@@ -229,29 +229,31 @@ def distance(ctx, end_loc, start_loc=None):
     start_result = start_results[0]
     start_coords = start_result["geometry"]["location"]
 
-    end_results = yield ctx.provider_for("geocode")(end_loc)
+    for part in re.split(r"\s+to\s+", path):
+        results = yield ctx.provider_for("geocode")(part)
+        if not result:
+            ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
+                where=end_loc
+            ))
+            return
 
-    if not end_results:
-        ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
-            where=end_loc
-        ))
-        return
-
-    end_result = end_results[0]
-    end_coords = end_result["geometry"]["location"]
+        part_results.append(results[0])
 
     is_great_circle = False
-    try:
-        distance = vincenty((start_coords["lat"], start_coords["lng"]),
-                            (end_coords["lat"], end_coords["lng"]))
-    except ValueError:
-        is_great_circle = True
-        distance = great_circle((start_coords["lat"], start_coords["lng"]),
-                                (end_coords["lat"], end_coords["lng"]))
+
+    distance = 0
+
+    for a, b in zip([start_result] + part_results, part_results):
+        try:
+            distance += vincenty((a["lat"], a["lng"]), (b["lat"], b["lng"])).km
+        except ValueError:
+            is_great_circle = True
+            distance += great_circle((a["lat"], a["lng"]),
+                                     (b["lat"], b["lng"])).km
 
     ctx.respond(ctx._("Distance from {start} to {end}: {approx}{distance:.3f} km").format(
         start=start_result["formatted_address"],
-        end=end_result["formatted_address"],
+        end=ctx._(" to ").join(part["formatted_address"] for part in part_results),
         distance=distance.km,
         approx="~" if is_great_circle else ""
     ))
