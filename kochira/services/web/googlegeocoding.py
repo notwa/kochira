@@ -231,7 +231,7 @@ def distance(ctx, path, start_loc=None):
 
     for part in re.split(r"\s+to\s+", path):
         results = yield ctx.provider_for("geocode")(part)
-        if not result:
+        if not results:
             ctx.respond(ctx._("I don't know where \"{where}\" is.").format(
                 where=end_loc
             ))
