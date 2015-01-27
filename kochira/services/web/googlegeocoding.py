@@ -245,12 +245,16 @@ def distance(ctx, path, start_loc=None):
     distance = 0
 
     for a, b in zip([start_result] + part_results, part_results):
+        a_coords = a["geometry"]["location"]
+        b_coords = b["geometry"]["location"]
+
         try:
-            distance += vincenty((a["lat"], a["lng"]), (b["lat"], b["lng"])).km
+            distance += vincenty((a_coords["lat"], a_coords["lng"]),
+                                 (b_coords["lat"], b_coords["lng"])).km
         except ValueError:
             is_great_circle = True
-            distance += great_circle((a["lat"], a["lng"]),
-                                     (b["lat"], b["lng"])).km
+            distance += great_circle((a_coords["lat"], a_coords["lng"]),
+                                     (b_coords["lat"], b_coords["lng"])).km
 
     ctx.respond(ctx._("Distance from {start} to {end}: {approx}{distance:.3f} km").format(
         start=start_result["formatted_address"],
