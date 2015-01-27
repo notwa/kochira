@@ -259,6 +259,6 @@ def distance(ctx, path, start_loc=None):
     ctx.respond(ctx._("Distance from {start} to {end}: {approx}{distance:.3f} km").format(
         start=start_result["formatted_address"],
         end=ctx._(" to ").join(part["formatted_address"] for part in part_results),
-        distance=distance.km,
+        distance=distance,
         approx="~" if is_great_circle else ""
     ))
