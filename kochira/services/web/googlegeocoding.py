@@ -229,6 +229,7 @@ def distance(ctx, path, start_loc=None):
     start_result = start_results[0]
     start_coords = start_result["geometry"]["location"]
 
+    part_results = []
     for part in re.split(r"\s+to\s+", path):
         results = yield ctx.provider_for("geocode")(part)
         if not results:
