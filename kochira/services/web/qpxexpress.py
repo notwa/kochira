@@ -51,6 +51,7 @@ def flight_search(ctx, slice_specs, num_adults: int=1):
             "date": dateutil.parser.parse(match.group("date")).strftime("%Y-%m-%d")
         })
 
+    ctx.respond(ctx._("This might take a while..."))
     resp = requests.post(
         "https://www.googleapis.com/qpxExpress/v1/trips/search",
         params={
