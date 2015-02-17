@@ -17,6 +17,7 @@ class Config(Config):
     safesearch = config.Field(doc="Whether or not to use SafeSearch.", default=False)
 
 
+@service.command(r"!img (?P<term>.+?)(?: (?P<num>\d+))?$")
 @service.command(r"!image (?P<term>.+?)(?: (?P<num>\d+))?$")
 @service.command(r"image(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
