@@ -263,14 +263,14 @@ def now_playing(ctx, who=None):
     )
 
     if not track["now_playing"]:
-        ctx.respond(ctx._("{who} ({lfm}) was playing about {dt}: {descr}").format(
+        ctx.respond(ctx._("{who} ({lfm}) was playing {descr} about {dt}").format(
             who=who,
             lfm=lfm,
             dt=humanize.naturaltime(datetime.fromtimestamp(track["ts"])),
             descr=track_descr
         ))
     else:
-        ctx.respond(ctx._("{who} ({lfm}) is playing: {descr}").format(
+        ctx.respond(ctx._("{who} ({lfm}) is playing {descr}").format(
             who=who,
             lfm=lfm,
             descr=track_descr
