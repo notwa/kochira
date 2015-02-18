@@ -27,7 +27,8 @@ def lookup(ctx, term):
         "action": "query",
         "prop": "extracts|info",
         "inprop": "url",
-        "rawcontinue": "true",
+        "rawcontinue": True,
+        "redirects": True,
         "titles": term
     }).json()
 
