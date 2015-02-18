@@ -11,7 +11,9 @@ from kochira.service import Service, background
 
 service = Service(__name__, __doc__)
 
+@service.command(r"!w (?P<term>.+)")
 @service.command(r"!wiki (?P<term>.+)")
+@service.command(r"!wikipedia (?P<term>.+)")
 @background
 def lookup(ctx, term):
     """
@@ -23,13 +25,13 @@ def lookup(ctx, term):
     r = requests.get("http://en.wikipedia.org/w/api.php", params={
         "format": "json",
         "action": "query",
-        "prop": "extract|info",
+        "prop": "extracts|info",
         "inprop": "url",
         "rawcontinue": "true",
         "titles": term
     }).json()
 
-    page, = r["query"]["pages"].values()
+    page, *_ = r["query"]["pages"].values()
     
     if "missing" in page:
         ctx.respond(ctx._("Couldn't find that."))
