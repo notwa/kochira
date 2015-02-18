@@ -11,7 +11,7 @@ from kochira.service import Service, background
 
 service = Service(__name__, __doc__)
 
-@service.command(r"!wiki (?<term>.+)")
+@service.command(r"!wiki (?P<term>.+)")
 @background
 def lookup(ctx, term):
     """
