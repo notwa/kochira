@@ -39,4 +39,4 @@ def lookup(ctx, term):
 
     text, *_ = bs4.BeautifulSoup(page["extract"]).get_text().split("\n")
 
-    ctx.respond(ctx._("{url}: {text}").format(link=page["canonicalurl"], text=text))
+    ctx.respond(ctx._("{url}: {text}").format(url=page["canonicalurl"], text=text))
