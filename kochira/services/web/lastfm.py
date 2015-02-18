@@ -253,10 +253,10 @@ def now_playing(ctx, who=None):
         ))
         return
 
-    track_descr = ctx._("{name} by {artist}{album}{tags} (played {playcount} time{s})").format(
+    track_descr = ctx._("\x02{name}\x02 by \x02{artist}\x02{album}{tags} (played {playcount} time{s})").format(
         name=track["name"],
         artist=track["artist"],
-        album=ctx._(" on {album}").format(album=track["album"]) if track["album"] else "",
+        album=ctx._(" on \x02{album}\x02").format(album=track["album"]) if track["album"] else "",
         tags=ctx._(" (tags: {tags})").format(tags=", ".join(track["tags"][:5])) if track["tags"] else "",
         playcount=track["user_playcount"],
         s="s" if track["user_playcount"] != 1 else "",
