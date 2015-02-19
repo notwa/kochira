@@ -143,6 +143,23 @@ def get_user_now_playing(api_key, user):
     return None
 
 
+def escape_quotes(s):
+    return s.replace("\"", "\\\"")
+
+
+def make_spotify_query(title, artist):
+    return "artist:\"{artist_escaped}\" title:\"{title_escaped}\"".format(
+        artist_escaped=escape_quotes(artist),
+        title_escaped=escape_quotes(title))
+
+
+def spotify_search(title, artist):
+    return requests.get("https://api.spotify.com/v1/search", params={
+        "q": make_spotify_query(title, artist),
+        "type": "track"
+    }).json()["tracks"]["items"]
+
+
 @coroutine
 def get_lfm_username(client, who):
     user_data = yield UserData.lookup_default(client, who)
@@ -253,13 +270,16 @@ def now_playing(ctx, who=None):
         ))
         return
 
-    track_descr = ctx._("\x02{name}\x02 by \x02{artist}\x02{album}{tags} (played {playcount} time{s})").format(
+    spotify_results = spotify_search(track["name"], track["artist"])
+
+    track_descr = ctx._("\x02{name}\x02 by \x02{artist}\x02{album}{tags} (played {playcount} time{s}){spotify}").format(
         name=track["name"],
         artist=track["artist"],
         album=ctx._(" on \x02{album}\x02").format(album=track["album"]) if track["album"] else "",
         tags=ctx._(" (tags: {tags})").format(tags=", ".join(track["tags"][:5])) if track["tags"] else "",
         playcount=track["user_playcount"],
         s="s" if track["user_playcount"] != 1 else "",
+        spotify=" " + spotify_results[0]["external_urls"]["spotify"] if spotify_results else ""
     )
 
     if not track["now_playing"]:
