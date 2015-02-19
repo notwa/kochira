@@ -147,15 +147,14 @@ def escape_quotes(s):
     return s.replace("\"", "\\\"")
 
 
-def make_spotify_query(title, artist):
-    return "artist:\"{artist_escaped}\" title:\"{title_escaped}\"".format(
-        artist_escaped=escape_quotes(artist),
-        title_escaped=escape_quotes(title))
+def make_spotify_query(params):
+    return " ".join("{}:\"{}\"".format(k, escape_quotes(v))
+                    for k, v in params.items())
 
 
-def spotify_search(title, artist):
+def spotify_search(**params):
     return requests.get("https://api.spotify.com/v1/search", params={
-        "q": make_spotify_query(title, artist),
+        "q": make_spotify_query(params),
         "type": "track"
     }).json()["tracks"]["items"]
 
@@ -270,7 +269,7 @@ def now_playing(ctx, who=None):
         ))
         return
 
-    spotify_results = spotify_search(track["name"], track["artist"])
+    spotify_results = spotify_search(title=track["name"], artist=track["artist"])
 
     track_descr = ctx._("\x02{name}\x02 by \x02{artist}\x02{album}{tags} (played {playcount} time{s}){spotify}").format(
         name=track["name"],
