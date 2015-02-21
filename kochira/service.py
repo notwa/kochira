@@ -100,15 +100,8 @@ class HookContext:
         return locale
 
     def _load_locale(self):
-        lang, _ = locale.getdefaultlocale()
-        languages = [self.locale, lang]
-
-        try:
-            self.t = gettext.translation("kochira",
-                                         self.bot.config.core.locale_path,
-                                         languages=languages)
-        except IOError:
-            self.t = gettext.NullTranslations()
+        # TODO: ugh, locales
+        self.t = gettext.NullTranslations()
 
     def lookup_user_data(self, who=None):
         if who is None:
