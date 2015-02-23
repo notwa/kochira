@@ -5,6 +5,7 @@ Run Python code through IRC messages.
 """
 
 import code
+import os
 import signal
 import sys
 
