@@ -46,7 +46,7 @@ def eval_code(ctx, code):
     ctx.storage.console.locals["client"] = ctx.client
 
     # we send signals in case native code wants to execute something in debug mode
-    signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+    old_sig = signal.signal(signal.SIGUSR1, signal.SIG_IGN)
     try:
         r = ctx.storage.console.push(code)
         os.kill(os.getpid(), signal.SIGUSR1)
@@ -54,7 +54,7 @@ def eval_code(ctx, code):
         err = "{}: {}".format(e.__class__.__qualname__, e)
         ctx.storage.console.resetbuffer()
     finally:
-        signal.signal(signal.SIGUSR1, signal.SIG_DFL)
+        signal.signal(signal.SIGUSR1, old_sig)
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
 
