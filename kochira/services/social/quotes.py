@@ -55,7 +55,7 @@ class Quote(Model):
     @property
     def quote_with_newlines(self):
         text = self.quote
-        text = re.sub(r"(?:^| )(\[?(?:(?:(?:\d\d)?\d\d-\d\d-\d\d )?\d\d:\d\d(?::\d\d)?\]? )?(?:< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>|\* |-!-))", "\n\\1", text)
+        text = re.sub(r"(?:^| )(\[?(?:(?:(?:\d\d)?\d\d-\d\d-\d\d )?\d\d:\d\d(?::\d\d)?\]? )?(?:< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>|\* |-!-|\*\*\*))", "\n\\1", text)
         text = re.sub(r"^\*", " *", text.strip(), re.M)
         return text
 
