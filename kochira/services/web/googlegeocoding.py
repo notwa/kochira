@@ -6,7 +6,7 @@ Look up and reverse look up addresses.
 
 import re
 import requests
-import urllib.parsequ
+import urllib.parse
 from geopy.distance import vincenty, great_circle
 
 from kochira import config
