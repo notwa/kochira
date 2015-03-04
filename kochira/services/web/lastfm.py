@@ -270,27 +270,29 @@ def now_playing(ctx, who=None):
         return
 
     spotify_results = spotify_search(title=track["name"], artist=track["artist"])
+    spotify_url = spotify_results[0]["external_urls"]["spotify"] if spotify_results else None
 
-    track_descr = ctx._("\x02{name}\x02 by \x02{artist}\x02{album}{tags} (played {playcount} time{s}){spotify}").format(
+    track_descr = ctx._("\x02{name}\x02 by \x02{artist}\x02{album}{tags} (played {playcount} time{s})").format(
         name=track["name"],
         artist=track["artist"],
         album=ctx._(" on \x02{album}\x02").format(album=track["album"]) if track["album"] else "",
         tags=ctx._(" (tags: {tags})").format(tags=", ".join(track["tags"][:5])) if track["tags"] else "",
         playcount=track["user_playcount"],
-        s="s" if track["user_playcount"] != 1 else "",
-        spotify=" " + spotify_results[0]["external_urls"]["spotify"] if spotify_results else ""
+        s="s" if track["user_playcount"] != 1 else ""
     )
 
     if not track["now_playing"]:
-        ctx.respond(ctx._("{who} ({lfm}) was playing {descr} about {dt}").format(
+        ctx.respond(ctx._("{who} ({lfm}) was playing {descr} about {dt}{spotify}").format(
             who=who,
             lfm=lfm,
             dt=humanize.naturaltime(datetime.fromtimestamp(track["ts"])),
-            descr=track_descr
+            descr=track_descr,
+            spotify=": " + spotify_url if spotify_url is not None else ""
         ))
     else:
-        ctx.respond(ctx._("{who} ({lfm}) is playing {descr}").format(
+        ctx.respond(ctx._("{who} ({lfm}) is playing {descr}{spotify}").format(
             who=who,
             lfm=lfm,
-            descr=track_descr
+            descr=track_descr,
+            spotify=": " + spotify_url if spotify_url is not None else ""
         ))
