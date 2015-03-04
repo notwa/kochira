@@ -6,6 +6,7 @@ Look up and reverse look up addresses.
 
 import re
 import requests
+import urllib.parsequ
 from geopy.distance import vincenty, great_circle
 
 from kochira import config
@@ -89,7 +90,7 @@ def get_location(ctx, where):
     ctx.respond(ctx._("Found \"{where}\" at {formatted_address} ({lat:.10}, {lng:.10}): https://www.google.com.au/maps/place/{quoted_address}/@{lat:.10},{lng:.10},15z/").format(
         where=where,
         formatted_address=result["formatted_address"],
-        quoted_address=quote_plus(result["formatted_address"]),
+        quoted_address=urllib.parse.quote_plus(result["formatted_address"]),
         lat=float(result["geometry"]["location"]["lat"]),
         lng=float(result["geometry"]["location"]["lng"])
     ))
