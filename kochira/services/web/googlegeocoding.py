@@ -87,7 +87,7 @@ def get_location(ctx, where):
 
     result = results[0]
 
-    ctx.respond(ctx._("Found \"{where}\" at {formatted_address} ({lat:.10}, {lng:.10}): https://www.google.com.au/maps/place/{quoted_address}/@{lat:.10},{lng:.10},15z/").format(
+    ctx.respond(ctx._("Found \"{where}\" at {formatted_address} ({lat:.10}, {lng:.10}): https://www.google.com/maps/place/{quoted_address}/@{lat:.10},{lng:.10},15z").format(
         where=where,
         formatted_address=result["formatted_address"],
         quoted_address=urllib.parse.quote_plus(result["formatted_address"]),
