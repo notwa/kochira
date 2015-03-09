@@ -214,7 +214,7 @@ def distance(ctx, path, start_loc=None):
     """
     Distance.
 
-    Compute the great-circle distance between two locations.
+    Compute the distance between two locations.
     """
 
     if start_loc is None:
@@ -242,25 +242,33 @@ def distance(ctx, path, start_loc=None):
 
         part_results.append(results[0])
 
-    is_great_circle = False
-
-    distance = 0
+    crow_flies = 0
 
     for a, b in zip([start_result] + part_results, part_results):
         a_coords = a["geometry"]["location"]
         b_coords = b["geometry"]["location"]
 
         try:
-            distance += vincenty((a_coords["lat"], a_coords["lng"]),
-                                 (b_coords["lat"], b_coords["lng"])).km
+            crow_flies += vincenty((a_coords["lat"], a_coords["lng"]),
+                                   (b_coords["lat"], b_coords["lng"])).km
         except ValueError:
-            is_great_circle = True
-            distance += great_circle((a_coords["lat"], a_coords["lng"]),
-                                     (b_coords["lat"], b_coords["lng"])).km
+            crow_flies += great_circle((a_coords["lat"], a_coords["lng"]),
+                                       (b_coords["lat"], b_coords["lng"])).km
 
-    ctx.respond(ctx._("Distance from {start} to {end}: {approx}{distance:.3f} km").format(
+    resp = requests.get(
+        "https://maps.googleapis.com/maps/api/directions/json",
+        params={
+            "key": ctx.config.api_key,
+            "origin": "{lat},{lng}".format(**start_coords),
+            "destination" "{lat},{lng}".format(**part_results[-1]["geometry"]["location"]),
+            "waypoints": "|".join("{lat},{lng}".format(**part["geometry"]["location"])
+                                  for part in part_results[:-1]),
+        }
+    ).json()
+    
+    ctx.respond(ctx._("Distance from {start} to {end}: {crow_flies:.3f} km as the crow flies, {car:.3f} km by car").format(
         start=start_result["formatted_address"],
         end=ctx._(" to ").join(part["formatted_address"] for part in part_results),
-        distance=distance,
-        approx="~" if is_great_circle else ""
+        crow_flies=crow_flies,
+        car=resp["distance"]["value"] / 1000.0
     ))
