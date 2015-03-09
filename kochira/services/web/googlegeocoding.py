@@ -255,7 +255,7 @@ def distance(ctx, path, start_loc=None):
             crow_flies += great_circle((a_coords["lat"], a_coords["lng"]),
                                        (b_coords["lat"], b_coords["lng"])).km
 
-    resp = requests.get(
+    routes = requests.get(
         "https://maps.googleapis.com/maps/api/directions/json",
         params={
             "key": ctx.config.api_key,
@@ -264,11 +264,20 @@ def distance(ctx, path, start_loc=None):
             "waypoints": "|".join("{lat},{lng}".format(**part["geometry"]["location"])
                                   for part in part_results[:-1]),
         }
-    ).json()
+    ).json()["routes"]
     
-    ctx.respond(ctx._("Distance from {start} to {end}: {crow_flies:.3f} km as the crow flies, {car:.3f} km by car").format(
-        start=start_result["formatted_address"],
-        end=ctx._(" to ").join(part["formatted_address"] for part in part_results),
-        crow_flies=crow_flies,
-        car=resp["distance"]["value"] / 1000.0
-    ))
+    if not routes:
+        ctx.respond(ctx._("Distance from {start} to {end}: {crow_flies:.3f} km as the crow flies").format(
+            start=start_result["formatted_address"],
+            end=ctx._(" to ").join(part["formatted_address"] for part in part_results),
+            crow_flies=crow_flies
+        ))
+    else:
+        route, *_ = routes
+    
+        ctx.respond(ctx._("Distance from {start} to {end}: {crow_flies:.3f} km as the crow flies, {car:.3f} km by car").format(
+            start=start_result["formatted_address"],
+            end=ctx._(" to ").join(part["formatted_address"] for part in part_results),
+            crow_flies=crow_flies,
+            car=route["distance"]["value"] / 1000.0
+        ))
