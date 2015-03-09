@@ -260,7 +260,7 @@ def distance(ctx, path, start_loc=None):
         params={
             "key": ctx.config.api_key,
             "origin": "{lat},{lng}".format(**start_coords),
-            "destination" "{lat},{lng}".format(**part_results[-1]["geometry"]["location"]),
+            "destination": "{lat},{lng}".format(**part_results[-1]["geometry"]["location"]),
             "waypoints": "|".join("{lat},{lng}".format(**part["geometry"]["location"])
                                   for part in part_results[:-1]),
         }
