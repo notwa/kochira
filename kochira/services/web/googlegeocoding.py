@@ -279,5 +279,5 @@ def distance(ctx, path, start_loc=None):
             start=start_result["formatted_address"],
             end=ctx._(" to ").join(part["formatted_address"] for part in part_results),
             crow_flies=crow_flies,
-            car=route["distance"]["value"] / 1000.0
+            car=sum(leg["distance"]["value"] for leg in route["legs"]) / 1000.0
         ))
