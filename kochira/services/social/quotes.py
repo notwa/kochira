@@ -239,16 +239,18 @@ def roulette(ctx):
 
     people = []
     
-    def replacer(nick):
+    def replacer(g):
+        nick = g.group(1)
+
         if nick not in people:
             people.append(nick)
         
-        return ctx._("Person {number}").format(number=people.index(nick))
+        return g.group(0).replace(nick, ctx._("Person {number}").format(number=people.index(nick)))
 
-    text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", lambda m: replacer(m.group(1)), text)
-    text = re.sub(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer(m.group(1)), text)
-    text = re.sub(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer(m.group(1)), text)
-    text = re.sub(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer(m.group(1)), text)
+    text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", replacer, text)
+    text = re.sub(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", replacer, text)
+    text = re.sub(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", replacer, text)
+    text = re.sub(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", replacer, text)
 
     ctx.respond(ctx._("Quote: {text}".format(text=text)))
 
