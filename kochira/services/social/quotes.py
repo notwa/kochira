@@ -219,6 +219,40 @@ def rand_quote(ctx, query=None):
     ))
 
 
+@service.command(r"quote roulette$", mention=True)
+@service.command(r"!quote roulette$")
+def roulette(ctx):
+    """
+    Quote roulette.
+    
+    Retrieve a completely random anonymized quote.
+    """
+
+    q = Quote.select().order_by(fn.Random()).limit(1)
+
+    if not q.exists():
+        ctx.respond(ctx._("Couldn't find any quotes."))
+        return
+
+    quote, = q
+    text = quote.quote
+
+    people = []
+    
+    def replacer(nick):
+        if nick not in people:
+            people.append(nick)
+        
+        return ctx._("Person {number}").format(people.index(nick))
+
+    text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", lambda m: replacer.group(1), text)
+    text = re.sub(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer.group(1), text)
+    text = re.sub(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer.group(1), text)
+    text = re.sub(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer.group(1), text)
+
+    ctx.respond(ctx._("Quote: {text}".format(text=text)))
+
+
 def _find_quotes(storage, query):
     q = storage.quote_qp.parse(query)
 
