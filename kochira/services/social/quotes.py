@@ -262,7 +262,9 @@ def roulette(ctx, query=None):
     if query is not None:
         q = _find_quotes(ctx.storage, query)
     else:
-        q = Quote.select()
+        q = Quote.select() \
+            .where(Quote.network == ctx.client.network,
+                   Quote.channel == ctx.target)
 
     q = q \
         .order_by(fn.Random()) \
@@ -282,7 +284,7 @@ def roulette(ctx, query=None):
 
         if nick not in people:
             people.append(nick)
-        
+
         return g.group(0).replace(nick, NAMES[people.index(nick) % len(NAMES)])
 
     text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", replacer, text)
