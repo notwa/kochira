@@ -219,6 +219,36 @@ def rand_quote(ctx, query=None):
     ))
 
 
+NAMES = [
+    "Amy",
+    "Bethany",
+    "Chloe",
+    "Daisy",
+    "Ella",
+    "Florence",
+    "Grace",
+    "Hannah",
+    "Isabelle",
+    "Julia",
+    "Katie",
+    "Laura",
+    "Mary",
+    "Nicole",
+    "Olivia",
+    "Phoebe",
+    "Quela",
+    "Rebecca",
+    "Sarah",
+    "Tia",
+    "Uma",
+    "Valerie",
+    "Whitney",
+    "Xenia",
+    "Yvonne",
+    "Zoe"
+]
+
+
 @service.command(r"quote roulette$", mention=True)
 @service.command(r"!quote roulette$")
 def roulette(ctx):
@@ -245,7 +275,7 @@ def roulette(ctx):
         if nick not in people:
             people.append(nick)
         
-        return g.group(0).replace(nick, ctx._("Person {number}").format(number=people.index(nick) + 1))
+        return g.group(0).replace(nick, NAMES[people.index(nick) % len(NAMES)])
 
     text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", replacer, text)
     text = re.sub(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", replacer, text)
