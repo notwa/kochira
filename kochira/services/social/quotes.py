@@ -278,19 +278,16 @@ def roulette(ctx, query=None):
     text = quote.quote
 
     people = []
-    
-    def replacer(g):
-        nick = g.group(1)
-
+    for nick in re.findall(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", text) + \
+                re.findall(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
+                re.findall(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
+                re.findall(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", text):
+        nick = nick.lower()
         if nick not in people:
             people.append(nick)
 
-        return g.group(0).replace(nick, NAMES[people.index(nick) % len(NAMES)])
-
-    text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", replacer, text)
-    text = re.sub(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", replacer, text)
-    text = re.sub(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", replacer, text)
-    text = re.sub(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", replacer, text)
+    for i, nick in enumerate(people):
+        text = re.sub(re.escape(nick), NAMES[i % len(NAMES)], text, re.I)
 
     ctx.respond(ctx._("Quote: {text}".format(text=text)))
 
