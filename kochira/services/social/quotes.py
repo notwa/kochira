@@ -288,7 +288,7 @@ def roulette(ctx, query=None):
             people.append(nick)
 
     for i, nick in enumerate(people):
-        text = re.sub(re.escape(nick), NAMES[i % len(NAMES)], text, 0, re.I)
+        text = re.sub("[!~&@%+]?" + re.escape(nick), NAMES[i % len(NAMES)], text, 0, re.I)
 
     ctx.respond(ctx._("Quote: {text}".format(text=text)))
 
