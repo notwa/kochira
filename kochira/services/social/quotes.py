@@ -5,6 +5,7 @@ This enables the bot to record and search quotes. If the web server service is
 running, a web interface to quotes will be made available at ``/quotes/``.
 """
 
+import random
 import re
 
 from datetime import datetime
@@ -220,32 +221,11 @@ def rand_quote(ctx, query=None):
 
 
 NAMES = [
-    "Amy",
-    "Bethany",
-    "Chloe",
-    "Daisy",
-    "Ella",
-    "Florence",
-    "Grace",
-    "Hannah",
-    "Isabelle",
-    "Julia",
-    "Katie",
-    "Laura",
-    "Mary",
-    "Nicole",
-    "Olivia",
-    "Phoebe",
-    "Quela",
-    "Rebecca",
-    "Sarah",
-    "Tia",
-    "Uma",
-    "Valerie",
-    "Whitney",
-    "Xenia",
-    "Yvonne",
-    "Zoe"
+    "Sailor Venus",
+    "Sailor Mercury",
+    "Sailor Mars",
+    "Sailor Jupiter",
+    "Sailor Moon"
 ]
 
 
@@ -287,8 +267,10 @@ def roulette(ctx, query=None):
         if nick not in people:
             people.append(nick)
 
+    names = names[:]
+    random.shuffle(names)
     for i, nick in enumerate(people):
-        text = re.sub("[!~&@%+]?" + re.escape(nick), NAMES[i % len(NAMES)], text, 0, re.I)
+        text = re.sub("[!~&@%+]?" + re.escape(nick), names[i % len(names)], text, 0, re.I)
 
     ctx.respond(ctx._("Quote: {text}".format(text=text)))
 
