@@ -245,7 +245,7 @@ def roulette(ctx):
         if nick not in people:
             people.append(nick)
         
-        return g.group(0).replace(nick, ctx._("Person {number}").format(number=people.index(nick)))
+        return g.group(0).replace(nick, ctx._("Person {number}").format(number=people.index(nick) + 1))
 
     text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", replacer, text)
     text = re.sub(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", replacer, text)
