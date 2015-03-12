@@ -268,7 +268,8 @@ def roulette(ctx, query=None):
             people.append(nick)
 
     names = NAMES[:]
-    random.shuffle(names)
+    random.Random(text).shuffle(names)
+
     for i, nick in enumerate(people):
         text = re.sub("[!~&@%+]?" + re.escape(nick), names[i % len(names)], text, 0, re.I)
 
