@@ -249,22 +249,30 @@ NAMES = [
 ]
 
 
-@service.command(r"quote roulette$", mention=True)
-@service.command(r"!quote roulette$")
-def roulette(ctx):
+@service.command(r"quote roulette(?: matching (?P<query>.+))?$", mention=True)
+@service.command(r"!quote rand(?: (?P<query>.+))?$")
+def roulette(ctx, query=None):
     """
     Quote roulette.
     
-    Retrieve a completely random anonymized quote.
+    Retrieve a random quote from the database, anonymized. If a query is
+    specified, then it is used.
     """
 
-    q = Quote.select().order_by(fn.Random()).limit(1)
+    if query is not None:
+        q = _find_quotes(ctx.storage, query)
+    else:
+        q = Quote.select()
+
+    q = q \
+        .order_by(fn.Random()) \
+        .limit(1)
 
     if not q.exists():
         ctx.respond(ctx._("Couldn't find any quotes."))
         return
 
-    quote, = q
+    quote = q[0]
     text = quote.quote
 
     people = []
