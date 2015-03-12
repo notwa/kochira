@@ -245,10 +245,10 @@ def roulette(ctx):
         
         return ctx._("Person {number}").format(people.index(nick))
 
-    text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", lambda m: replacer.group(1), text)
-    text = re.sub(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer.group(1), text)
-    text = re.sub(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer.group(1), text)
-    text = re.sub(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer.group(1), text)
+    text = re.sub(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", lambda m: replacer(m.group(1)), text)
+    text = re.sub(r" \* ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer(m.group(1)), text)
+    text = re.sub(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer(m.group(1)), text)
+    text = re.sub(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", lambda m: replacer(m.group(1)), text)
 
     ctx.respond(ctx._("Quote: {text}".format(text=text)))
 
