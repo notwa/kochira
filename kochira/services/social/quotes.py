@@ -250,7 +250,7 @@ NAMES = [
 
 
 @service.command(r"quote roulette(?: matching (?P<query>.+))?$", mention=True)
-@service.command(r"!quote rand(?: (?P<query>.+))?$")
+@service.command(r"!quote roulette(?: (?P<query>.+))?$")
 def roulette(ctx, query=None):
     """
     Quote roulette.
