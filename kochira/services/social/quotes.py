@@ -274,7 +274,7 @@ def roulette(ctx, query=None):
     names = NAMES[:]
     random.Random(text).shuffle(names)
 
-    people_mappings = {}
+    people_mappings = []
 
     for i, nick in enumerate(people):
         new_name = names[i % len(names)]
