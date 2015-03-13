@@ -300,7 +300,7 @@ def reveal(ctx):
         ctx.respond(ctx._("Nobody has quote rouletted in this channel."))
         return
 
-    ctx.respond(", ".join("{} = {}".format(new, orig) for new, orig in last_mappings))
+    ctx.respond(", ".join("{} = {}".format(orig, new) for new, orig in last_mappings))
 
 
 def _find_quotes(storage, query):
