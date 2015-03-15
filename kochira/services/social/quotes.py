@@ -247,7 +247,7 @@ def prism_power(text, seed):
         new_name = names[i % len(names)]
         people_mappings.append((original_people[i], new_name))
 
-        text = re.sub("[!~&@%+]?" + re.escape(nick), new_name, text, 0, re.I)
+        text = re.sub(r"\b[!~&@%+]?" + re.escape(nick) + r"\b", new_name, text, 0, re.I)
 
     return text, people_mappings
 
