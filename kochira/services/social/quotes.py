@@ -370,7 +370,8 @@ class IndexHandler(RequestHandler):
                     quotes=q.limit(limit).offset(offset),
                     count=q.count(),
                     limit=limit,
-                    offset=offset)
+                    offset=offset,
+                    transform=prism_power if self.get_argument("prism_power", "") else lambda x: x)
 
 
 def make_application(settings):
