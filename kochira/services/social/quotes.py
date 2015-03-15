@@ -215,11 +215,11 @@ def rand_quote(ctx, query=None):
 
 
 NAMES = [
-    "Sailor Venus",
-    "Sailor Mercury",
-    "Sailor Mars",
-    "Sailor Jupiter",
-    "Sailor Moon"
+    "Sailor_Venus",
+    "Sailor_Mercury",
+    "Sailor_Mars",
+    "Sailor_Jupiter",
+    "Sailor_Moon"
 ]
 
 def prism_power(text):
@@ -364,6 +364,8 @@ class IndexHandler(RequestHandler):
 
         q = q.order_by(Quote.id.desc())
 
+        prism_power = bool(self.get_argument("prism_power", ""))
+
         self.render("quotes/index.html",
                     query=query,
                     quotes=q.limit(limit).offset(offset),
@@ -371,9 +373,10 @@ class IndexHandler(RequestHandler):
                     limit=limit,
                     offset=offset,
                     transform=(lambda x: prism_power(x)[0])
-                              if self.get_argument("prism_power", "")
+                              if prism_power
                               else (lambda x: x),
-                    guess_newlines=guess_newlines)
+                    guess_newlines=guess_newlines.
+                    prism_power=prism_power)
 
 
 def make_application(settings):
