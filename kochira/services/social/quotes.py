@@ -229,6 +229,33 @@ NAMES = [
     "Sailor Moon"
 ]
 
+def prism_power(text):
+    people = []
+    original_people = []
+
+    for nick in re.findall(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", text) + \
+                re.findall(r"< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>\s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
+                re.findall(r"(?:^| )\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
+                re.findall(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
+                re.findall(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", text):
+        normalized_nick = nick.lower()
+        if normalized_nick not in people:
+            people.append(normalized_nick)
+            original_people.append(nick)
+
+    names = NAMES[:]
+    random.Random(text).shuffle(names)
+
+    people_mappings = []
+
+    for i, nick in enumerate(people):
+        new_name = names[i % len(names)]
+        people_mappings.append((original_people[i], new_name))
+
+        text = re.sub("[!~&@%+]?" + re.escape(nick), new_name, text, 0, re.I)
+
+    return text, people_mappings
+
 
 @service.command(r"quote roulette(?: matching (?P<query>.+))?$", mention=True)
 @service.command(r"!quote roulette(?: (?P<query>.+))?$")
@@ -256,31 +283,7 @@ def roulette(ctx, query=None):
         return
 
     quote = q[0]
-    text = quote.quote
-
-    people = []
-    original_people = []
-
-    for nick in re.findall(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", text) + \
-                re.findall(r"< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>\s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
-                re.findall(r"(?:^| )\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
-                re.findall(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
-                re.findall(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", text):
-        normalized_nick = nick.lower()
-        if normalized_nick not in people:
-            people.append(normalized_nick)
-            original_people.append(nick)
-
-    names = NAMES[:]
-    random.Random(text).shuffle(names)
-
-    people_mappings = []
-
-    for i, nick in enumerate(people):
-        new_name = names[i % len(names)]
-        people_mappings.append((original_people[i], new_name))
-
-        text = re.sub("[!~&@%+]?" + re.escape(nick), new_name, text, 0, re.I)
+    text, people_mappings = prism_power(quote.quote)
 
     ctx.storage.last_people_mappings[ctx.client.network, ctx.target] = people_mappings
     ctx.respond(ctx._("Quote: {text}".format(text=text)))
