@@ -215,14 +215,14 @@ def rand_quote(ctx, query=None):
 
 
 NAMES = [
-    "Sailor_Venus",
-    "Sailor_Mercury",
-    "Sailor_Mars",
-    "Sailor_Jupiter",
-    "Sailor_Moon"
+    "Sailor Venus",
+    "Sailor Mercury",
+    "Sailor Mars",
+    "Sailor Jupiter",
+    "Sailor Moon"
 ]
 
-def prism_power(text):
+def prism_power(text, seed):
     people = []
     original_people = []
 
@@ -237,7 +237,7 @@ def prism_power(text):
             original_people.append(nick)
 
     names = NAMES[:]
-    random.Random(text).shuffle(names)
+    random.Random(seed).shuffle(names)
 
     people_mappings = []
 
@@ -372,7 +372,7 @@ class IndexHandler(RequestHandler):
                     count=q.count(),
                     limit=limit,
                     offset=offset,
-                    transform=(lambda x: prism_power(x)[0])
+                    transform=(lambda x: prism_power(x, q.text)[0])
                               if is_prism_power
                               else (lambda x: x),
                     guess_newlines=guess_newlines,
