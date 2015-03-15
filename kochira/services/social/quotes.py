@@ -364,7 +364,7 @@ class IndexHandler(RequestHandler):
 
         q = q.order_by(Quote.id.desc())
 
-        is_prism_power = bool(self.get_argument("prism_power", ""))
+        is_prism_power = self.get_argument("prism_power", "") == "activate"
 
         self.render("quotes/index.html",
                     query=query,
@@ -373,7 +373,7 @@ class IndexHandler(RequestHandler):
                     limit=limit,
                     offset=offset,
                     transform=(lambda x: prism_power(x)[0])
-                              if prism_power
+                              if is_prism_power
                               else (lambda x: x),
                     guess_newlines=guess_newlines,
                     prism_power=is_prism_power)
