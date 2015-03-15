@@ -262,7 +262,7 @@ def roulette(ctx, query=None):
     original_people = []
 
     for nick in re.findall(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", text) + \
-                re.findall(r"< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+> ([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
+                re.findall(r"< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>\s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
                 re.findall(r"(?:^| )\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
                 re.findall(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
                 re.findall(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", text):
