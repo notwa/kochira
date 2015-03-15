@@ -226,13 +226,13 @@ def prism_power(text, seed):
     people = []
     original_people = []
 
-    for nick in re.findall(r"(?:^| )< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)> ", text) + \
-                re.findall(r"(?:^| )< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>\s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
-                re.findall(r"(?:^| )[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+) \| ", text) + \
-                re.findall(r"(?:^| )[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+ \|\s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
-                re.findall(r"(?:^| )\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
-                re.findall(r"(?:^| )\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
-                re.findall(r"(?:^| )-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", text):
+    for nick in re.findall(r"(?:^|[ \n])< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)> ", text) + \
+                re.findall(r"(?:^|[ \n])< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>\s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
+                re.findall(r"(?:^|[ \n])[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+) \| ", text) + \
+                re.findall(r"(?:^|[ \n])[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+ \|\s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
+                re.findall(r"(?:^|[ \n])\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
+                re.findall(r"(?:^|[ \n])\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
+                re.findall(r"(?:^|[ \n])-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", text):
         normalized_nick = nick.lower()
         if normalized_nick not in people:
             people.append(normalized_nick)
