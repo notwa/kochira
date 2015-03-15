@@ -30,8 +30,8 @@
 <ul class="pager">
     {% set n = int(math.ceil(count / limit)) %}
     {% set j = offset // limit %}
-    <li class="previous{% if j <= 0 %} disabled{% end %}"><a href="?offset={{(j - 1) * limit}}&limit={{limit}}&q={{url_escape(query) or ""}}">&larr; Newer</a></li>
-    <li class="next{% if j >= n - 1 %} disabled{% end %}"><a href="?offset={{(j + 1) * limit}}&limit={{limit}}&q={{url_escape(query) or ""}}">Older &rarr;</a></li>
+    <li class="previous{% if j <= 0 %} disabled{% end %}"><a href="?offset={{(j - 1) * limit}}&limit={{limit}}{% if prism_power %}prism_power=1{% end %}&q={{url_escape(query) or ""}}">&larr; Newer</a></li>
+    <li class="next{% if j >= n - 1 %} disabled{% end %}"><a href="?offset={{(j + 1) * limit}}&limit={{limit}}{% if prism_power %}prism_power=1{% end %}&q={{url_escape(query) or ""}}">Older &rarr;</a></li>
 </ul>
 </div>
 
