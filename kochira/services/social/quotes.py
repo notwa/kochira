@@ -53,13 +53,6 @@ class Quote(Model):
     network = CharField(255)
     ts = DateTimeField()
 
-    @property
-    def quote_with_newlines(self):
-        text = self.quote
-        text = re.sub(r"(?:^| )(\[?(?:(?:(?:\d\d)?\d\d-\d\d-\d\d )?\d\d:\d\d(?::\d\d)?\]? )?(?:< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>|\* |-!-|\*\*\*))", "\n\\1", text)
-        text = re.sub(r"^\*", " *", text.strip(), re.M)
-        return text
-
     class Meta:
         indexes = (
             (("channel", "network"), False),
@@ -344,6 +337,12 @@ def find_quote(ctx, query):
         ))
 
 
+def guess_newlines(text):
+    text = re.sub(r"(?:^| )(\[?(?:(?:(?:\d\d)?\d\d-\d\d-\d\d )?\d\d:\d\d(?::\d\d)?\]? )?(?:< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>|\* |-!-|\*\*\*))", "\n\\1", text)
+    text = re.sub(r"^\*", " *", text.strip(), re.M)
+    return text
+
+
 class IndexHandler(RequestHandler):
     def get(self):
         try:
@@ -371,7 +370,10 @@ class IndexHandler(RequestHandler):
                     count=q.count(),
                     limit=limit,
                     offset=offset,
-                    transform=prism_power if self.get_argument("prism_power", "") else lambda x: x)
+                    transform=lambda x: prism_power(x)[0]
+                              if self.get_argument("prism_power", "")
+                              else lambda x: x,
+                    guess_newlines=guess_newlines)
 
 
 def make_application(settings):
