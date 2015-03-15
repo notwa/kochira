@@ -375,7 +375,7 @@ class IndexHandler(RequestHandler):
                     transform=(lambda x: prism_power(x)[0])
                               if prism_power
                               else (lambda x: x),
-                    guess_newlines=guess_newlines.
+                    guess_newlines=guess_newlines,
                     prism_power=prism_power)
 
 
