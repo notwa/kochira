@@ -276,7 +276,7 @@ def roulette(ctx, query=None):
         return
 
     quote = q[0]
-    text, people_mappings = prism_power(quote.quote)
+    text, people_mappings = prism_power(quote.quote, quote.quote)
 
     ctx.storage.last_people_mappings[ctx.client.network, ctx.target] = people_mappings
     ctx.respond(ctx._("Quote: {text}".format(text=text)))
