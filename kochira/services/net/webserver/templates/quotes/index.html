@@ -15,7 +15,7 @@
 {% for quote in quotes %}
 <blockquote>
     <p>
-        {% for line in transform(guess_newlines(quote.quote)) %}
+        {% for line in display(quote)) %}
         {{line}}<br>
         {% end %}
     </p>
