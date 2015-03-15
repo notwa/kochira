@@ -15,7 +15,7 @@
 {% for quote in quotes %}
 <blockquote>
     <p>
-        {% for line in quote.quote_with_newlines.split("\n") %}
+        {% for line in guess_newlines(transform(quote.quote)) %}
         {{line}}<br>
         {% end %}
     </p>
