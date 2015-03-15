@@ -340,7 +340,7 @@ def find_quote(ctx, query):
 def guess_newlines(text):
     text = re.sub(r"(?:^| )(\[?(?:(?:(?:\d\d)?\d\d-\d\d-\d\d )?\d\d:\d\d(?::\d\d)?\]? )?(?:< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>|\* |-!-|\*\*\*))", "\n\\1", text)
     text = re.sub(r"^\*", " *", text.strip(), re.M)
-    return text
+    return text.split("\n")
 
 
 class IndexHandler(RequestHandler):
