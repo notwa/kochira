@@ -19,10 +19,10 @@
         {{line}}<br>
         {% end %}
     </p>
-    <small><a href="?q=id:{{quote.id}}">Quote #{{quote.id}}</a>
-    by <a href="?q=by:{{url_escape(quote.by)}}">{{quote.by}}</a>
-    in <a href="?q=channel:{{url_escape(quote.channel)}}+AND+network:{{url_escape(quote.network)}}">{{quote.channel}}</a>
-    on <a href="?q=network:{{url_escape(quote.network)}}">{{quote.network}}</a>
+    <small><a href="?{% if prism_power %}prism_power=activate&{% end %}q=id:{{quote.id}}">Quote #{{quote.id}}</a>
+    by <a href="?{% if prism_power %}prism_power=activate&{% end %}q=by:{{url_escape(quote.by)}}">{{quote.by}}</a>
+    in <a href="?{% if prism_power %}prism_power=activate&{% end %}q=channel:{{url_escape(quote.channel)}}+AND+network:{{url_escape(quote.network)}}">{{quote.channel}}</a>
+    on <a href="?{% if prism_power %}prism_power=activate&{% end %}q=network:{{url_escape(quote.network)}}">{{quote.network}}</a>
     <time datetime="{{quote.ts.isoformat()}}Z">{{quote.ts.isoformat()}}Z</time></small>
 </blockquote>
 {% end %}
