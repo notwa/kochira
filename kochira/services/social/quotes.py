@@ -370,9 +370,9 @@ class IndexHandler(RequestHandler):
                     count=q.count(),
                     limit=limit,
                     offset=offset,
-                    transform=lambda x: prism_power(x)[0]
+                    transform=(lambda x: prism_power(x)[0])
                               if self.get_argument("prism_power", "")
-                              else lambda x: x,
+                              else (lambda x: x),
                     guess_newlines=guess_newlines)
 
 
