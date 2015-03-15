@@ -226,8 +226,10 @@ def prism_power(text, seed):
     people = []
     original_people = []
 
-    for nick in re.findall(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)>", text) + \
+    for nick in re.findall(r"< ?[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+)> ", text) + \
                 re.findall(r"< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>\s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
+                re.findall(r"[!~&@%+]?([A-Za-z0-9{}\[\]|^`\\_-]+) \| ", text) + \
+                re.findall(r"[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+ \| \s+([A-Za-z0-9{}\[\]|^`\\_-]+): ", text) + \
                 re.findall(r"(?:^| )\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
                 re.findall(r"\*\*\* ([A-Za-z0-9{}\[\]|^`\\_-]+)", text) + \
                 re.findall(r"-!- ([A-Za-z0-9{}\[\]|^`\\_-]+)", text):
@@ -340,7 +342,7 @@ def find_quote(ctx, query):
 def guess_newlines(text):
     text = re.sub(
         r"(?:^| )(\[?(?:(?:(?:\d\d)?\d\d-\d\d-\d\d )?\d\d:\d\d(?::\d\d)?\]? )?" +
-        r"(?:< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+>|[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+ \||\* |-!-|\*\*\*))", "\n\\1", text)
+        r"(?:< ?[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+> |[!~&@%+]?[A-Za-z0-9{}\[\]|^`\\_-]+ \| |\* |-!-|\*\*\*))", "\n\\1", text)
     text = re.sub(r"^\*", " *", text.strip(), re.M)
     return text.split("\n")
 
