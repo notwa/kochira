@@ -8,7 +8,7 @@ import locale
 import heapq
 import logging
 import multiprocessing
-from peewee import SqliteDatabase
+from playhouse.sqlite_ext import SqliteDatabaseExt
 import signal
 import yaml
 
@@ -182,7 +182,7 @@ class Bot:
 
     def _connect_to_db(self):
         db_name = self.config.core.database
-        database.initialize(SqliteDatabase(db_name, check_same_thread=False))
+        database.initialize(SqliteExtDatabase(db_name, check_same_thread=False))
         logger.info("Opened database connection: %s", db_name)
         UserDataKVPair.create_table(True)
 
