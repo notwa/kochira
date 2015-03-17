@@ -8,7 +8,7 @@ import locale
 import heapq
 import logging
 import multiprocessing
-from playhouse.sqlite_ext import SqliteDatabaseExt
+from playhouse.sqlite_ext import SqliteExtDatabase
 import signal
 import yaml
 
