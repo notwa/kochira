@@ -26,17 +26,21 @@ def stock_price(ctx, symbol):
     Get the stock price for a given symbol.
     """
 
-    (symbol, exchange, name, last_trade_price, last_trade_time, change, change_pct), = csv.reader(
+    (sym, exchange, name, last_trade_price, last_trade_time, change, change_pct), = csv.reader(
         io.StringIO(requests.get(
             "http://download.finance.yahoo.com/d/quotes.csv",
             params={"s": symbol, "f": "sxnl1t1c1p2"}).text),
         delimiter=",", quotechar="\"")
+
+    if sym.lower() != symbol.lower():
+        ctx.respond(ctx._("Couldn't find a stock with that symbol."))
+        return
 
     ctx.respond(ctx._("The last trading price at {last_trade_time} for {name} ({exchange}: {symbol}) is {last_trade_price}, with a change of {change} ({change_pct}).").format(
         last_trade_time=last_trade_time,
         last_trade_price=last_trade_price,
         name=name,
         exchange=exchange,
-        symbol=symbol,
+        symbol=sym,
         change=change,
         change_pct=change_pct))
