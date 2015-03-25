@@ -32,7 +32,7 @@ def stock_price(ctx, symbol):
             params={"s": symbol, "f": "sxnl1t1c1p2"}).text),
         delimiter=",", quotechar="\"")
 
-    if sym.lower() != symbol.lower():
+    if exchange == "N/A":
         ctx.respond(ctx._("Couldn't find a stock with that symbol."))
         return
 
