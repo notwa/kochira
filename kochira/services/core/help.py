@@ -8,7 +8,7 @@ import itertools
 import re
 
 from kochira import config
-from kochira.service import Service, Config
+from kochira.service import Service, Config, HookContext
 from docutils.core import publish_parts
 from tornado.web import RequestHandler, Application, HTTPError, UIModule
 
@@ -81,7 +81,13 @@ class RequestHandler(RequestHandler):
 
 class IndexHandler(RequestHandler):
     def get(self):
-        services = [bound.service for bound in self.application.ctx.bot.services.values()]
+        bot = self.application.ctx.bot
+
+        client = self.get_argument("client", None)
+        target = self.get_argument("target", None)
+        
+        services = [bound.service for bound in self.application.ctx.bot.services.values()
+                    if HookContext(bound.service, bot, bot.clients[client] target).config["enabled"]]
         services.sort(key=lambda s: s.name)
 
         self.render("help/index.html", services=services,
@@ -155,7 +161,8 @@ def help(ctx, trigger=None):
                 ctx.respond(ctx._("Sorry, no help is available for that command."))
         else:
             ctx.respond(ctx._("My help is available at {url}").format(
-                url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help/"
+                url=ctx.bot.config.services["kochira.services.net.webserver"].base_url.rstrip("/") + "/help/?" +
+                    urllib.parse.urlencode({"client": ctx.client.name, "target": ctx.target})
             ))
 
 
