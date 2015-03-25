@@ -25,6 +25,9 @@ class Client(_Client):
         self.bot = bot
 
         self.name = name
+        
+        # if we don't have a network name, default to the client name
+        self.network = name
 
     @property
     def config(self):
