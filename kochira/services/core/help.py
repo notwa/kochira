@@ -87,7 +87,7 @@ class IndexHandler(RequestHandler):
         target = self.get_argument("target", None)
         
         services = [bound.service for bound in self.application.ctx.bot.services.values()
-                    if HookContext(bound.service, bot, bot.clients[client] target).config["enabled"]]
+                    if HookContext(bound.service, bot, bot.clients[client], target).config["enabled"]]
         services.sort(key=lambda s: s.name)
 
         self.render("help/index.html", services=services,
