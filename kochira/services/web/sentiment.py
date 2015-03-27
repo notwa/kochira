@@ -8,7 +8,7 @@ import random
 import re
 import requests
 
-from kochira.service import Service
+from kochira.service import Service, background
 
 service = Service(__name__, __doc__)
 
