@@ -29,7 +29,7 @@ def do_reply(ctx, target, origin, message):
 
     message = message.strip()
 
-    r = requests.get("http://text-processing.com/api/sentiment", params={"text": message}).json()
+    r = requests.post("http://text-processing.com/api/sentiment/", data={"text": message}).json()
     replies = REPLIES.get(r["label"], [])
 
     if replies:
