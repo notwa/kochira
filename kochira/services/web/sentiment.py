@@ -8,6 +8,8 @@ import random
 import re
 import requests
 
+from kobun.service import Service
+
 service = Service(__name__, __doc__)
 
 REPLIES = {
