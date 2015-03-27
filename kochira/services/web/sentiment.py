@@ -8,7 +8,7 @@ import random
 import re
 import requests
 
-from kobun.service import Service
+from kochira.service import Service
 
 service = Service(__name__, __doc__)
 
