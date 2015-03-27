@@ -24,7 +24,7 @@ REPLIES = {
 def do_reply(ctx, target, origin, message):
     front, _, message = message.partition(" ")
 
-    if front.strip(",:").lower() != ctx.client.nickname.lower():
+    if front.rstrip(",:").lstrip("@").lower() != ctx.client.nickname.lower():
         return
 
     message = message.strip()
