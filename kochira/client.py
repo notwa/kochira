@@ -184,7 +184,7 @@ class Client(_Client):
 
     def on_channel_message(self, target, by, message):
         self._add_to_backlog(target.name, by.name, message)
-        self._run_hooks("channel_message", target.name, by.name, [target, by, message])
+        self._run_hooks("channel_message", target.name, by.name, [target.name, by.name, message])
 
     def on_private_message(self, by, message):
         self._add_to_backlog(by.name, by.name, message)
