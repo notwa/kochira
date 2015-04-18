@@ -43,16 +43,13 @@ def _get_file_handle(ctx, channel):
 
 
 def _hostmask_for(client, nickname):
-    user = client.users.get(nickname, {})
+    user = client.users.get(nickname)
 
-    username = user.get("username") or ""
-    hostname = user.get("hostname") or ""
-
-    if not username and not hostname:
+    if user is None:
         return ""
 
-    return "{username}@{hostname}".format(username=username,
-                                          hostname=hostname)
+    return "{username}@{hostname}".format(username=user.username,
+                                          hostname=user.hostname)
 
 
 def log(ctx, channel, what):
