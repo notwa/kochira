@@ -70,7 +70,7 @@ def log_message(ctx, target, origin, message, format):
 
     if target in ctx.client.channels:
         for sigil2, mode in ctx.client._nickname_prefixes.items():
-            if origin in ctx.client.channels[target]["modes"].get(mode, []):
+            if origin in ctx.client.channels[target].modes.get(mode, []):
                 sigil = sigil2
 
     log(ctx, target, format.format(sigil=sigil, origin=origin,
@@ -79,7 +79,7 @@ def log_message(ctx, target, origin, message, format):
 
 def log_global(ctx, origin, what):
     for channel, info in ctx.client.channels.items():
-        if origin in info["users"]:
+        if origin in info.users:
             log(ctx, channel, what)
 
     if _is_log_open(ctx, origin):
