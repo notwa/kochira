@@ -30,44 +30,22 @@ class Config(Config):
     announce = config.Field(doc="Whether or not to announce. Set this on a per-channel basis.", default=False)
 
 
-class UpdateError(Exception):
-    pass
-
-
 def rev_parse(rev):
-    p = subprocess.Popen(["git", "rev-parse", rev], stdout=subprocess.PIPE)
-    commit_hash, _ = p.communicate()
-    commit_hash = commit_hash.decode("utf-8").strip()
-
-    if p.returncode != 0:
-        raise UpdateError("git rev-parse failed")
-
-    return commit_hash
+    return subprocess.check_output(["git", "rev-parse", rev]).decode("utf-8").strip()
 
 
 def get_log(from_rev, to_rev):
-    p = subprocess.Popen(["git", "log", "--graph", "--abbrev-commit",
-                          "--date=relative", "--format=%h - (%ar) %s - %an",
-                          from_rev + ".." + to_rev], stdout=subprocess.PIPE)
-
-    out, _ = p.communicate()
-
-    if p.returncode != 0:
-        raise UpdateError("git log failed")
+    out = subprocess.check_output([
+        "git", "log", "--graph", "--abbrev-commit", "--date=relative",
+        "--format=%h - (%ar) %s - %an", from_rev + ".." + to_rev])
 
     return reversed([line for line in out.decode("utf-8").rstrip("\n").split("\n")
                      if line])
 
 
 def do_update(remote, branch):
-    p = subprocess.Popen(["git", "pull", remote, branch],
-                         stdout=subprocess.PIPE)
-    out, _ = p.communicate()
-
-    if p.returncode != 0:
-        raise UpdateError("git pull failed")
-
-    return out.decode("utf-8").strip() != "Already up-to-date."
+    subprocess.check_call(["git", "fetch", remote, branch])
+    subprocess.check_call(["git", "reset", "--hard", remote + "/" + branch])
 
 
 @service.command(r"(?:windows )?update(?:s)?!?$", mention=True, allow_private=True)
