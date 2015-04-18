@@ -88,12 +88,6 @@ def remove_ignore(ctx, hostmask):
 
 @service.hook("channel_message", priority=2000)
 def ignore_message(ctx, target, origin, message):
-    hostmask = "{nickname}!{username}@{hostname}".format(
-        nickname=origin,
-        username=ctx.client.users[origin]["username"],
-        hostname=ctx.client.users[origin]["hostname"]
-    )
-
-    if Ignore.select().where(Expression(hostmask, "ilike", fn.replace(Ignore.hostmask, "*", "%")),
+    if Ignore.select().where(Expression(ctx.client.users[origin].hostmask, "ilike", fn.replace(Ignore.hostmask, "*", "%")),
                              Ignore.network == ctx.client.name).exists():
         return service.EAT
