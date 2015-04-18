@@ -25,7 +25,7 @@ class Client(_Client):
         self.bot = bot
 
         self.name = name
-        
+
         # if we don't have a network name, default to the client name
         self.network = name
 
@@ -165,51 +165,51 @@ class Client(_Client):
             backlog.pop()
 
     def on_invite(self, channel, by):
-        self._run_hooks("invite", by, by, [channel, by])
+        self._run_hooks("invite", by.name, by.name, [channel.name, by.name])
 
     def on_join(self, channel, user):
-        self._run_hooks("join", channel, user, [channel, user])
+        self._run_hooks("join", channel.name, user.name, [channel.name, user.name])
 
     def on_kill(self, target, by, reason):
-        self._run_hooks("kill", by, by, [target, by, reason])
+        self._run_hooks("kill", by.name, by.name, [target.name, by.name, reason])
 
     def on_kick(self, channel, target, by, reason=None):
-        self._run_hooks("kick", channel, by, [channel, target, by, reason])
+        self._run_hooks("kick", channel.name, by.name, [channel.name, target.name, by.name, reason])
 
     def on_mode_change(self, channel, modes, by):
-        self._run_hooks("mode_change", channel, by, [channel, modes, by])
+        self._run_hooks("mode_change", channel.name, by.name, [channel.name, modes, by.name])
 
     def on_user_mode_change(self, modes):
-        self._run_hooks("user_mode_change", None, self.nickname, [modes])
+        self._run_hooks("user_mode_change", None, self.name, [modes])
 
     def on_channel_message(self, target, by, message):
-        self._add_to_backlog(target, by, message)
-        self._run_hooks("channel_message", target, by, [target, by, message])
+        self._add_to_backlog(target.name, by.name, message)
+        self._run_hooks("channel_message", target.name, by.name, [target, by, message])
 
     def on_private_message(self, by, message):
-        self._add_to_backlog(by, by, message)
-        self._run_hooks("private_message", by, by, [by, message])
+        self._add_to_backlog(by.name, by.name, message)
+        self._run_hooks("private_message", by.name, by.name, [by.name, message])
 
     def on_nick_change(self, old, new):
-        self._run_hooks("nick_change", new, new, [old, new])
+        self._run_hooks("nick_change", new, new, [old.name, new])
 
     def on_channel_notice(self, target, by, message):
-        self._run_hooks("channel_notice", target, by, [target, by, message])
+        self._run_hooks("channel_notice", target.name, by.name, [target.name, by.name, message])
 
     def on_private_notice(self, by, message):
-        self._run_hooks("private_notice", by, by, [by, message])
+        self._run_hooks("private_notice", by.name, by.name, [by.name, message])
 
     def on_part(self, channel, user, message=None):
-        self._run_hooks("part", channel, user, [channel, user, message])
+        self._run_hooks("part", channel.name, user.name, [channel.name, user.name, message])
 
     def on_topic_change(self, channel, message, by):
-        self._run_hooks("topic_change", channel, by, [channel, message, by])
+        self._run_hooks("topic_change", channel.name, by.name, [channel.name, message, by.name])
 
     def on_quit(self, user, message=None):
-        self._run_hooks("quit", user, user, [user, message])
+        self._run_hooks("quit", user.name, user.name, [user.name, message])
 
     def on_ctcp(self, by, target, what, contents):
-        self._run_hooks("ctcp", by, by, [by, what, contents])
+        self._run_hooks("ctcp", by.name, by.name, [by.name, what, contents])
 
     def on_ctcp_action(self, by, what, contents):
-        self._run_hooks("ctcp_action", by, by, [by, what, contents])
+        self._run_hooks("ctcp_action", by.name, by.name, [by.name, what, contents])

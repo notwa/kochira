@@ -187,13 +187,8 @@ class Service:
                 # check for permissions
                 permissions = getattr(f, "permissions", set([]))
 
-                hostmask = "{nickname}!{username}@{hostname}".format(
-                    nickname=origin,
-                    username=ctx.client.users[origin]["username"],
-                    hostname=ctx.client.users[origin]["hostname"]
-                )
-                if not all(has_permission(ctx.client, hostmask, permission,
-                                          target)
+                if not all(has_permission(ctx.client, origin.hostmask,
+                                          permission, target)
                            for permission in permissions):
                     return
 

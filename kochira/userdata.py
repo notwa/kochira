@@ -110,11 +110,11 @@ class UserData(collections.MutableMapping):
 
             account = None
 
-            if whois.get("identified", False):
+            if whois.identified:
                 account = nickname
 
-            if "account" in whois and whois["account"] is not None:
-                account = whois["account"]
+            if whois.account is not None:
+                account = whois.account
 
             if account is None:
                 raise cls.DoesNotExist
