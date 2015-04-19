@@ -27,7 +27,7 @@ def topic(ctx, topic):
     evict the oldest part of the topic.
     """
 
-    parts = ctx.client.channels[ctx.target].get("topic")
+    parts = ctx.client.channels[ctx.target].topic
 
     if parts:
         parts = parts.split(ctx.config.topic_separator)
