@@ -13,7 +13,7 @@
         <strong>{{ client.network }} ({{ client.connection.hostname }}:{{ client.connection.port }})</strong> as <strong>{{ client.nickname }}</strong>
         <ul>
         {% for channel, details in client.channels.items() %}
-            {% if not details["modes"].get("s") %}
+            {% if not details.modes.get("s") %}
             <li>{{ channel }}</li>
             {% end %}
         {% end %}
