@@ -24,7 +24,7 @@ def _is_log_open(ctx, channel):
 
 
 def _get_file_handle(ctx, channel):
-    k = (ctx.client.name, channel)
+    k = (ctx.client.name, channel.name)
 
     if k not in ctx.storage.handles:
         client_name_path = ctx.storage.path / ctx.client.name
@@ -32,7 +32,7 @@ def _get_file_handle(ctx, channel):
         if not client_name_path.exists():
             client_name_path.mkdir(parents=True)
 
-        path = client_name_path / (channel + ".log")
+        path = client_name_path / (channel.name + ".log")
         f = path.open("ab")
 
         service.logger.debug("Opened handle for: %s", path)
