@@ -44,7 +44,7 @@ def get_log(from_rev, to_rev):
 
 
 def do_update(remote, branch):
-    subprocess.check_call(["git", "fetch", remote, branch])
+    subprocess.check_call(["git", "fetch", "--all"])
     subprocess.check_call(["git", "reset", "--hard", remote + "/" + branch])
 
 
