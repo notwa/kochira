@@ -85,12 +85,12 @@ def make_comic_spec(title, lines):
 
     clumps = []
 
-    for clump in clump_many(segment, datetime.datetime.fromtimestamp(0),
-                            datetime.timedelta(seconds=average_pondering),
-                            operator.attrgetter("ts")):
-        while clump:
-            clumps.append(clump[:3])
-            clump = clump[3:]
+    for subclump in clump_many(segment, datetime.datetime.fromtimestamp(0),
+                               datetime.timedelta(seconds=average_pondering),
+                               operator.attrgetter("ts")):
+        while subclump:
+            clumps.append(subclump[:3])
+            subclump = subclump[3:]
 
     return {
         "panels_per_row": 2,
