@@ -103,7 +103,7 @@ def make_comic_spec(title, lines):
             "num_stick_figures": len(stick_figures),
             "dialogs": [{
                 "speaker": stick_figures.index(dialog.who),
-                "text": "\n".join(textwrap.textwrap(truncate_really_long_words(strip_control_codes(dialog.text)), 25))
+                "text": "\n".join(textwrap.wrap(truncate_really_long_words(strip_control_codes(dialog.text)), 25))
             } for dialog in reversed(panel)]
         } for panel in reversed(clumps)]
     }
