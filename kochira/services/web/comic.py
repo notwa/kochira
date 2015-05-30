@@ -64,18 +64,48 @@ def clump_many(xs, init, delta, key=lambda x: x):
 
 
 def make_comic_spec(title, lines):
+    # do some initial clumping and limit number of stick figures to 3
     seen_names = set([])
-    segment = []
-
+    initial_lines = []
+    
     for line in clump(lines,
-                     datetime.datetime.fromtimestamp(0),
-                     datetime.timedelta(seconds=120),
-                     operator.attrgetter("ts")):
-        segment.append(line)
+                      datetime.datetime.fromtimestamp(0),
+                      datetime.timedelta(seconds=60),
+                      operator.attrgetter("ts")):
+        initial_lines.append(line)
         seen_names.add(line.who)
-
+    
         if len(seen_names) >= 3:
             break
+
+    # determine conversation connectedness
+    segment = []
+    speakers = {initial_lines[0].who}
+    
+    while True:
+        for line in initial_lines:
+            highlight_match = re.match(r"^(\S+)[:,] ", line.text)
+    
+            if highlight_match is not None and line.who not in speakers:
+                speakers.add(line.who)
+                del segment[:]
+                break
+    
+            if line.who in speakers:
+                if highlight_match is not None and \
+                   highlight_match.group(1) not in speakers:
+                    speakers.add(highlight_match.group(1))
+                    del segment[:]
+                    break
+    
+                segment.append(line)
+    
+        if segment:
+            break
+    
+    # no connectivity, just render the whole comic
+    if speakers == {initial_lines[0].who}:
+        segment = initial_lines
 
     stick_figures = list(collections.Counter([
         entry.who for entry in segment]).keys())
