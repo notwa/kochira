@@ -128,7 +128,7 @@ def comic(ctx):
 
     ulim = requests.post("https://api.imgur.com/3/upload.json",
                          headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
-                         data={"image": resp.raw.read()).json()
+                         data={"image": resp.raw.read()}).json()
 
     if ulim["status"] != 200:
         ctx.respond(ctx._("Couldn't upload comic."))
