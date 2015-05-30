@@ -93,7 +93,7 @@ def make_comic_spec(title, lines):
             subclump = subclump[3:]
 
     return {
-        "panels_per_row": 2,
+        "panels_per_row": 1 if len(clumps) == 1 else 2,
         "panel_width": 500,
         "panel_height": 500,
         "title": title,
