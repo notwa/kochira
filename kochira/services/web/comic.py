@@ -125,6 +125,7 @@ def comic(ctx):
         resp.raise_for_status()
     except:
         ctx.respond(ctx._("Couldn't generate a comic."))
+        return
 
     ulim = requests.post("https://api.imgur.com/3/upload.json",
                          headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
