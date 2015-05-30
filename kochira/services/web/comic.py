@@ -21,6 +21,7 @@ service = Service(__name__, __doc__)
 @service.config
 class Config(Config):
     comic_server = config.Field(doc="Comic server to connect to.")
+    clump_interval = config.Field(doc="Time to use for dialog clumping, in seconds.", type=float, default=10 * 60)
     imgur_clientid = config.Field(doc="Client ID for use with Imgur.")
 
 
@@ -63,14 +64,14 @@ def clump_many(xs, init, delta, key=lambda x: x):
     return clumps
 
 
-def make_comic_spec(title, lines):
+def make_comic_spec(title, lines, clump_interval):
     # do some initial clumping and limit number of stick figures to 3
     seen_names = set([])
     initial_lines = []
     
     for line in clump(lines,
                       datetime.datetime.fromtimestamp(0),
-                      datetime.timedelta(seconds=60),
+                      datetime.timedelta(seconds=clump_interval),
                       operator.attrgetter("ts")):
         initial_lines.append(line)
         seen_names.add(line.who)
@@ -148,7 +149,8 @@ def comic(ctx):
     Generate a comic.
     """
     comic_spec = make_comic_spec(ctx._("{channel}: the comic").format(channel=ctx.target),
-                                 list(ctx.client.backlogs[ctx.target])[1:])
+                                 list(ctx.client.backlogs[ctx.target])[1:],
+                                 ctx.config.clump_interval)
 
     resp = requests.post(ctx.config.comic_server, stream=True, data=json.dumps(comic_spec))
 
