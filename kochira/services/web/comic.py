@@ -117,7 +117,7 @@ def comic(ctx):
     Generate a comic.
     """
     comic_spec = make_comic_spec(ctx._("{channel}: the comic").format(channel=ctx.target),
-                                 ctx.client.backlogs[ctx.target][1:])
+                                 list(ctx.client.backlogs[ctx.target])[1:])
 
     resp = requests.post(ctx.config.comic_server, stream=True, data=json.dumps(comic_spec))
 
