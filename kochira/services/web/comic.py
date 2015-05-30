@@ -131,9 +131,9 @@ def make_comic_spec(title, lines, clump_interval):
         "title": title,
         "title_size": 35,
         "panels": [{
-            "num_stick_figures": len(stick_figures),
+            "stick_figures": stick_figures,
             "dialogs": [{
-                "speaker": stick_figures.index(dialog.who),
+                "speaker": dialog.who,
                 "text": "\n".join(textwrap.wrap(truncate_really_long_words(strip_control_codes(dialog.text)), 25))
             } for dialog in reversed(panel)]
         } for panel in reversed(clumps)]
