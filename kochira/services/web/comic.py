@@ -126,8 +126,8 @@ def make_comic_spec(title, lines, clump_interval):
 
     return {
         "panels_per_row": 1 if len(clumps) == 1 else 2,
-        "panel_width": 500,
-        "panel_height": 500,
+        "panel_width": 600,
+        "panel_height": 600,
         "title": title,
         "title_size": 35,
         "panels": [{
