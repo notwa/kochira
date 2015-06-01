@@ -63,6 +63,13 @@ def clump_many(xs, init, delta, key=lambda x: x):
     return clumps
 
 
+def remove_highlights(text, speakers):
+    return re.sub(
+        r"^(?:(?:{})[:,] )+".format("|".join(re.escape(nick)
+                                    for nick in speakers)),
+        "", text)
+
+
 def make_comic_spec(title, lines, clump_interval, nicks):
     # do some initial clumping and limit number of stick figures to 3
     seen_names = set([])
@@ -141,7 +148,7 @@ def make_comic_spec(title, lines, clump_interval, nicks):
             "stick_figures": stick_figures,
             "dialogs": [{
                 "speaker": dialog.who,
-                "text": truncate_really_long_words(strip_control_codes(dialog.text))
+                "text": truncate_really_long_words(remove_highlights(strip_control_codes(dialog.text), speakers))
             } for dialog in reversed(panel)]
         } for panel in reversed(clumps)]
     }
