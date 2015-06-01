@@ -82,30 +82,32 @@ def make_comic_spec(title, lines, clump_interval, nicks):
     segment = []
     speakers = {initial_lines[0].who}
 
-    for i in range(100):
-    #while True:
+    while True:
         for line in initial_lines:
-            possible_nicks = set(re.findall(r"(?:(?<=[^a-z_\-\[\]\\^{}|`])|^)[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]*", line.text, re.IGNORECASE))
+            possible_nicks = set(re.findall(
+                r"(?:(?<=[^a-z_\-\[\]\\^{}|`])|^)[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]*",
+                line.text, re.IGNORECASE))
             possible_nicks.intersection_update(nicks)
 
-            service.logger.info("CURRENT STATE: %s %s", possible_nicks, speakers)
+            if possible_nicks:
+                # a new person is talking to someone we know
+                if possible_nicks.intersection(speakers) and \
+                    line.who not in speakers:
+                    speakers.add(line.who)
+                    del segment[:]
+                    break
 
-            # a new person is talking to someone we know
-            if possible_nicks.intersection(speakers) and line.who not in speakers:
-                speakers.add(line.who)
-                del segment[:]
-                break
-    
-            # someone we know is talking to new people
-            if line.who in speakers and possible_nicks:
-                speakers.update(possible_nicks)
-                del segment[:]
-                break
+                # someone we know is talking to new people
+                if line.who in speakers and \
+                    not speakers.intersection(possible_nicks):
+                    speakers.update(possible_nicks)
+                    del segment[:]
+                    break
 
             # nobody is talking to anyone, so we'll just add this line in and continue
             if line.who in speakers:
                 segment.append(line)
-    
+
         # we've collected all the lines now
         if segment:
             break
