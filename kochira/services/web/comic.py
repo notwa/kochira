@@ -89,7 +89,7 @@ def make_comic_spec(title, lines, clump_interval, nicks):
             possible_nicks = set(re.findall(r"(?:(?<=[^a-z_\-\[\]\\^{}|`])|^)[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]*", line.text))
             possible_nicks.intersection_update(nicks)
 
-            service.logger.info("POSSIBLE NICKS: %s %s", possible_nicks, speakers)
+            service.logger.info("CURRENT STATE: %s %s", possible_nicks, speakers)
 
             # a new person is talking to someone we know
             if possible_nicks.intersection(speakers) and line.who not in speakers:
