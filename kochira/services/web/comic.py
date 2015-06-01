@@ -64,7 +64,7 @@ def clump_many(xs, init, delta, key=lambda x: x):
     return clumps
 
 
-def make_comic_spec(title, lines, clump_interval):
+def make_comic_spec(title, lines, clump_interval, nicks):
     # do some initial clumping and limit number of stick figures to 3
     seen_names = set([])
     initial_lines = []
@@ -85,22 +85,26 @@ def make_comic_spec(title, lines, clump_interval):
     
     while True:
         for line in initial_lines:
-            highlight_match = re.match(r"^(\S+)[:,] ", line.text)
-    
-            if highlight_match is not None and line.who not in speakers:
+            possible_nicks = set(re.findall(r"(?:(?<=[^a-z_\-\[\]\\^{}|`])|^)[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]*", line.text))
+            possible_nicks.intersection_update(nicks)
+
+            # a new person is talking to someone we know
+            if possible_nicks.intersection(speakers) and line.who not in speakers:
                 speakers.add(line.who)
                 del segment[:]
                 break
     
+            # someone we know about is speaking to new people
+            if possible_nicks and line.who in speakers:
+                speakers.update(possible_nicks)
+                del segment[:]
+                break
+
+            # nobody is addressing anyone, so we'll just add this line in and continue
             if line.who in speakers:
-                if highlight_match is not None and \
-                   highlight_match.group(1) not in speakers:
-                    speakers.add(highlight_match.group(1))
-                    del segment[:]
-                    break
-    
                 segment.append(line)
     
+        # we've collected all the lines now
         if segment:
             break
     
@@ -150,7 +154,7 @@ def comic(ctx):
     """
     comic_spec = make_comic_spec(ctx._("{channel}: the comic").format(channel=ctx.target),
                                  list(ctx.client.backlogs[ctx.target])[1:],
-                                 ctx.config.clump_interval)
+                                 ctx.config.clump_interval, ctx.channels[ctx.channel].users)
 
     resp = requests.post(ctx.config.comic_server, stream=True, data=json.dumps(comic_spec))
 
