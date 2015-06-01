@@ -10,7 +10,6 @@ import json
 import operator
 import re
 import requests
-import textwrap
 
 from kochira import config
 from kochira.service import Service, Config, background
@@ -86,7 +85,7 @@ def make_comic_spec(title, lines, clump_interval, nicks):
     for i in range(100):
     #while True:
         for line in initial_lines:
-            possible_nicks = set(re.findall(r"(?:(?<=[^a-z_\-\[\]\\^{}|`])|^)[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]*", line.text))
+            possible_nicks = set(re.findall(r"(?:(?<=[^a-z_\-\[\]\\^{}|`])|^)[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]*", line.text, re.IGNORECASE))
             possible_nicks.intersection_update(nicks)
 
             service.logger.info("CURRENT STATE: %s %s", possible_nicks, speakers)
@@ -136,12 +135,11 @@ def make_comic_spec(title, lines, clump_interval, nicks):
         "panel_width": 600,
         "panel_height": 600,
         "title": title,
-        "title_size": 35,
         "panels": [{
             "stick_figures": stick_figures,
             "dialogs": [{
                 "speaker": dialog.who,
-                "text": "\n".join(textwrap.wrap(truncate_really_long_words(strip_control_codes(dialog.text)), 25))
+                "text": truncate_really_long_words(strip_control_codes(dialog.text))
             } for dialog in reversed(panel)]
         } for panel in reversed(clumps)]
     }
