@@ -154,7 +154,7 @@ def comic(ctx):
     """
     comic_spec = make_comic_spec(ctx._("{channel}: the comic").format(channel=ctx.target),
                                  list(ctx.client.backlogs[ctx.target])[1:],
-                                 ctx.config.clump_interval, ctx.channels[ctx.channel].users)
+                                 ctx.config.clump_interval, ctx.client.channels[ctx.channel].users)
 
     resp = requests.post(ctx.config.comic_server, stream=True, data=json.dumps(comic_spec))
 
