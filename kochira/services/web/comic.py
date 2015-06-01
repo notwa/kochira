@@ -82,11 +82,14 @@ def make_comic_spec(title, lines, clump_interval, nicks):
     # determine conversation connectedness
     segment = []
     speakers = {initial_lines[0].who}
-    
-    while True:
+
+    for i in range(100):
+    #while True:
         for line in initial_lines:
             possible_nicks = set(re.findall(r"(?:(?<=[^a-z_\-\[\]\\^{}|`])|^)[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]*", line.text))
             possible_nicks.intersection_update(nicks)
+
+            print("POSSIBLE NICKS: ", possible_nicks, speakers)
 
             # a new person is talking to someone we know
             if possible_nicks.intersection(speakers) and line.who not in speakers:
@@ -94,13 +97,13 @@ def make_comic_spec(title, lines, clump_interval, nicks):
                 del segment[:]
                 break
     
-            # someone we know about is speaking to new people
-            if possible_nicks and line.who in speakers:
+            # someone we know is talking to new people
+            if line.who in speakers and possible_nicks:
                 speakers.update(possible_nicks)
                 del segment[:]
                 break
 
-            # nobody is addressing anyone, so we'll just add this line in and continue
+            # nobody is talking to anyone, so we'll just add this line in and continue
             if line.who in speakers:
                 segment.append(line)
     
