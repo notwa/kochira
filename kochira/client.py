@@ -213,3 +213,8 @@ class Client(_Client):
 
     def on_ctcp_action(self, by, what, contents):
         self._run_hooks("ctcp_action", by.name, by.name, [by.name, what, contents])
+
+    def on_raw_410(self, message):
+        self._capabilities_requested = set()
+        self._capabilities_negotiating = set()
+        self.rawmsg('CAP', 'END')

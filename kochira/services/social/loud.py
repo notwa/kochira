@@ -9,12 +9,18 @@ import string
 
 from peewee import TextField, CharField, fn, SQL
 
+from kochira import config
 from kochira.db import Model
+from kochira.service import Service, Config
 
-from kochira.service import Service
+import kochira.timeout as timeout
 
 service = Service(__name__, __doc__)
 
+@service.config
+class Config(Config):
+    reply = config.Field(doc="Whether or not to generate replies.", default=True)
+    timeout_messages, timeout_seconds, timeout_global = timeout.config()
 
 @service.model
 class Shout(Model):
@@ -27,6 +33,11 @@ class Shout(Model):
             (("message",), True),
             (("who", "network"), False)
         )
+
+
+@service.setup
+def setup(ctx):
+    timeout.setup(ctx)
 
 
 def is_shout(text):
@@ -137,10 +148,11 @@ def record_or_play_shout(ctx, target, origin, message):
         Shout.create(who=ctx.origin, network=ctx.client.network,
                      message=message).save()
 
-    q = Shout.select().where(Shout.message != message) \
-        .order_by(fn.Random()) \
-        .limit(1)
+    if ctx.config.reply and timeout.handle(ctx, origin):
+        q = Shout.select().where(Shout.message != message) \
+            .order_by(fn.Random()) \
+            .limit(1)
 
-    if q.exists():
-        shout = q[0]
-        ctx.message(shout.message)
+        if q.exists():
+            shout = q[0]
+            ctx.message(shout.message)

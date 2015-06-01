@@ -10,33 +10,45 @@ import re
 
 from kochira import config
 from kochira.service import Service, background, Config
-import requests
+from websocket import create_connection
+
+import kochira.timeout as timeout
 
 service = Service(__name__, __doc__)
 
 @service.config
 class Config(Config):
     url = config.Field(doc="The remote cobed to connect to.")
-    username = config.Field(doc="The username to use when connecting.")
-    password = config.Field(doc="The password to use when connecting.")
     reply = config.Field(doc="Whether or not to generate replies.", default=True)
     prefix = config.Field(doc="Prefix to trigger brain.", default="?")
+    mention = config.Field(doc="Whether or not to mention activee.", default=True)
     random_replyness = config.Field(doc="Probability the brain will generate a reply for all messages.", default=0.0)
+    timeout_messages, timeout_seconds, timeout_global = timeout.config()
 
 
-def reply_and_learn(url, username, password, what):
-    r = requests.post(url,
-                      params={"q": what},
-                      headers={"X-Cobed-Auth": username + ":" + password})
-    r.raise_for_status()
-    return r.text
+@service.setup
+def setup(ctx):
+    timeout.setup(ctx)
+
+def reply_and_learn(url, what):
+    try:
+        cobe = create_connection(url)
+        cobe.send('?'+what)
+        reply = cobe.recv()
+        cobe.close()
+        return reply
+    except ConnectionRefusedError:
+        pass
 
 
-def learn(url, username, password, what):
-    requests.post(url,
-                  params={"q": what, "n": 1},
-                  headers={"X-Cobed-Auth": username + ":" + password}) \
-        .raise_for_status()
+def learn(url, what):
+    try:
+        cobe = create_connection(url)
+        cobe.send('!'+what)
+        cobe.recv()
+        cobe.close()
+    except ConnectionRefusedError:
+        pass
 
 
 @service.hook("channel_message", priority=-9999)
@@ -62,16 +74,13 @@ def do_reply(ctx, target, origin, message):
     if re.search(r"\b{}\b".format(re.escape(ctx.client.nickname)), message, re.I) is not None:
         reply = True
 
-    if reply and ctx.config.reply:
-        reply_message = reply_and_learn(ctx.config.url,
-                                        ctx.config.username,
-                                        ctx.config.password,
-                                        message)
+    if reply and ctx.config.reply and timeout.handle(ctx, origin):
+        reply_message = reply_and_learn(ctx.config.url, message)
 
-        if mention:
-            ctx.respond(reply_message)
-        else:
-            ctx.message(reply_message)
+        if reply_message is not None:
+            if mention and ctx.config.mention:
+                ctx.respond(reply_message)
+            else:
+                ctx.message(reply_message)
     elif message:
-        learn(ctx.config.url, ctx.config.username, ctx.config.password, message)
-
+        learn(ctx.config.url, message)
