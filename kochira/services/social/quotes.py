@@ -419,7 +419,7 @@ def comic_quote(ctx, query=None):
             })
     
     comic_spec = {
-        "panels_per_row": 2,
+        "panels_per_row": 2 if len(panels) > 1 else 1,
         "panel_width": 600 + max([len(stick_figures) - 3, 0]) * 200,
         "panel_height": 600 + max([len(stick_figures) - 3, 0]) * 100,
         "title": "Kobun&!",
