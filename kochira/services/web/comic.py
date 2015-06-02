@@ -182,5 +182,6 @@ def comic(ctx):
         comic = make_comic(comic_spec)
     except Exception as e:
         ctx.respond(ctx._("Couldn't generate a comic: {error}").format(error=e))
+        raise
     else:
         ctx.respond(ctx._("Comic: {url}").format(url=comic))
