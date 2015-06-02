@@ -354,6 +354,10 @@ def comic_quote(ctx, query=None):
     
     Make a quote into a comic.
     """
+    if not ctx.config.comicstrip_server:
+        ctx.respond(ctx._("I don't have comic support."))
+        return
+
     if query is not None:
         q = _find_quotes(ctx.storage, query)
     else:
@@ -369,7 +373,7 @@ def comic_quote(ctx, query=None):
 
     ctx.respond(ctx._("Comic: {comicstrip_server}/{id}").format(
         comicstrip_server=ctx.config.comicstrip_server,
-        id=comic.id))
+        id=q.id))
 
 
 def guess_newlines(text):
