@@ -428,7 +428,7 @@ def comic_quote(ctx, query=None):
 
     print(make_comic)
     try:
-        comic = make_comic(ctx, comic_spec)
+        comic = make_comic(comic_spec)
     except Exception as e:
         ctx.respond(ctx._("Couldn't generate a comic: {error}").format(error=e))
         raise
