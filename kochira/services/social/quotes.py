@@ -7,6 +7,8 @@ running, a web interface to quotes will be made available at ``/quotes/``.
 
 import random
 import re
+import operator
+import itertools
 
 from datetime import datetime
 from peewee import CharField, TextField, DateTimeField, fn, SQL
