@@ -343,8 +343,7 @@ DIALOG_EXPR = re.compile(
     r"(?:<[ !~&@%+]?(?P<who>[A-Za-z0-9{}\[\]|^`\\_-]+)>) (?P<text>.*)")
 
 
-@service.command(r"comic quote (?P<query>.+)$", mention=True)
-@service.command(r"!quote comic (?P<query>.+)$")
+@service.command(r"!quote comic(?: (?P<query>.+))?$")
 @background
 def comic_quote(ctx, query=None):
     """
