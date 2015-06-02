@@ -10,9 +10,12 @@ import re
 
 from kochira import config
 from kochira.service import Service, background, Config
-from websocket import create_connection
+from kochira.services.social.loud import is_shout
 
 import kochira.timeout as timeout
+
+from websocket import create_connection
+
 
 service = Service(__name__, __doc__)
 
@@ -22,6 +25,7 @@ class Config(Config):
     reply = config.Field(doc="Whether or not to generate replies.", default=True)
     prefix = config.Field(doc="Prefix to trigger brain.", default="?")
     mention = config.Field(doc="Whether or not to mention activee.", default=True)
+    ignore_caps = config.Field(doc="Skip over messages in all-caps.", default=True)
     random_replyness = config.Field(doc="Probability the brain will generate a reply for all messages.", default=0.0)
     timeout_messages, timeout_seconds, timeout_global = timeout.config()
 
@@ -73,6 +77,9 @@ def do_reply(ctx, target, origin, message):
 
     if re.search(r"\b{}\b".format(re.escape(ctx.client.nickname)), message, re.I) is not None:
         reply = True
+
+    if reply and ctx.config.ignore_caps and is_shout(message):
+        reply = False
 
     if reply and ctx.config.reply and timeout.handle(ctx, origin):
         reply_message = reply_and_learn(ctx.config.url, message)
