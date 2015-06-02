@@ -13,18 +13,17 @@ def setup(ctx):
     ctx.storage.points = {}
     ctx.storage.lock = threading.Lock()
 
-def bump(ctx, hostmask):
-    # TODO: act from @ onwards so you can't change nick to avoid timeout
+def bump(ctx, hostname):
     now = time.time()
     lasttimes = ctx.storage.lasttimes
     allpoints = ctx.storage.points
     if ctx.config.get('timeout_global', False):
-        hostmask = '(global timeout)'
+        hostname = '(global timeout)'
     one = max(0, ctx.config.get('timeout_messages', 3))
     two = max(1, ctx.config.get('timeout_seconds', 60))
 
-    then = lasttimes.get(hostmask, now)
-    points = allpoints.get(hostmask, one)
+    then = lasttimes.get(hostname, now)
+    points = allpoints.get(hostname, one)
 
     passed = now - then
 
@@ -33,12 +32,12 @@ def bump(ctx, hostmask):
     points += passed*one/two
     points = min(max(points, 0), one)
 
-    allpoints[hostmask] = points
-    lasttimes[hostmask] = now
+    allpoints[hostname] = points
+    lasttimes[hostname] = now
 
     return good
 
 def handle(ctx, origin):
-    hostmask = ctx.client.users[origin].hostmask
+    hostname = client.users[origin].hostname
     with ctx.storage.lock:
-        return bump(ctx, hostmask)
+        return bump(ctx, hostname)
