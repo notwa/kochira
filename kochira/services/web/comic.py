@@ -154,8 +154,8 @@ def make_comic_spec(title, lines, clump_interval, nicks):
     }
 
 
-@service.provides("make_comic")
-def make_comic(spec):
+@service.provides("make_comic", rebinds_context=True)
+def make_comic(ctx, spec):
     resp = requests.post(ctx.config.comic_server, stream=True, data=json.dumps(spec))
     resp.raise_for_status()
 
