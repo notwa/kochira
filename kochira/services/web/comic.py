@@ -179,7 +179,7 @@ def comic(ctx):
                                  list(ctx.client.backlogs[ctx.target])[1:],
                                  ctx.config.clump_interval, ctx.client.channels[ctx.target].users)
     try:
-        comic = make_comic(comic_spec)
+        comic = make_comic(ctx, comic_spec)
     except Exception as e:
         ctx.respond(ctx._("Couldn't generate a comic: {error}").format(error=e))
         raise
