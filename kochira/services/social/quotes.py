@@ -373,7 +373,7 @@ def comic_quote(ctx, query=None):
 
     ctx.respond(ctx._("Comic: {comicstrip_server}/{id}").format(
         comicstrip_server=ctx.config.comicstrip_server,
-        id=q.id))
+        id=q[0].id))
 
 
 def guess_newlines(text):
