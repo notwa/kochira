@@ -33,6 +33,7 @@ service = Service(__name__, __doc__)
 @service.config
 class Config(Config):
     index_path = config.Field(doc="Path to the full-text index.", default="quotes")
+    comicstrip_server = config.Field(doc="URL to comicstrip server.")
 
 
 stem_ana = StemmingAnalyzer()
@@ -353,12 +354,6 @@ def comic_quote(ctx, query=None):
     
     Make a quote into a comic.
     """
-    try:
-        make_comic = ctx.provider_for("make_comic")
-    except KeyError:
-        ctx.respond(ctx._("Sorry, I don't have a comic provider loaded."))
-        return
-
     if query is not None:
         q = _find_quotes(ctx.storage, query)
     else:
@@ -372,68 +367,9 @@ def comic_quote(ctx, query=None):
         ctx.respond(ctx._("Couldn't find any quotes."))
         return
 
-    dialogs = []
-    stick_figures = []
-    
-    for line in guess_newlines(q[0].quote):
-        match = DIALOG_EXPR.match(line)
-        if match is None:
-            continue
-    
-        speaker = match.group("who")
-        if speaker not in stick_figures:
-            stick_figures.append(speaker)
-    
-        text = match.group("text")
-    
-        dialogs.append({
-            "speaker": speaker,
-            "text": text
-        })
-    
-    for dialog in dialogs:
-        dialog["text"] = re.sub(
-            r"^({names})[:,] ".format(names="|".join(
-                re.escape(name) for name in stick_figures)),
-            "", dialog["text"])
-    
-    clumps = [[]]
-    
-    for _, lines in itertools.groupby(dialogs, operator.itemgetter("speaker")):
-        lines = list(lines)
-    
-        last_clump = clumps[-1]
-    
-        if not last_clump or len(last_clump) + len(lines) <= 3:
-            last_clump.extend(lines)
-        else:
-            clumps.append(lines)
-    
-    panels = []
-    for clump in clumps:
-        while clump:
-            cur, clump = clump[:3], clump[3:]
-            panels.append({
-                "stick_figures": stick_figures,
-                "dialogs": cur
-            })
-    
-    comic_spec = {
-        "panels_per_row": 2 if len(panels) > 1 else 1,
-        "panel_width": 600 + max([len(stick_figures) - 3, 0]) * 200,
-        "panel_height": 600 + max([len(stick_figures) - 3, 0]) * 100,
-        "title": "Kobun&!",
-        "panels": panels
-    }
-
-    print(make_comic)
-    try:
-        comic = make_comic(comic_spec)
-    except Exception as e:
-        ctx.respond(ctx._("Couldn't generate a comic: {error}").format(error=e))
-        raise
-    else:
-        ctx.respond(ctx._("Comic: {url}").format(url=comic))    
+    ctx.respond(ctx._("Comic: {comicstrip_server}/{id}").format(
+        comicstrip_server=ctx.config.comicstrip_server,
+        id=comic.id))
 
 
 def guess_newlines(text):
