@@ -154,6 +154,19 @@ def make_comic_spec(title, lines, clump_interval, nicks):
     }
 
 
+@service.provides("make_comic")
+def make_comic(spec):
+    resp = requests.post(ctx.config.comic_server, stream=True, data=json.dumps(spec))
+    resp.raise_for_status()
+
+    ulim = requests.post("https://api.imgur.com/3/upload.json",
+                         headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
+                         data={"image": resp.raw.read()})
+    ulim.raise_for_status()
+
+    return ulim.json()["data"]["link"]
+
+
 @service.command("!comic")
 @background
 def comic(ctx):
@@ -165,20 +178,9 @@ def comic(ctx):
     comic_spec = make_comic_spec(ctx._("{channel}: the comic").format(channel=ctx.target),
                                  list(ctx.client.backlogs[ctx.target])[1:],
                                  ctx.config.clump_interval, ctx.client.channels[ctx.target].users)
-
-    resp = requests.post(ctx.config.comic_server, stream=True, data=json.dumps(comic_spec))
-
     try:
-        resp.raise_for_status()
-    except:
-        ctx.respond(ctx._("Couldn't generate a comic."))
-        return
-
-    ulim = requests.post("https://api.imgur.com/3/upload.json",
-                         headers={"Authorization": "Client-ID " + ctx.config.imgur_clientid},
-                         data={"image": resp.raw.read()}).json()
-
-    if ulim["status"] != 200:
-        ctx.respond(ctx._("Couldn't upload comic."))
+        comic = make_comic(comic_spec)
+    except Exception as e:
+        ctx.respond(ctx._("Couldn't generate a comic: {error}").format(error=e)
     else:
-        ctx.respond(ctx._("Comic: {url}".format(url=ulim["data"]["link"])))
+        ctx.respond(ctx._("Comic: {url}".format(url=comic)))
