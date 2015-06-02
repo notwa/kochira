@@ -42,8 +42,7 @@ def setup(ctx):
 
 def is_shout(text):
     return text.upper() == text and \
-       len(text) >= 4 and \
-       any(c for c in text if c in string.ascii_uppercase)
+       len([c for c in text if c in string.ascii_uppercase]) >= 4
 
 
 @service.command(r"who(?:'s| is| are|'re)(?: the loudest|loud)(?: .+)?\??$", mention=True)
