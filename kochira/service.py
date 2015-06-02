@@ -273,11 +273,16 @@ class Service:
         self.on_shutdown = f
         return f
 
-    def provides(self, name):
+    def provides(self, name, rebinds_context=False):
         """
         Register a provider function to expose to other services.
         """
         def _decorator(f):
+            if rebinds_context:
+                _f = f
+                def f(ctx, *args, **kwargs):
+                    ctx = ctx.client.context_factory(self, ctx.bot, ctx.client, ctx.target, ctx.origin)
+                    return _f(ctx, *args, **kwargs)
             self.providers[name] = f
             return f
         return _decorator
