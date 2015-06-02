@@ -38,6 +38,6 @@ def bump(ctx, hostname):
     return good
 
 def handle(ctx, origin):
-    hostname = client.users[origin].hostname
+    hostname = ctx.client.users[origin].hostname
     with ctx.storage.lock:
         return bump(ctx, hostname)
