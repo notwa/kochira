@@ -20,7 +20,7 @@ from whoosh.qparser import QueryParser
 from kochira import config
 from kochira.db import Model, database
 
-from kochira.service import Service, Config
+from kochira.service import Service, Config, background
 from kochira.auth import requires_permission
 
 from tornado.web import RequestHandler, Application
@@ -337,6 +337,89 @@ def find_quote(ctx, query):
             num=len(qids),
             qids=", ".join(str(qid) for qid in qids)
         ))
+
+
+DIALOG_EXPR = re.compile(
+    r"(?:<[ !~&@%+]?(?P<who>[A-Za-z0-9{}\[\]|^`\\_-]+)>) (?P<text>.*)")
+
+
+@service.command(r"comic for quote (?P<qid>\d+)\??$", mention=True)
+@service.command(r"comic quote (?P<qid>\d+)$", mention=True)
+@service.command(r"!quote comic (?P<qid>\d+)$")
+@background
+def read_quote(ctx, qid: int):
+    try:
+        make_comic = ctx.provider_for("make_comic")
+    except KeyError:
+        ctx.respond(ctx._("Sorry, I don't have a comic provider loaded."))
+        return
+
+    q = Quote.select() \
+        .where(Quote.id == qid)
+
+    if not q.exists():
+        ctx.respond(ctx._("That's not a quote."))
+        return
+
+        dialogs = []
+        stick_figures = []
+        
+        for line in guess_newlines(q[0].quote):
+            match = DIALOG_EXPR.match(line)
+            if match is None:
+                continue
+        
+            speaker = match.group("who")
+            if speaker not in stick_figures:
+                stick_figures.append(speaker)
+        
+            text = match.group("text")
+        
+            dialogs.append({
+                "speaker": speaker,
+                "text": text
+            })
+        
+        for dialog in dialogs:
+            dialog["text"] = re.sub(
+                r"^({names})[:,] ".format(names="|".join(
+                    re.escape(name) for name in stick_figures)),
+                "", dialog["text"])
+        
+        clumps = [[]]
+        
+        for _, lines in itertools.groupby(dialogs, operator.itemgetter("speaker")):
+            lines = list(lines)
+        
+            last_clump = clumps[-1]
+        
+            if not last_clump or len(last_clump) + len(lines) <= 3:
+                last_clump.extend(lines)
+            else:
+                clumps.append(lines)
+        
+        panels = []
+        for clump in clumps:
+            while clump:
+                cur, clump = clump[:3], clump[3:]
+                panels.append({
+                    "stick_figures": stick_figures,
+                    "dialogs": cur
+                })
+        
+        try:
+            comic = make_comic(ctx, {
+                "panels_per_row": 2,
+                "panel_width": 600 + max([len(stick_figures) - 3, 0]) * 200,
+                "panel_height": 600 + max([len(stick_figures) - 3, 0]) * 100,
+                "title": "Kobun&!",
+                "panels": panels
+            })
+        except Exception as e:
+            ctx.respond(ctx._("Couldn't generate a comic: {error}").format(error=e))
+            raise
+        else:
+            ctx.respond(ctx._("Comic: {url}").format(url=comic))    
 
 
 def guess_newlines(text):
