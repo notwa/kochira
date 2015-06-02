@@ -418,14 +418,17 @@ def comic_quote(ctx, query=None):
                 "dialogs": cur
             })
     
+    comic_spec = {
+        "panels_per_row": 2,
+        "panel_width": 600 + max([len(stick_figures) - 3, 0]) * 200,
+        "panel_height": 600 + max([len(stick_figures) - 3, 0]) * 100,
+        "title": "Kobun&!",
+        "panels": panels
+    }
+
+    print(make_comic)
     try:
-        comic = make_comic(ctx, {
-            "panels_per_row": 2,
-            "panel_width": 600 + max([len(stick_figures) - 3, 0]) * 200,
-            "panel_height": 600 + max([len(stick_figures) - 3, 0]) * 100,
-            "title": "Kobun&!",
-            "panels": panels
-        })
+        comic = make_comic(ctx, comic_spec)
     except Exception as e:
         ctx.respond(ctx._("Couldn't generate a comic: {error}").format(error=e))
         raise
