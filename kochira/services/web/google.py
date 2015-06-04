@@ -19,6 +19,7 @@ service = Service(__name__, __doc__)
 class Config(Config):
     api_key = config.Field(doc="Google API key.")
     cx = config.Field(doc="Custom search engine ID.")
+    safesearch = config.Field(doc="Set safety level.", default="medium")
     # FIXME: this appears to do jack shit
     timeout_messages, timeout_seconds, timeout_global = \
       timeout.config(config.Field, messages=100, seconds=60*60*8, globally=True)
@@ -48,7 +49,8 @@ def search(ctx, term, num: int=None):
         params={
             "key": ctx.config.api_key,
             "cx": ctx.config.cx,
-            "q": term
+            "q": term,
+            "safe": ctx.config.safesearch,
         }
     ).json()
 
