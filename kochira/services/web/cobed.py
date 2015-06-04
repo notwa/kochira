@@ -27,7 +27,7 @@ class Config(Config):
     mention = config.Field(doc="Whether or not to mention activee.", default=True)
     ignore_caps = config.Field(doc="Skip over messages in all-caps.", default=True)
     random_replyness = config.Field(doc="Probability the brain will generate a reply for all messages.", default=0.0)
-    timeout_messages, timeout_seconds, timeout_global = timeout.config()
+    timeout_messages, timeout_seconds, timeout_global = timeout.config(config.Field)
 
 
 @service.setup

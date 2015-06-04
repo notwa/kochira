@@ -1,11 +1,13 @@
 import time
 import threading
 
-def config():
-    from kochira import config
-    timeout_messages = config.Field(doc="Timeout: number of messages allowed per timeframe.", default=3)
-    timeout_seconds = config.Field(doc="Timeout: Timeframe in seconds.", default=60)
-    timeout_global = config.Field(doc="Timeout: Affect globally to all users.", default=False)
+def config(Field, messages=3, seconds=60, globally=False):
+    timeout_messages = Field(doc=\
+      "Timeout: number of messages allowed per timeframe.", default=messages)
+    timeout_seconds = Field(doc=\
+      "Timeout: timeframe in seconds.", default=seconds)
+    timeout_global = Field(doc=\
+      "Timeout: affect globally to all users.", default=globally)
     return timeout_messages, timeout_seconds, timeout_global
 
 def setup(ctx):
@@ -14,30 +16,36 @@ def setup(ctx):
     ctx.storage.lock = threading.Lock()
 
 def bump(ctx, hostname):
-    now = time.time()
     lasttimes = ctx.storage.lasttimes
     allpoints = ctx.storage.points
-    if ctx.config.get('timeout_global', False):
-        hostname = '(global timeout)'
-    one = max(0, ctx.config.get('timeout_messages', 3))
-    two = max(1, ctx.config.get('timeout_seconds', 60))
+    tomsgs = max(0, ctx.config.get('timeout_messages', 3))
+    tosecs = max(1, ctx.config.get('timeout_seconds', 60))
 
+    now = time.time()
     then = lasttimes.get(hostname, now)
-    points = allpoints.get(hostname, one)
-
+    points = allpoints.get(hostname, tomsgs)
     passed = now - then
 
     good = points >= 1
     points -= 1
-    points += passed*one/two
-    points = min(max(points, 0), one)
+    points += passed*tomsgs/tosecs
+    points = min(max(points, 0), tomsgs)
 
     allpoints[hostname] = points
     lasttimes[hostname] = now
 
     return good
 
-def handle(ctx, origin):
-    hostname = ctx.client.users[origin].hostname
+def handle(ctx, origin=None):
+    if ctx.config.get('timeout_global') == None:
+        print("kochira.timeout: something went wrong")
+    if ctx.config.get('timeout_global', False):
+        hostname = '(global timeout)'
+    elif origin != None:
+        hostname = ctx.client.users[origin].hostname
+    else:
+        # this is awful lol
+        hostname = '(MISSING ORIGIN)'
+        print('kochira.timeout:', hostname)
     with ctx.storage.lock:
         return bump(ctx, hostname)

@@ -20,7 +20,7 @@ service = Service(__name__, __doc__)
 @service.config
 class Config(Config):
     reply = config.Field(doc="Whether or not to generate replies.", default=True)
-    timeout_messages, timeout_seconds, timeout_global = timeout.config()
+    timeout_messages, timeout_seconds, timeout_global = timeout.config(config.Field)
 
 @service.model
 class Shout(Model):

@@ -10,6 +10,8 @@ from kochira import config
 from kochira.service import Service, background, Config, coroutine
 from kochira.userdata import UserData
 
+import kochira.timeout as timeout
+
 service = Service(__name__, __doc__)
 
 
@@ -17,6 +19,14 @@ service = Service(__name__, __doc__)
 class Config(Config):
     api_key = config.Field(doc="Google API key.")
     cx = config.Field(doc="Custom search engine ID.")
+    # FIXME: this appears to do jack shit
+    timeout_messages, timeout_seconds, timeout_global = \
+      timeout.config(config.Field, messages=100, seconds=60*60*8, globally=True)
+
+
+@service.setup
+def setup(ctx):
+    timeout.setup(ctx)
 
 
 @service.command(r"!g (?P<term>.+?)(?: (?P<num>\d+))?$")
@@ -29,6 +39,9 @@ def search(ctx, term, num: int=None):
     Search for the given terms on Google. If a number is given, it will display
     that result.
     """
+
+    if not timeout.handle(ctx):
+        return
 
     r = requests.get(
         "https://www.googleapis.com/customsearch/v1",
