@@ -7,6 +7,8 @@ running, a web interface to quotes will be made available at ``/quotes/``.
 
 import random
 import re
+import operator
+import itertools
 
 from datetime import datetime
 from peewee import CharField, TextField, DateTimeField, fn, SQL
@@ -20,7 +22,7 @@ from whoosh.qparser import QueryParser
 from kochira import config
 from kochira.db import Model, database
 
-from kochira.service import Service, Config
+from kochira.service import Service, Config, background
 from kochira.auth import requires_permission
 
 from tornado.web import RequestHandler, Application
@@ -31,6 +33,7 @@ service = Service(__name__, __doc__)
 @service.config
 class Config(Config):
     index_path = config.Field(doc="Path to the full-text index.", default="quotes")
+    comicstrip_server = config.Field(doc="URL to comicstrip server.")
 
 
 stem_ana = StemmingAnalyzer()
@@ -337,6 +340,40 @@ def find_quote(ctx, query):
             num=len(qids),
             qids=", ".join(str(qid) for qid in qids)
         ))
+
+
+DIALOG_EXPR = re.compile(
+    r"(?:<[ !~&@%+]?(?P<who>[A-Za-z0-9{}\[\]|^`\\_-]+)>) (?P<text>.*)")
+
+
+@service.command(r"!quote comic(?: (?P<query>.+))?$")
+@background
+def comic_quote(ctx, query=None):
+    """
+    Comic quote.
+    
+    Make a quote into a comic.
+    """
+    if not ctx.config.comicstrip_server:
+        ctx.respond(ctx._("I don't have comic support."))
+        return
+
+    if query is not None:
+        q = _find_quotes(ctx.storage, query)
+    else:
+        q = Quote.select()
+
+    q = q \
+        .order_by(fn.Random()) \
+        .limit(1)
+
+    if not q.exists():
+        ctx.respond(ctx._("Couldn't find any quotes."))
+        return
+
+    ctx.respond(ctx._("Comic: {comicstrip_server}/{id}").format(
+        comicstrip_server=ctx.config.comicstrip_server,
+        id=q[0].id))
 
 
 def guess_newlines(text):

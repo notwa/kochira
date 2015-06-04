@@ -82,7 +82,8 @@ class HookContext:
     def provider_for(self, name):
         for bound in self.bot.services.values():
             if name in bound.service.providers:
-                return functools.partial(bound.service.providers[name], self)
+                ctx = self.__class__(bound.service, self.bot, self.client, self.target, self.origin)
+                return functools.partial(bound.service.providers[name], ctx)
 
         raise KeyError(name)
 

@@ -23,15 +23,18 @@ for language in pycountry.languages.objects:
 
 def perform_translation(term, sl, tl):
     return requests.get(
-        "http://translate.google.com/translate_a/t",
+        "http://translate.google.com/translate_a/single",
         params={
-            "client": "p",
+            "client": "t",
+            "dt": "t",
+            "dt": "rm",
             "sl": sl,
             "tl": tl,
-            "text": term,
+            "q": term,
             "ie": "UTF-8",
             "oe": "UTF-8"
-        }
+        },
+        headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36"}
     ).json()
 
 

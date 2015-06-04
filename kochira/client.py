@@ -1,5 +1,6 @@
+import datetime
 import logging
-from collections import deque
+from collections import deque, namedtuple
 import textwrap
 
 from pydle import Client as _Client
@@ -9,6 +10,8 @@ from pydle.features.rfc1459.protocol import MESSAGE_LENGTH_LIMIT
 from .service import Service, HookContext
 
 logger = logging.getLogger(__name__)
+
+BacklogEntry = namedtuple("BacklogEntry", "who text ts")
 
 
 class Client(_Client):
@@ -159,7 +162,7 @@ class Client(_Client):
 
     def _add_to_backlog(self, target, by, message):
         backlog = self.backlogs.setdefault(target, deque([]))
-        backlog.appendleft((by, message))
+        backlog.appendleft(BacklogEntry(by, message, datetime.datetime.utcnow()))
 
         while len(backlog) > self.bot.config.core.max_backlog:
             backlog.pop()
