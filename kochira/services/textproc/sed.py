@@ -48,5 +48,5 @@ def sed(ctx, pattern, replacement, who=None, flags=None):
                     ctx.respond(ctx._("Couldn't parse that pattern."))
                     return
 
-                ctx.message("<{who}> {message}".format(who=other, message=msg))
+                ctx.message("<{who}> {message}".format(who=entry.who, message=msg))
                 break
