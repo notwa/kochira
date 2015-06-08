@@ -39,11 +39,11 @@ def sed(ctx, pattern, replacement, who=None, flags=None):
 
     for entry in list(ctx.client.backlogs.get(ctx.target, []))[1:]:
         if who is None or entry.who == who:
-            match = expr.search(entry.message)
+            match = expr.search(entry.text)
 
             if match is not None:
                 try:
-                    msg = expr.sub("\x1f" + replacement + "\x1f", entry.message, count=0 if "g" in flags else 1)
+                    msg = expr.sub("\x1f" + replacement + "\x1f", entry.text, count=0 if "g" in flags else 1)
                 except:
                     ctx.respond(ctx._("Couldn't parse that pattern."))
                     return
