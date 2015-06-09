@@ -72,7 +72,7 @@ def who_said_that(ctx):
     Get information for who originally said the last shout.
     """
 
-    shouts = {line.strip(): i
+    shouts = {entry.text.strip(): i
               for i, entry in enumerate(ctx.client.backlogs[ctx.target])
               if is_shout(entry.text) and entry.who == ctx.client.nickname}
 
