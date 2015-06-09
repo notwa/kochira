@@ -73,8 +73,8 @@ def who_said_that(ctx):
     """
 
     shouts = {line.strip(): i
-              for i, (who, line) in enumerate(ctx.client.backlogs[ctx.target])
-              if is_shout(line) and who == ctx.client.nickname}
+              for i, entry in enumerate(ctx.client.backlogs[ctx.target])
+              if is_shout(entry.text) and entry.who == ctx.client.nickname}
 
     q = list(Shout.select() \
         .where((Shout.message << list(shouts.keys())) if shouts else False))
