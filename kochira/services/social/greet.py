@@ -66,5 +66,4 @@ def greet(ctx, channel, who):
     except KeyError:
         return
     else:
-        ctx.message(ctx._("[{who}] {greeting}").format(who=who,
-                                                       greeting=greeting))
+        ctx.message(greeting)
