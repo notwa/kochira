@@ -11,6 +11,7 @@ service = Service(__name__, __doc__)
 
 
 @service.command(r"!nogreet$", mention=False)
+@coroutine
 def forget_greeting(ctx):
     """
     Forget greeting.
