@@ -16,10 +16,20 @@ def acl_for(client, target=None):
     return acl
 
 
-def has_permission(client, hostmask, permission, target=None):
-    for match_hostmask, permissions in acl_for(client, target).items():
-        if fnmatch.fnmatch(hostmask, match_hostmask) and \
-            (permission in permissions or "admin" in permissions):
+CHECKERS = {
+    "a": lambda account, user: user.account == account,
+    None: lambda hostmask, user: fnmatch.fnmatch(user.hostmask, hostmask)
+}
+
+def has_permission(client, user, permission, target=None):
+    for mask, permissions in acl_for(client, target).items():
+        if mask[0] == "$":
+            matcher = CHECKERS[hostmask[1]]
+            mask = mask[3:]
+        else:
+            matcher = CHECKERS[None]
+
+        if matcher(mask, user) and (permission in permissions or "admin" in permissions):
             return True
     return False
 
