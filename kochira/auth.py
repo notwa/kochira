@@ -24,7 +24,7 @@ CHECKERS = {
 def has_permission(client, user, permission, target=None):
     for mask, permissions in acl_for(client, target).items():
         if mask[0] == "$":
-            matcher = CHECKERS[hostmask[1]]
+            matcher = CHECKERS[mask[1]]
             mask = mask[3:]
         else:
             matcher = CHECKERS[None]
