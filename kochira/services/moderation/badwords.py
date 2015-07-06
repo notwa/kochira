@@ -19,6 +19,11 @@ service = Service(__name__, __doc__)
 def is_regex(what):
     return what[0] == "/" and what[-1] == "/"
 
+CONTROL_CODE_RE = re.compile(
+    "\x1f|\x02|\x12|\x0f|\x16|\x03(?:\d{1,2}(?:,\d{1,2})?)?", re.UNICODE)
+
+def strip_control_codes(s):
+    return CONTROL_CODE_RE.sub("", s)
 
 @service.model
 class Badword(Model):
@@ -108,14 +113,14 @@ def check_badwords(ctx, target, origin, message):
         else:
             expr = r"\b{}\b".format(re.escape(badword.word))
 
-        if re.search(expr, message, re.I) is not None:
+        if re.search(expr, strip_control_codes(message), re.I) is not None:
             op_modes = set(itertools.takewhile(lambda x: x != "v",
                                                ctx.client._nickname_prefixes.values()))
 
             ops = set([])
 
             for op_mode in op_modes:
-                ops.update(ctx.client.channels[target]["modes"].get(op_mode, []))
+                ops.update(ctx.client.channels[target].modes.get(op_mode, []))
 
             if ctx.client.nickname not in ops and ctx.config.chanserv_op is not None:
                 ctx.client.message("ChanServ", ctx.config.chanserv_op.format(
