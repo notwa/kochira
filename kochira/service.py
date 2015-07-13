@@ -188,9 +188,7 @@ class Service:
                 # check for permissions
                 permissions = getattr(f, "permissions", set([]))
 
-                if not all(has_permission(ctx.client,
-                                          ctx.client.users[origin].hostmask,
-                                          permission, target)
+                if not all(has_permission(ctx.client, ctx.client.users[origin], permission, target)
                            for permission in permissions):
                     return
 
