@@ -37,8 +37,8 @@ def bump(ctx, hostname):
     return good
 
 def handle(ctx, origin=None):
-    if ctx.config.get('timeout_global') == None:
-        print("kochira.timeout: something went wrong")
+    #if ctx.config.get('timeout_global') == None:
+        #print("kochira.timeout: something went wrong")
     if ctx.config.get('timeout_global', False):
         hostname = '(global timeout)'
     elif origin != None:
