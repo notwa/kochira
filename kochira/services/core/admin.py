@@ -15,7 +15,7 @@ from kochira.service import Service
 service = Service(__name__, __doc__)
 
 
-@service.command(r"(?P<r>re)?load service (?P<service_name>\S+)$", mention=True, priority=3000)
+@service.command(r"(?P<r>re)?(load|start) services? (?P<service_name>\S+)$", mention=True, priority=3000)
 @requires_permission("admin")
 def load_service(ctx, r, service_name):
     """
@@ -45,7 +45,7 @@ def load_service(ctx, r, service_name):
     ctx.respond(message)
 
 
-@service.command(r"unload service (?P<service_name>\S+)$", mention=True, priority=3000)
+@service.command(r"unload services? (?P<service_name>\S+)$", mention=True, priority=3000)
 @requires_permission("admin")
 def unload_service(ctx, service_name):
     """
