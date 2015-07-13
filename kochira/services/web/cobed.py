@@ -34,7 +34,16 @@ class Config(Config):
 def setup(ctx):
     timeout.setup(ctx)
 
+
+def pls_no_spamerino(what):
+    if what.find('\x03') != -1:
+        return
+    return what
+
+
 def reply_and_learn(url, what):
+    what = pls_no_spamerino(what)
+    if not what: return
     try:
         cobe = create_connection(url)
         cobe.send('?'+what)
@@ -46,6 +55,8 @@ def reply_and_learn(url, what):
 
 
 def learn(url, what):
+    what = pls_no_spamerino(what)
+    if not what: return
     try:
         cobe = create_connection(url)
         cobe.send('!'+what)
