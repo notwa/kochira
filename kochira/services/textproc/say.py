@@ -60,7 +60,7 @@ def setup(ctx):
 
     lexicon = make_lexicon(ctx.config.lexicon_file)
     ctx.storage.vars = {}
-    ctx.storage.vars.extend(lexicon)
+    ctx.storage.vars.update(lexicon)
 
 
 @service.command("!say (?P<text>.+)")
