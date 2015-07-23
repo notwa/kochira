@@ -56,7 +56,7 @@ def setup(ctx):
         for k in ['plural', 'plural_noun', 'plural_verb', 'plural_adj',
                   'singular_noun', 'no', 'num', 'a', 'an', 'present_participle',
                   'ordinal', 'number_to_words', 'join']})
-    env.filters['choose'] = random.choice
+    ctx.storage.env.filters['choose'] = random.choice
 
     lexicon = make_lexicon(ctx.config.lexicon_file)
     ctx.storage.vars = {}
