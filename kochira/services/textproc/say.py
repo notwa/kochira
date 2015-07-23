@@ -70,4 +70,7 @@ def say(ctx, text):
     
     I can say things!
     """
-    ctx.message(ctx.storage.env.from_string(text).render(**ctx.storage.vars))
+    try:
+        ctx.message(ctx.storage.env.from_string(text).render(**ctx.storage.vars))
+    except Exception as e:
+        ctx.respond(ctx._("Didn't manage to say that: {error}").format(error=e))
