@@ -40,6 +40,9 @@ def make_lexicon(fn):
     lexicon = {}
     with open(fn, 'rb') as f:
         for line in f:
+            if not line:
+                continue
+
             word, poss = line.decode('utf-8').rstrip().rsplit('\\', 1)
             for pos in poss:
                 if pos in PARTS_OF_SPEECH:
