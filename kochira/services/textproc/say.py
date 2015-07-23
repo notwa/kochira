@@ -38,9 +38,9 @@ PARTS_OF_SPEECH = {
 
 def make_lexicon(fn):
     lexicon = {}
-    with open(fn, 'r') as f:
+    with open(fn, 'rb') as f:
         for line in f:
-            word, poss = line.rstrip().rsplit('\\', 1)
+            word, poss = line.decode('utf-8').rstrip().rsplit('\\', 1)
             for pos in poss:
                 if pos in PARTS_OF_SPEECH:
                     lexicon.setdefault(PARTS_OF_SPEECH[pos], []).append(word)
