@@ -40,10 +40,10 @@ def make_lexicon(fn):
     lexicon = {}
     with open(fn, 'r') as f:
         for line in f:
-        word, poss = line.rstrip().rsplit('\\', 1)
-        for pos in poss:
-            if pos in PARTS_OF_SPEECH:
-            lexicon.setdefault(PARTS_OF_SPEECH[pos], []).append(word)
+            word, poss = line.rstrip().rsplit('\\', 1)
+            for pos in poss:
+                if pos in PARTS_OF_SPEECH:
+                lexicon.setdefault(PARTS_OF_SPEECH[pos], []).append(word)
     return lexicon
 
 
