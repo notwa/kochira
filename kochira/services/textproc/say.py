@@ -57,6 +57,7 @@ def setup(ctx):
                   'singular_noun', 'no', 'num', 'a', 'an', 'present_participle',
                   'ordinal', 'number_to_words', 'join']})
     ctx.storage.env.filters['choose'] = random.choice
+    ctx.storage.env.filters['sample'] = random.sample
 
     lexicon = make_lexicon(ctx.config.lexicon_file)
     ctx.storage.vars = {}
