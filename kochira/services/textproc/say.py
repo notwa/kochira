@@ -55,7 +55,8 @@ def setup(ctx):
         k: getattr(ctx.storage.inflector, k)
         for k in ['plural', 'plural_noun', 'plural_verb', 'plural_adj',
                   'singular_noun', 'no', 'num', 'a', 'an', 'present_participle',
-                  'ordinal', 'number_to_words', 'join']})
+                  'ordinal', 'number_to_words']})
+    ctx.storage.env.filters['join'] = lambda xs, *a, **kw: p.join(list(xs), *a, **kw)
     ctx.storage.env.filters['choose'] = random.choice
     ctx.storage.env.filters['sample'] = random.sample
 
