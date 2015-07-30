@@ -22,7 +22,7 @@ def strip_control_codes(s):
 @service.config
 class Config(Config):
     languages = config.Field(doc="Language codes to ban.", type=config.Many(str))
-    api_key = config.Field(dlc="API key for detectlanguage.com")
+    api_key = config.Field(doc="API key for detectlanguage.com")
     kick_message = config.Field(doc="Kick message.", default="Watch your language!")
 
 
