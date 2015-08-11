@@ -85,10 +85,10 @@ class Client(_Client):
         logger.info("Connected to IRC: %s", self.name)
         super().on_connect()
 
+        self._run_hooks("connect", None, None)
+
         for name, channel in self.bot.config.clients[self.name].channels.items():
             self.join(name, password=channel.password)
-
-        self._run_hooks("connect", None, None)
 
     def _autotruncate(self, command, target, message, suffix="..."):
         hostmask = self._format_user_mask(self.nickname)
@@ -216,6 +216,26 @@ class Client(_Client):
 
     def on_ctcp_action(self, by, what, contents):
         self._run_hooks("ctcp_action", by.name, by.name, [by.name, what, contents])
+
+    # hacks:
+
+    def on_raw_004(self, message):
+        """ Basic server information. """
+        if len(message.params) != 2:
+            hostname, ircd, user_modes, channel_modes = message.params[:4]
+        else:
+            # special case: twitch.tv
+            hostname, ircd = message.params[:2]
+            channel_modes = ''
+            user_modes = ''
+
+        # Set valid channel and user modes.
+        self._channel_modes = set(channel_modes)
+        self._user_modes = set(user_modes)
+
+    def on_raw_396(self, message):
+        # this just tells us what our hostname is
+        pass
 
     def on_raw_410(self, message):
         self._capabilities_requested = set()
