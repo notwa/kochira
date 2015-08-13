@@ -211,6 +211,7 @@ def on_quit(ctx, origin, message=None):
 
 @service.hook("ctcp_action", priority=10000)
 def on_ctcp_action(ctx, origin, target, message):
+    target = target.name # FIXME: hack
     if target == ctx.client.nickname:
         target = origin
 
