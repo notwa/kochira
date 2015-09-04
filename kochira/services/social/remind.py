@@ -117,6 +117,7 @@ def add_timed_reminder(ctx, whos, duration, message):
     
     if ctx.client.normalize(ctx.origin) in normalized_whos:
         ctx.respond(ctx._("I'm sure you have better ways of reminding yourself."))
+        return
 
     for who in whos:
         if t is None:
@@ -160,6 +161,7 @@ def add_reminder(ctx, whos, message):
     
     if ctx.client.normalize(ctx.origin) in normalized_whos:
         ctx.respond(ctx._("I'm sure you have better ways of reminding yourself."))
+        return
 
     for who in whos:
         Reminder.create(who=who, who_n=ctx.client.normalize(who),
