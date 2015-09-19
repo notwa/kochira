@@ -5,6 +5,7 @@ This enables the bot to record and search quotes. If the web server service is
 running, a web interface to quotes will be made available at ``/quotes/``.
 """
 
+import humanize
 import random
 import re
 import operator
@@ -154,9 +155,36 @@ def read_quote(ctx, qid: int):
 
     quote = q[0]
 
-    ctx.respond(ctx._("Quote {id}: {text}").format(
+    ctx.respond(ctx._("Quote #{id}: {text}").format(
         id=quote.id,
         text=quote.quote
+    ))
+
+
+@service.command(r"info quote (?P<qid>\d+)$", mention=True)
+@service.command(r"!quote info (?P<qid>\d+)$")
+def info_quote(ctx, qid: int):
+    """
+    Quote info.
+
+    Retrieve metadata about the quote from the database.
+    """
+
+    q = Quote.select() \
+        .where(Quote.id == qid)
+
+    if not q.exists():
+        ctx.respond(ctx._("That's not a quote."))
+        return
+
+    quote = q[0]
+
+    ctx.respond(ctx._("Quote #{id} is by {by} in {channel} on {network} {time}.").format(
+        id=quote.id,
+        by=quote.by,
+        channel=quote.channel,
+        network=quote.network,
+        time=humanize.naturaltime(datetime.datetime.now() - quote.ts),
     ))
 
 
