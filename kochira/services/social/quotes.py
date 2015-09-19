@@ -184,7 +184,7 @@ def info_quote(ctx, qid: int):
         by=quote.by,
         channel=quote.channel,
         network=quote.network,
-        time=humanize.naturaltime(datetime.now() - quote.ts),
+        time=humanize.naturaltime(datetime.utcnow() - quote.ts),
     ))
 
 
