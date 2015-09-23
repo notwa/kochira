@@ -197,7 +197,7 @@ class Service:
 
                 # check if we're either being mentioned or being PMed
                 if mention and origin != target:
-                    match = re.match(r"@?{}[:, ]*\b(?P<rest>.+)".format(
+                    match = re.match(r"@?{}[:, ]*(?P<rest>.+)".format(
                         re.escape(ctx.client.nickname)
                     ), message, re.IGNORECASE)
 
