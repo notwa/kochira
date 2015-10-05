@@ -340,7 +340,7 @@ def _find_quotes(storage, query):
         qids = [r["id"] for r in results]
 
     return Quote.select() \
-        .where(Quote.id << SQL("({})".format(", ".join(str(qid) for qid in qids))))
+        .where(Quote.id << SQL("({})".format(", ".join(str(qid) for qid in qids)))) \
         .order_by(Quote.id.desc())
 
 
