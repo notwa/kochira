@@ -155,7 +155,7 @@ def read_quote(ctx, qid: int):
 
     quote = q[0]
 
-    ctx.respond(ctx._("Quote #{id}: {text}").format(
+    ctx.respond(ctx._("Quote {id}: {text}").format(
         id=quote.id,
         text=quote.quote
     ))
@@ -179,7 +179,7 @@ def info_quote(ctx, qid: int):
 
     quote = q[0]
 
-    ctx.respond(ctx._("Quote #{id} is by {by} in {channel} on {network} {time}.").format(
+    ctx.respond(ctx._("Quote {id} is by {by} in {channel} on {network} {time}.").format(
         id=quote.id,
         by=quote.by,
         channel=quote.channel,
@@ -341,6 +341,7 @@ def _find_quotes(storage, query):
 
     return Quote.select() \
         .where(Quote.id << SQL("({})".format(", ".join(str(qid) for qid in qids))))
+        .order_by(Quote.id.desc())
 
 
 @service.command(r"find (?:a )?quote matching (?P<query>.+)$", mention=True)
