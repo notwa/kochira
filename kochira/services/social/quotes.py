@@ -363,7 +363,6 @@ def find_quote(ctx, query):
         ))
     else:
         qids = [quote.id for quote in quotes]
-        qids.sort()
 
         ctx.respond(ctx._("Found {num} quotes: {qids}").format(
             num=len(qids),
