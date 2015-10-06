@@ -41,7 +41,7 @@ class Badword(Model):
 class Config(Config):
     chanserv_kick = config.Field(doc="Ask ChanServ to perform the kick.", default=False)
     chanserv_op = config.Field(doc="Ask ChanServ to op with the given command, if not already opped.", default=None)
-    kick_message = config.Field(doc="Kick message.", default="Watch your language!")
+    kick_message = config.Field(doc="Kick message.", default="Bad word: {match}")
 
 
 @service.command("(?P<word>.+) is a bad word", mention=True)
@@ -97,14 +97,14 @@ def list_badwords(ctx):
 
 @service.hook("channel_message", priority=2500)
 def check_badwords(ctx, target, origin, message):
-    def _callback():
+    def _callback(match):
         if ctx.config.chanserv_kick:
             ctx.client.message("ChanServ", "KICK {target} {origin} {message}".format(
                                target=ctx.target, origin=ctx.origin,
-                               message=ctx.config.kick_message))
+                               message=ctx.config.kick_message.format(match=match)))
         else:
             ctx.client.rawmsg("KICK", ctx.target, ctx.origin,
-                              ctx.config.kick_message)
+                              ctx.config.kick_message.format(match=match))
 
     for badword in Badword.select().where(Badword.client_name == ctx.client.name,
                                           Badword.channel == ctx.target):
@@ -113,7 +113,8 @@ def check_badwords(ctx, target, origin, message):
         else:
             expr = r"\b{}\b".format(re.escape(badword.word))
 
-        if re.search(expr, strip_control_codes(message), re.I) is not None:
+        match = re.search(expr, strip_control_codes(message), re.I)
+        if match is not None:
             op_modes = set(itertools.takewhile(lambda x: x != "v",
                                                ctx.client._nickname_prefixes.values()))
 
@@ -125,7 +126,7 @@ def check_badwords(ctx, target, origin, message):
             if ctx.client.nickname not in ops and ctx.config.chanserv_op is not None:
                 ctx.client.message("ChanServ", ctx.config.chanserv_op.format(
                                    target=ctx.target, me=ctx.client.nickname))
-                ctx.bot.event_loop.schedule(_callback)
+                ctx.bot.event_loop.schedule(lambda: _callback(match))
             else:
-                _callback()
+                _callback(match)
             return Service.EAT
