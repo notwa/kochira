@@ -5,8 +5,6 @@ This service enables the bot to perform automatic corrections for given
 keywords.
 """
 
-raise RuntimeError("u")
-
 import re2
 from peewee import CharField
 from tornado.web import RequestHandler, Application
