@@ -10,6 +10,7 @@ import gzip
 import humanize
 from datetime import datetime
 from lxml import etree
+import io
 
 from kochira import config
 from kochira.userdata import UserData
@@ -31,16 +32,10 @@ def query_lastfm(api_key, method, arguments):
 
     r = requests.get(
         "http://ws.audioscrobbler.com/2.0/",
-        params=params,
-        stream=True
+        params=params
     )
 
-    f = r.raw
-    try:
-        f = gzip.GzipFile(fileobj=f)
-    except OSError:
-        pass
-    return etree.parse(f)
+    return etree.fromstring(r.text)
 
 
 def get_compare_users(api_key, user1, user2):
