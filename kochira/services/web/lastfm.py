@@ -35,7 +35,12 @@ def query_lastfm(api_key, method, arguments):
         stream=True
     )
 
-    return etree.parse(gzip.GzipFile(fileobj=r.raw))
+    f = r.raw
+    try:
+        f = gzip.GzipFile(fileobj=f)
+    except IOError:
+        pass
+    return etree.parse(f)
 
 
 def get_compare_users(api_key, user1, user2):
