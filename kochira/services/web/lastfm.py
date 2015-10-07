@@ -38,7 +38,7 @@ def query_lastfm(api_key, method, arguments):
     f = r.raw
     try:
         f = gzip.GzipFile(fileobj=f)
-    except IOError:
+    except OSError:
         pass
     return etree.parse(f)
 
