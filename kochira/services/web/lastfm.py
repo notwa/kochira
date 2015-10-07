@@ -35,7 +35,7 @@ def query_lastfm(api_key, method, arguments):
         params=params
     )
 
-    return etree.fromstring(r.text)
+    return etree.fromstring(r.text.encode("utf-8"))
 
 
 def get_compare_users(api_key, user1, user2):
