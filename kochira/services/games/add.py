@@ -17,8 +17,7 @@ class Add(Model):
     number = IntegerField()
 
 
-@service.command("add", mention=True, allow_private=False)
-@service.command("!add", mention=False, allow_private=False)
+@service.command("f", mention=False, allow_private=False)
 def add(ctx):
     """
     Add to the number.
@@ -32,6 +31,6 @@ def add(ctx):
     a.number += 1
     a.save()
 
-    ctx.respond(ctx._("Thanks, the number has been increased to {number}.").format(
+    ctx.respond(ctx._("Thanks, the number of respects paid is now {number}.").format(
         number=a.number
     ))

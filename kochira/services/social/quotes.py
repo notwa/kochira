@@ -5,6 +5,7 @@ This enables the bot to record and search quotes. If the web server service is
 running, a web interface to quotes will be made available at ``/quotes/``.
 """
 
+import humanize
 import random
 import re
 import operator
@@ -160,6 +161,33 @@ def read_quote(ctx, qid: int):
     ))
 
 
+@service.command(r"info quote (?P<qid>\d+)$", mention=True)
+@service.command(r"!quote info (?P<qid>\d+)$")
+def info_quote(ctx, qid: int):
+    """
+    Quote info.
+
+    Retrieve metadata about the quote from the database.
+    """
+
+    q = Quote.select() \
+        .where(Quote.id == qid)
+
+    if not q.exists():
+        ctx.respond(ctx._("That's not a quote."))
+        return
+
+    quote = q[0]
+
+    ctx.respond(ctx._("Quote {id} is by {by} in {channel} on {network} {time}.").format(
+        id=quote.id,
+        by=quote.by,
+        channel=quote.channel,
+        network=quote.network,
+        time=humanize.naturaltime(datetime.utcnow() - quote.ts),
+    ))
+
+
 @service.command(r"what is the last quote\??", mention=True)
 @service.command(r"last quote", mention=True)
 @service.command(r"!quote read last")
@@ -312,7 +340,8 @@ def _find_quotes(storage, query):
         qids = [r["id"] for r in results]
 
     return Quote.select() \
-        .where(Quote.id << SQL("({})".format(", ".join(str(qid) for qid in qids))))
+        .where(Quote.id << SQL("({})".format(", ".join(str(qid) for qid in qids)))) \
+        .order_by(Quote.id.desc())
 
 
 @service.command(r"find (?:a )?quote matching (?P<query>.+)$", mention=True)
@@ -334,7 +363,6 @@ def find_quote(ctx, query):
         ))
     else:
         qids = [quote.id for quote in quotes]
-        qids.sort()
 
         ctx.respond(ctx._("Found {num} quotes: {qids}").format(
             num=len(qids),

@@ -113,11 +113,13 @@ def add_timed_reminder(ctx, whos, duration, message):
     t = parse_time(duration)
 
     whos = set(re.split(r",(?: and | )?| and ", whos))
+    normalized_whos = {ctx.client.normalize(who) for who in whos}
+    
+    if ctx.client.normalize(ctx.origin) in normalized_whos:
+        ctx.respond(ctx._("I'm sure you have better ways of reminding yourself."))
+        return
 
     for who in whos:
-        if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
-            who = ctx.origin
-    
         if t is None:
             ctx.respond(ctx._("Sorry, I don't understand that time."))
             return
@@ -155,11 +157,13 @@ def add_reminder(ctx, whos, message):
     """
 
     whos = set(re.split(r",(?: and | )?| and ", whos))
+    normalized_whos = {ctx.client.normalize(who) for who in whos}
+    
+    if ctx.client.normalize(ctx.origin) in normalized_whos:
+        ctx.respond(ctx._("I'm sure you have better ways of reminding yourself."))
+        return
 
     for who in whos:
-        if who.lower() == "me" and who not in ctx.client.channels[ctx.target]["users"]:
-            who = ctx.origin
-    
         Reminder.create(who=who, who_n=ctx.client.normalize(who),
                         channel=ctx.target, origin=ctx.origin, message=message,
                         client_name=ctx.client.name, ts=datetime.utcnow(),
