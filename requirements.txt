@@ -1,4 +1,4 @@
-https://github.com/Shizmob/pydle/tarball/master#egg=pydle
+https://github.com/notwa/pydle/tarball/master#egg=pydle
 peewee
 pyyaml
 requests
