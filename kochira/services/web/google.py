@@ -30,8 +30,8 @@ def setup(ctx):
     timeout.setup(ctx)
 
 
-@service.command(r"!g (?P<term>.+?)(?: (?P<num>\d+))?$")
-@service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
+@service.command(r"!g (?P<term>.+?)(?: (?P<num>#\d+))?$")
+@service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>#\d+)\))?\??$", mention=True)
 @background
 def search(ctx, term, num: int=None):
     """
@@ -70,7 +70,7 @@ def search(ctx, term, num: int=None):
         ctx.respond(ctx._("Couldn't find anything matching \"{term}\".").format(term=term))
         return
 
-    ctx.respond(ctx._("({num} of {total}) {title}: {url}").format(
+    ctx.respond(ctx._("(#{num} of {total}) {title}: {url}").format(
         title=results[num]["title"],
         url=results[num]["link"],
         num=num + 1,
