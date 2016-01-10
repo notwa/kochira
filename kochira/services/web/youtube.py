@@ -18,8 +18,8 @@ class Config(Config):
     api_key = config.Field(doc="Google API key.")
 
 
-#@service.command(r"!yt (?P<term>.+?)(?: (?P<num>\d+))?$")
-@service.command(r"youtube search(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
+#@service.command(r"!yt (?P<term>.+?)(?: #(?P<num>\d+))?$")
+@service.command(r"youtube search(?: for)? (?P<term>.+?)(?: #(?P<num>\d+))?\??$", mention=True)
 @background
 def search(ctx, term, num: int=None):
     """
