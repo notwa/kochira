@@ -30,8 +30,8 @@ def setup(ctx):
     timeout.setup(ctx)
 
 
-@service.command(r"!g (?P<term>.+?)(?: (?P<num>#\d+))?$")
-@service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>#\d+)\))?\??$", mention=True)
+@service.command(r"!g (?P<term>.+?)(?: #(?P<num>\d+))?$")
+@service.command(r"(?:search|google)(?: for)? (?P<term>.+?)(?: \((?P<num>\d+)\))?\??$", mention=True)
 @background
 def search(ctx, term, num: int=None):
     """
