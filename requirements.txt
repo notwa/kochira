@@ -17,4 +17,3 @@ https://github.com/rfk/pyenchant/tarball/master#egg=pyenchant
 textblob
 ccy
 geopy
-https://github.com/rfw/pyre2/tarball/master#egg=re2

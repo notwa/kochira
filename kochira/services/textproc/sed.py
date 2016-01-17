@@ -4,7 +4,7 @@ Sed-style find and replacement.
 Finds patterns in text and replaces it with other terms.
 """
 
-import re2
+import re
 
 from kochira.service import Service
 
@@ -24,15 +24,15 @@ def sed(ctx, pattern, replacement, who=None, flags=None):
     if flags is None:
         flags = ""
 
-    re_flags = re2.UNICODE
+    re_flags = re.UNICODE
 
     if "i" in flags:
-        re_flags |= re2.IGNORECASE
+        re_flags |= re.IGNORECASE
     if "s" in flags:
-        re_flags |= re2.DOTALL
+        re_flags |= re.DOTALL
 
     try:
-        expr = re2.compile(pattern, re_flags)
+        expr = re.compile(pattern, re_flags)
     except:
         ctx.respond(ctx._("Couldn't parse that pattern."))
         return
